@@ -1,0 +1,15 @@
+fastmcp>=2.10.0,<3.0.0
+pywinauto>=0.6.8
+opencv-python>=4.5.0
+numpy>=1.19.0
+psutil>=5.8.0
+python-dotenv>=1.0.0
+face-recognition>=1.3.0
+face-recognition-models>=0.3.0
+dlib>=19.22.0
+cryptography>=3.4.00; platform_system=='Windows'
+pygetwindow>=0.0.9
+pillow>=9.0.0
+numpy>=1.21.0
+uvicorn[standard]>=0.20.0
+pywin32>=300; platform_system=='Windows'

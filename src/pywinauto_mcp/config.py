@@ -1,0 +1,51 @@
+"""Configuration settings for PyWinAuto MCP."""
+
+import os
+from pathlib import Path
+from typing import Optional
+
+from pydantic import BaseSettings, Field, validator
+from pydantic.networks import AnyHttpUrl
+
+
+class Settings(BaseSettings):
+    """Application settings."""
+
+    # Server Configuration
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    LOG_LEVEL: str = "INFO"
+    DEBUG: bool = False
+    RELOAD: bool = False
+    WORKERS: int = 1
+    
+    # PyWinAuto Settings
+    TIMEOUT: float = 10.0
+    RETRY_ATTEMPTS: int = 3
+    RETRY_DELAY: float = 1.0
+    
+    # Screenshot Settings
+    SCREENSHOT_DIR: Path = Path("./screenshots")
+    SCREENSHOT_FORMAT: str = "png"
+    
+    # MCP Settings
+    MCP_NAME: str = "pywinauto-mcp"
+    MCP_VERSION: str = "0.1.0"
+    MCP_DESCRIPTION: str = "MCP server for Windows UI automation using PyWinAuto"
+    
+    class Config:
+        """Pydantic config."""
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = True
+    
+    @validator("SCREENSHOT_DIR", pre=True)
+    def create_screenshot_dir(cls, v):
+        """Create screenshot directory if it doesn't exist."""
+        path = Path(v)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+
+# Global settings instance
+settings = Settings()

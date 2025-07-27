@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=42.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pywinauto-mcp"
+version = "0.1.0"
+description = "FastMCP server for Windows UI automation using PyWinAuto"
+authors = [
+    {name = "Sandra Schilling", email = "sandra@example.com"},
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "fastmcp>=2.10.0,<3.0.0",
+    "pywinauto>=0.6.8",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "pywin32>=300; platform_system=='Windows'",
+    "pygetwindow>=0.0.9",
+    "pillow>=9.0.0",  # For screenshots
+    "numpy>=1.21.0",  # For image processing
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "types-python-dotenv>=1.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+# DXT Configuration
+[tool.dxt]
+name = "pywinauto-mcp"
+display_name = "PyWinAuto MCP"
+version = "0.1.0"
+description = "MCP server for Windows UI automation using PyWinAuto"
+entry_point = "pywinauto_mcp.main:app"
+
+[[tool.dxt.tools]]
+name = "find_window"
+description = "Find a window by title, class, or other attributes"
+
+[[tool.dxt.tools]]
+name = "click_element"
+description = "Click on a UI element"
+
+[[tool.dxt.tools]]
+name = "type_text"
+description = "Type text into a window or control"
+
+[[tool.dxt.tools]]
+name = "get_element_info"
+description = "Get information about a UI element"
+
+[tool.dxt.config]
+log_level = "INFO"
+max_workers = 4
+request_timeout = 30.0

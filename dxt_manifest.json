@@ -1,0 +1,235 @@
+{
+  "name": "pywinauto-mcp",
+  "display_name": "PyWinAuto MCP",
+  "version": "0.1.0",
+  "description": "Windows UI Automation MCP server with advanced security and monitoring capabilities",
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": "https://github.com/yourusername/pywinauto-mcp",
+  "categories": ["automation", "security", "monitoring", "productivity", "testing"],
+  "keywords": ["windows", "automation", "security", "monitoring", "ui-testing"],
+  
+  "server": {
+    "command": "python -m pywinauto_mcp.main",
+    "url": "http://localhost:8000",
+    "timeout": 30
+  },
+
+  "tools": [
+    {
+      "name": "monitor_sensitive_apps",
+      "description": "Monitor and alert on access to sensitive applications",
+      "parameters": {
+        "app_names": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of application names to monitor (e.g., ['banking_app.exe', 'corporate_dashboard.exe'])"
+        },
+        "webcam_required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether webcam verification is required"
+        },
+        "alert_email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address to send alerts to"
+        },
+        "monitor_duration_minutes": {
+          "type": "integer",
+          "default": 60,
+          "description": "Duration to monitor for (in minutes)"
+        }
+      },
+      "examples": [
+        {
+          "name": "Monitor banking app access",
+          "input": {
+            "app_names": ["banking_app.exe"],
+            "webcam_required": true,
+            "alert_email": "alerts@example.com",
+            "monitor_duration_minutes": 480
+          },
+          "description": "Monitor for banking app access during work hours and alert if accessed without webcam verification"
+        }
+      ]
+    },
+    {
+      "name": "security_sweep",
+      "description": "Perform a comprehensive security sweep of the system",
+      "parameters": {
+        "check_cameras": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check all available cameras for intruders"
+        },
+        "scan_running_processes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scan for suspicious processes"
+        },
+        "check_network_connections": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check for unusual network connections"
+        },
+        "alert_threshold": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "default": "medium",
+          "description": "Sensitivity level for security alerts"
+        }
+      },
+      "examples": [
+        {
+          "name": "Full security sweep",
+          "input": {
+            "check_cameras": true,
+            "scan_running_processes": true,
+            "check_network_connections": true,
+            "alert_threshold": "high"
+          },
+          "description": "Perform a comprehensive security sweep with high alert sensitivity"
+        }
+      ]
+    },
+    {
+      "name": "detect_intruder",
+      "description": "Use available cameras to detect potential intruders",
+      "parameters": {
+        "sensitivity": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 1.0,
+          "default": 0.7,
+          "description": "Sensitivity for motion detection (0.1-1.0)"
+        },
+        "duration_minutes": {
+          "type": "integer",
+          "default": 5,
+          "description": "Duration to monitor for intruders (in minutes)"
+        },
+        "alert_contacts": {
+          "type": "array",
+          "items": {"type": "string", "format": "email"},
+          "description": "Email addresses to alert if intruder is detected"
+        },
+        "record_video": {
+          "type": "boolean",
+          "default": true,
+          "description": "Record video when motion is detected"
+        }
+      },
+      "examples": [
+        {
+          "name": "Nighttime intruder detection",
+          "input": {
+            "sensitivity": 0.8,
+            "duration_minutes": 480,
+            "alert_contacts": ["security@example.com", "me@example.com"],
+            "record_video": true
+          },
+          "description": "Monitor for intruders overnight with high sensitivity"
+        }
+      ]
+    },
+    {
+      "name": "monitor_workstation_activity",
+      "description": "Monitor workstation for unusual activity patterns",
+      "parameters": {
+        "monitor_hours": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start": {"type": "string", "format": "time"},
+              "end": {"type": "string", "format": "time"}
+            }
+          },
+          "description": "Time windows to monitor for unusual activity"
+        },
+        "sensitive_apps": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of applications that require additional verification"
+        },
+        "alert_methods": {
+          "type": "array",
+          "items": {"type": "string", "enum": ["email", "sms", "desktop"]},
+          "default": ["email"],
+          "description": "Methods to use for alerts"
+        }
+      },
+      "examples": [
+        {
+          "name": "After-hours monitoring",
+          "input": {
+            "monitor_hours": [
+              {"start": "18:00", "end": "08:00"},
+              {"start": "00:00", "end": "23:59", "days": [5, 6]}
+            ],
+            "sensitive_apps": ["banking_app.exe", "corporate_vpn.exe"],
+            "alert_methods": ["email", "sms"]
+          },
+          "description": "Monitor for after-hours access to sensitive applications"
+        }
+      ]
+    }
+  ],
+
+  "suggested_prompts": [
+    "Monitor my banking app and alert me if it's accessed without webcam verification after work hours",
+    "Perform a full security sweep of my home office and email me the report",
+    "Detect any motion in my home office when I'm not there and record video evidence",
+    "Alert me if any new USB devices are connected to my computer",
+    "Monitor for failed login attempts and lock the system after 3 failures",
+    "Create a time-lapse of my work area when motion is detected during off-hours",
+    "Monitor for any changes to system security settings and alert me immediately",
+    "Check if my webcam or microphone are being accessed without my knowledge",
+    "Monitor for unusual network activity when I'm away from my computer",
+    "Create a security log of all applications that access the clipboard"
+  ],
+
+  "security_scenarios": [
+    {
+      "name": "Unauthorized Access Detection",
+      "description": "Detect and respond to unauthorized access attempts",
+      "steps": [
+        "Monitor for login attempts outside of working hours",
+        "Verify identity using webcam when sensitive apps are accessed",
+        "Send security alerts for suspicious activities",
+        "Optionally lock the workstation or log out the user"
+      ]
+    },
+    {
+      "name": "Physical Security Sweep",
+      "description": "Periodically check the physical security of the premises",
+      "steps": [
+        "Activate all available cameras",
+        "Scan for motion or unrecognized faces",
+        "Compare against known faces database",
+        "Alert security personnel if unauthorized persons are detected"
+      ]
+    },
+    {
+      "name": "Sensitive Application Monitoring",
+      "description": "Monitor and control access to sensitive applications",
+      "steps": [
+        "Detect when sensitive applications are launched",
+        "Verify user identity through multiple factors",
+        "Log all access attempts and activities",
+        "Enforce session timeouts and automatic logouts"
+      ]
+    },
+    {
+      "name": "Workstation Activity Audit",
+      "description": "Maintain a comprehensive audit of workstation activities",
+      "steps": [
+        "Log all application usage and file access",
+        "Record network connections and data transfers",
+        "Monitor peripheral device connections",
+        "Generate daily security reports"
+      ]
+    }
+  ]
+}
