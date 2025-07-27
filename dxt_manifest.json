@@ -2,10 +2,10 @@
   "name": "pywinauto-mcp",
   "display_name": "PyWinAuto MCP",
   "version": "0.1.0",
-  "description": "Windows UI Automation MCP server with advanced security and monitoring capabilities",
-  "author": "Your Name",
+  "description": "Windows UI Automation MCP server with advanced security and monitoring capabilities including face recognition",
+  "author": "Sandra Schi",
   "license": "MIT",
-  "repository": "https://github.com/yourusername/pywinauto-mcp",
+  "repository": "https://github.com/sandraschi/pywinauto-mcp",
   "categories": ["automation", "security", "monitoring", "productivity", "testing"],
   "keywords": ["windows", "automation", "security", "monitoring", "ui-testing"],
   
@@ -16,6 +16,59 @@
   },
 
   "tools": [
+    {
+      "name": "enroll_face",
+      "description": "Enroll a new face for recognition",
+      "parameters": {
+        "name": {
+          "type": "string",
+          "description": "Name or identifier for the person"
+        },
+        "image_file": {
+          "type": "string",
+          "format": "file",
+          "description": "Path to an image file containing the face"
+        }
+      },
+      "examples": [
+        {
+          "name": "Enroll face from image",
+          "input": {
+            "name": "John Doe",
+            "image_file": "path/to/face.jpg"
+          },
+          "description": "Enroll a new face from an image file"
+        }
+      ]
+    },
+    {
+      "name": "verify_face_webcam",
+      "description": "Verify identity using webcam face recognition",
+      "parameters": {
+        "confidence_threshold": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0.1,
+          "maximum": 1.0,
+          "description": "Minimum confidence score to accept a match (0.1-1.0)"
+        },
+        "timeout": {
+          "type": "integer",
+          "default": 30,
+          "description": "Maximum time to wait for face verification (seconds)"
+        }
+      },
+      "examples": [
+        {
+          "name": "Verify identity with high confidence",
+          "input": {
+            "confidence_threshold": 0.8,
+            "timeout": 60
+          },
+          "description": "Verify identity with 80% confidence, waiting up to 60 seconds"
+        }
+      ]
+    },
     {
       "name": "monitor_sensitive_apps",
       "description": "Monitor and alert on access to sensitive applications",
@@ -178,8 +231,11 @@
   ],
 
   "suggested_prompts": [
-    "Monitor my banking app and alert me if it's accessed without webcam verification after work hours",
+    "Enroll my face for secure login verification",
+    "Monitor my banking app and alert me if it's accessed without face verification after work hours",
+    "Set up face recognition for my workstation login",
     "Perform a full security sweep of my home office and email me the report",
+    "Configure intruder detection with face recognition for my home office",
     "Detect any motion in my home office when I'm not there and record video evidence",
     "Alert me if any new USB devices are connected to my computer",
     "Monitor for failed login attempts and lock the system after 3 failures",

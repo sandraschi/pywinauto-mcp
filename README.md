@@ -34,12 +34,38 @@ A FastMCP 2.10+ compliant server for Windows UI automation using PyWinAuto with 
    pip install -e .[dev]
    ```
 
+
 ## 🚀 Quick Start
+
+### Option 1: DXT Package (Recommended)
+
+1. **Install the DXT CLI**:
+   ```bash
+   npm install -g @anthropic-ai/dxt
+   ```
+
+
+2. **Download the latest DXT package** from the [releases page](https://github.com/sandraschi/pywinauto-mcp/releases)
+
+3. **Install the DXT package**:
+   ```bash
+   dxt install pywinauto-mcp-0.1.0.dxt
+   ```
+
+
+4. **Start the server**:
+   ```bash
+   dxt run pywinauto-mcp
+   ```
+
+
+### Option 2: From Source
 
 1. **Start the MCP server**:
    ```powershell
    uvicorn pywinauto_mcp.main:app --reload
    ```
+
 
 2. **Example: Find and interact with Notepad**
    ```powershell
@@ -71,7 +97,13 @@ A FastMCP 2.10+ compliant server for Windows UI automation using PyWinAuto with 
 
 ## 🔧 Configuration
 
-Create a `.env` file in the project root:
+### DXT Configuration
+
+When using the DXT package, create a `.env` file in the DXT package directory (typically in `~/.dxt/packages/pywinauto-mcp/.env` on Linux/macOS or `%USERPROFILE%\.dxt\packages\pywinauto-mcp\.env` on Windows).
+
+### Local Development
+
+For local development, create a `.env` file in the project root:
 
 ```ini
 # Server Configuration
