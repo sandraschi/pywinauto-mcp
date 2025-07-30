@@ -1,6 +1,7 @@
 # PyWinAutoMCP DXT Package
 
-This is a DXT (Desktop Extension) package for PyWinAutoMCP, which provides Windows UI automation capabilities with advanced security features including face recognition.
+This is a DXT (Desktop Extension) package for PyWinAutoMCP, which provides Windows UI
+automation capabilities with advanced security features including face recognition.
 
 ## Installation
 

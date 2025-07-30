@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     WORKERS: int = 1
     
     # PyWinAuto Settings
-    TIMEOUT: float = 10.0
+    TIMEOUT: float = 10.0  # Default timeout in seconds for operations
     RETRY_ATTEMPTS: int = 3
     RETRY_DELAY: float = 1.0
     
@@ -28,10 +28,15 @@ class Settings(BaseSettings):
     SCREENSHOT_DIR: Path = Path("./screenshots")
     SCREENSHOT_FORMAT: str = "png"
     
+    # OCR Settings
+    TESSERACT_CMD: Optional[str] = None  # Path to tesseract executable if not in PATH
+    TESSERACT_LANG: str = "eng"  # Default language for OCR
+    TESSERACT_CONFIG: str = "--psm 6 --oem 3"  # Default Tesseract config
+    
     # MCP Settings
     MCP_NAME: str = "pywinauto-mcp"
     MCP_VERSION: str = "0.1.0"
-    MCP_DESCRIPTION: str = "MCP server for Windows UI automation using PyWinAuto"
+    MCP_DESCRIPTION: str = "MCP server for Windows UI automation using PyWinAuto with OCR capabilities"
     
     class Config:
         """Pydantic config."""

@@ -10,9 +10,19 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 import base64
 import io
+import sys
+from pathlib import Path
 
-from ...face_recognition import face_recognizer, FaceData
-from ...security import SecurityLevel
+# Add the project root to the Python path
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from pywinauto_mcp.face_recognition import FaceRecognition, FaceData
+from pywinauto_mcp.security import SecurityLevel
+
+# Initialize the face recognizer
+face_recognizer = FaceRecognition()
 
 router = APIRouter(
     prefix="/face-recognition",

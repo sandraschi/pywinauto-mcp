@@ -4,11 +4,22 @@ Security API endpoints for PyWinAutoMCP.
 This module provides FastAPI routes for security-related functionality.
 """
 from typing import List, Optional, Dict, Any
+import sys
+from pathlib import Path
 from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
 from pydantic import BaseModel, Field, validator, EmailStr
 from datetime import datetime, time
 
-from ...security import app_monitor, intruder_detector, SecurityLevel, SecurityEvent
+# Add the project root to the Python path
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from pywinauto_mcp.security import ApplicationMonitor, IntruderDetector, SecurityLevel, SecurityEvent
+
+# Create singleton instances
+app_monitor = ApplicationMonitor()
+intruder_detector = IntruderDetector()
 
 router = APIRouter(
     prefix="/security",

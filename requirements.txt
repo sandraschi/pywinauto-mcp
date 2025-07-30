@@ -13,3 +13,5 @@ pillow>=9.0.0
 numpy>=1.21.0
 uvicorn[standard]>=0.20.0
 pywin32>=300; platform_system=='Windows'
+pytesseract>=0.3.10
+opencv-python-headless>=4.5.0  # For image processing

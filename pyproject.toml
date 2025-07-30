@@ -1,43 +1,115 @@
 [build-system]
-requires = ["setuptools>=42.0"]
+requires = ["setuptools>=42.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pywinauto-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "FastMCP server for Windows UI automation using PyWinAuto"
+readme = "README.md"
 authors = [
     {name = "Sandra Schilling", email = "sandra@example.com"},
 ]
 requires-python = ">=3.10"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: Microsoft :: Windows :: Windows 11",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Desktop Environment",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Systems Administration",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/pywinauto-mcp"
+Documentation = "https://github.com/yourusername/pywinauto-mcp#readme"
+Issues = "https://github.com/yourusername/pywinauto-mcp/issues"
+Source = "https://github.com/yourusername/pywinauto-mcp"
+
+[project.scripts]
+pywinauto-mcp = "pywinauto_mcp.main:main"
+
 dependencies = [
+    # Core dependencies
     "fastmcp>=2.10.0,<3.0.0",
-    "pywinauto>=0.6.8",
+    "fastapi>=0.95.0",
+    "uvicorn[standard]>=0.22.0",
     "python-dotenv>=1.0.0",
-    "pydantic>=2.0.0",
+    "pydantic>=2.0.0,<3.0.0",
+    
+    # Windows automation
+    "pywinauto>=0.6.8,<1.0.0",
     "pywin32>=300; platform_system=='Windows'",
-    "pygetwindow>=0.0.9",
-    "pillow>=9.0.0",  # For screenshots
-    "numpy>=1.21.0",  # For image processing
+    "psutil>=5.9.0; platform_system=='Windows'",
+    "pygetwindow>=0.0.9,<1.0.0",
+    
+    # Image processing and OCR
+    "pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "opencv-python-headless>=4.8.0",
+    "pytesseract>=0.3.10",
+    
+    # Security features
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.6",
+    
+    # Utilities
+    "typing-extensions>=4.5.0",
+    "python-dateutil>=2.8.2",
+    "httpx>=0.24.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
+    # Testing
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.11.0",
+    "pytest-xdist>=3.3.1",
+    "pytest-html>=4.0.0",
+    "pytest-timeout>=2.1.0",
+    
+    # Code quality
+    "black>=23.7.0",
     "isort>=5.12.0",
-    "mypy>=1.0.0",
+    "mypy>=1.4.0",
+    "ruff>=0.0.280",
+    "pre-commit>=3.3.0",
+    
+    # Documentation
+    "mkdocs>=1.4.3",
+    "mkdocs-material>=9.1.15",
+    "mkdocstrings[python]>=0.22.0",
+    "mkdocs-autorefs>=0.4.1",
+    "mkdocs-jupyter>=0.24.1",
+    "mkdocs-minify-plugin>=0.6.4",
+    "mkdocs-redirects>=1.1.2",
+    
+    # Type stubs
     "types-python-dotenv>=1.0.0",
+    "types-psutil>=5.9.0",
+    "types-python-dateutil>=2.8.0",
+    "types-requests>=2.28.0",
 ]
+
+docs = [
+    "mkdocs>=1.4.3",
+    "mkdocs-material>=9.1.15",
+    "mkdocstrings[python]>=0.22.0",
+    "mkdocs-autorefs>=0.4.1",
+    "mkdocs-jupyter>=0.24.1",
+]
+
+[project.entry-points.fastmcp.plugins]
+pywinauto = "pywinauto_mcp.plugins:setup_plugin"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -72,21 +144,42 @@ version = "0.1.0"
 description = "MCP server for Windows UI automation using PyWinAuto"
 entry_point = "pywinauto_mcp.main:app"
 
+# Core Windows Automation Tools
 [[tool.dxt.tools]]
 name = "find_window"
 description = "Find a window by title, class, or other attributes"
+category = "windows"
 
 [[tool.dxt.tools]]
 name = "click_element"
 description = "Click on a UI element"
+category = "elements"
 
 [[tool.dxt.tools]]
 name = "type_text"
 description = "Type text into a window or control"
+category = "input"
 
 [[tool.dxt.tools]]
 name = "get_element_info"
 description = "Get information about a UI element"
+category = "info"
+
+# OCR Plugin Tools
+[[tool.dxt.tools]]
+name = "extract_text"
+description = "Extract text from an image using OCR"
+category = "ocr"
+
+[[tool.dxt.tools]]
+name = "extract_region"
+description = "Extract text from a specific region of an image"
+category = "ocr"
+
+[[tool.dxt.tools]]
+name = "find_text"
+description = "Find the position of specific text in an image"
+category = "ocr"
 
 [tool.dxt.config]
 log_level = "INFO"

@@ -8,9 +8,21 @@ from datetime import datetime, time
 from enum import Enum
 from pydantic import BaseModel, Field, validator, EmailStr
 from fastapi import HTTPException, status, BackgroundTasks
-from fastmcp import mcp
+from fastmcp.tools import tool as mcp
 
-from .security import app_monitor, intruder_detector, SecurityLevel, SecurityEvent
+import sys
+from pathlib import Path
+
+# Add the project root to the Python path
+project_root = Path(__file__).parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from pywinauto_mcp.security import ApplicationMonitor, IntruderDetector, SecurityLevel, SecurityEvent
+
+# Create singleton instances
+app_monitor = ApplicationMonitor()
+intruder_detector = IntruderDetector()
 
 # Request/Response Models
 class TimeWindow(BaseModel):

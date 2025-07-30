@@ -22,8 +22,17 @@ import win32gui
 import win32process
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field, validator
+from pydantic_settings import BaseSettings
 
-from .config import settings
+import sys
+from pathlib import Path
+
+# Add the project root to the Python path
+project_root = Path(__file__).parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from pywinauto_mcp.config import settings
 
 logger = logging.getLogger(__name__)
 

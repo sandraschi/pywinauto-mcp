@@ -2,8 +2,8 @@
 PyWinAuto MCP - FastMCP 2.10 compliant Windows UI automation server.
 
 This module provides a FastMCP server that exposes Windows UI automation capabilities
-through a RESTful API, with full support for FastMCP 2.10 tool definitions,
-structured output, and elicitation patterns.
+through MCP tools, with full support for FastMCP 2.10 tool definitions, structured output,
+and a plugin system for extensibility.
 """
 
 import logging
@@ -11,23 +11,34 @@ import time
 import win32gui
 import win32process
 import psutil
+import importlib
+import pkgutil
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union, Annotated, Tuple
+from typing import Any, Dict, List, Literal, Optional, Union, Annotated, Tuple, Type
 
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import FastAPI, HTTPException, Query, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastmcp import FastMCP, mcp
+from fastmcp.server import FastMCP
+from fastmcp.tools import tool as mcp
 from pydantic import BaseModel, Field, HttpUrl, conint, constr
 from pywinauto import Application, Desktop, findwindows, timings
 from pywinauto.controls.uia_controls import EditWrapper
 from pywinauto.findwindows import ElementNotFoundError, WindowAmbiguousError
 from pywinauto.timings import TimeoutError as PywinautoTimeoutError
 
-from .config import settings
-from . import security_endpoints  # Import security endpoints to register tools
-from .api import face_recognition  # Import face recognition endpoints
+import sys
+from pathlib import Path
+
+# Add the project root to the Python path
+project_root = Path(__file__).parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from pywinauto_mcp.core.config import get_config
+from pywinauto_mcp.config import settings
+from pywinauto_mcp.core.plugin import PyWinAutoPlugin, PluginManager
 
 # Type aliases
 WindowHandle = int
@@ -50,6 +61,14 @@ class ModifierKey(str, Enum):
     CTRL = "ctrl"
     ALT = "alt"
     WIN = "win"
+
+
+class WindowState(str, Enum):
+    """Window state options."""
+    NORMAL = "normal"
+    MAXIMIZED = "maximized"
+    MINIMIZED = "minimized"
+    HIDDEN = "hidden"
 
 
 class Rectangle(BaseModel):
@@ -107,35 +126,37 @@ class ElementInfo(BaseModel):
     )
 
 # Configure logging
-logging.basicConfig(level=settings.LOG_LEVEL)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize security modules
-app_monitor.init()
-intruder_detector.init()
-# Face recognition module is initialized when imported
+# Load configuration
+config = get_config()
 
 # Initialize FastMCP app
-app = FastMCP(
-    name=settings.MCP_NAME,
-    version=settings.MCP_VERSION,
-    description=settings.MCP_DESCRIPTION,
-    log_level=settings.LOG_LEVEL,
-    # Enable structured output for LARKS
+mcp_app = FastMCP(
+    name="pywinauto-mcp",
+    version="1.0.0",
+    description="Windows UI Automation MCP Server",
+    log_level=config.get("log_level", "INFO"),
     structured_output=True,
-    # Enable elicitation for better user interaction
     enable_elicitation=True,
-    # Define tool categories for better organization
     tool_categories=[
         {"name": "windows", "description": "Window management operations"},
         {"name": "elements", "description": "UI element interactions"},
         {"name": "input", "description": "Keyboard and mouse input"},
-        {"name": "info", "description": "Information retrieval"},
+        {"name": "info", "description": "Information retrieval"}
     ]
 )
 
+# Initialize plugin manager
+plugin_manager = PluginManager(mcp_app)
+
+# Load plugins from config
+if "plugins" in config:
+    plugin_manager.load_from_config(config["plugins"])
+
 # Add CORS middleware
-app.add_middleware(
+mcp_app.app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
@@ -144,31 +165,44 @@ app.add_middleware(
 )
 
 # Global application cache
-app.state.windows = {}
+mcp_app.state.windows = {}
+
+# Make mcp_app available for ASGI
+app = mcp_app.app
 
 
 def get_application(process_id: Optional[int] = None, **kwargs) -> Application:
-    """Get or create a PyWinAuto Application instance."""
-    if process_id and process_id in app.state.windows:
-        return app.state.windows[process_id]
+    """Get or create a PyWinAuto Application instance.
+    
+    Args:
+        process_id: Process ID of the application
+        **kwargs: Additional arguments to pass to Application.connect()
+        
+    Returns:
+        Application: Connected PyWinAuto Application instance
+    """
+    if process_id and process_id in mcp_app.state.windows:
+        return mcp_app.state.windows[process_id]
     
     app_instance = Application(backend="uia").connect(process=process_id, **kwargs)
     if process_id:
-        app.state.windows[process_id] = app_instance
+        mcp_app.state.windows[process_id] = app_instance
     return app_instance
 
 
-@app.on_event("startup")
+@mcp_app.on_event("startup")
 async def startup_event():
     """Initialize application state."""
     logger.info("Starting PyWinAuto MCP server...")
-    logger.info(f"Server running on http://{settings.HOST}:{settings.PORT}")
+    logger.info("Loaded plugins: %s", ", ".join(plugin_manager.plugins.keys()) or "None")
 
 
-@app.on_event("shutdown")
+@mcp_app.on_event("shutdown")
 async def shutdown_event():
     """Clean up resources on shutdown."""
     logger.info("Shutting down PyWinAuto MCP server...")
+    # Shutdown all plugins
+    plugin_manager.shutdown()
 
 
 @mcp.tool(
@@ -181,37 +215,28 @@ async def shutdown_event():
             "status": {"type": "string", "description": "Service status"},
             "service": {"type": "string", "description": "Service name"},
             "version": {"type": "string", "description": "Service version"},
-            "timestamp": {"type": "string", "format": "date-time", "description": "Current server time"}
+            "timestamp": {"type": "string", "format": "date-time", "description": "Current server time"},
+            "plugins": {"type": "array", "items": {"type": "string"}, "description": "Loaded plugins"}
         },
-        "required": ["status", "service", "version", "timestamp"]
+        "required": ["status", "service", "version", "timestamp", "plugins"]
     },
     examples=[
         {"name": "Basic health check", "input": {}}
     ]
 )
 @app.get("/api/health")
-async def health_check() -> Dict[str, str]:
-    """
-    Health check endpoint.
+async def health_check() -> Dict[str, Any]:
+    """Check if the PyWinAuto MCP server is running.
     
     Returns:
-        Service health status and version information.
-        
-    Example:
-        ```json
-        {
-            "status": "ok",
-            "service": "pywinauto-mcp",
-            "version": "0.1.0",
-            "timestamp": "2025-07-27T22:45:00Z"
-        }
-        ```
+        Dict with service status and information
     """
     return {
         "status": "ok",
-        "service": settings.MCP_NAME,
-        "version": settings.MCP_VERSION,
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        "service": "pywinauto-mcp",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat(),
+        "plugins": list(plugin_manager.plugins.keys())
     }
 
 
@@ -281,7 +306,7 @@ async def find_window(
         example=1234
     ),
     timeout: float = Query(
-        settings.TIMEOUT,
+        10.0,  # Default timeout in seconds
         description="Timeout in seconds",
         ge=0.1,
         le=60.0,

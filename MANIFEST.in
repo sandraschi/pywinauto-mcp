@@ -1,0 +1,14 @@
+include LICENSE
+include README.md
+include requirements*.txt
+include .env.example
+recursive-include pywinauto_mcp/templates *
+recursive-include pywinauto_mcp/static *
+recursive-include pywinauto_mcp/locale *
+recursive-include tests *
+recursive-include docs *
+recursive-include examples *
+prune __pycache__
+prune .pytest_cache
+prune .mypy_cache
+prune .ruff_cache

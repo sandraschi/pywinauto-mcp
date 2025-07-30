@@ -5,12 +5,14 @@ This directory contains test images for the face recognition system.
 ## Required Test Images
 
 ### 1. `known_face.jpg`
+
 - A clear, front-facing photo of a person's face
 - Well-lit with neutral expression
 - Minimum 200x200 pixels
 - JPG format
 
 ### 2. `unknown_face.jpg`
+
 - A photo of a different person's face
 - Similar quality to `known_face.jpg`
 - Used to test non-matching face scenarios
