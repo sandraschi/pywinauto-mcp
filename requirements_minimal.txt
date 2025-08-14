@@ -1,0 +1,4 @@
+fastmcp>=2.10.0
+pywinauto>=0.6.8
+pydantic>=2.0.0
+typing-extensions>=4.5.0

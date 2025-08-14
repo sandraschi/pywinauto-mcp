@@ -4,8 +4,12 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseSettings, Field, validator
-from pydantic.networks import AnyHttpUrl
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:
+    from pydantic import BaseSettings
+
+from pydantic import Field, validator
 
 
 class Settings(BaseSettings):

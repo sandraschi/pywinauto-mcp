@@ -1,0 +1,1 @@
+"""PyWinAuto MCP core package."""

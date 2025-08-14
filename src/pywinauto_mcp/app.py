@@ -1,8 +1,7 @@
 """
 PyWinAutoMCP - Windows UI Automation MCP Server.
 
-This module provides the main application setup and plugin management
-for the PyWinAutoMCP server.
+This module provides the main application setup for the PyWinAutoMCP server.
 """
 import logging
 from typing import Dict, Any
@@ -15,8 +14,8 @@ project_root = Path(__file__).parent
 if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
-from pywinauto_mcp.core.plugin import PluginManager
 from pywinauto_mcp.core.config import get_config
+from pywinauto_mcp.api import api_router
 
 
 def create_app(config: Dict[str, Any] = None) -> FastMCP:
@@ -59,29 +58,8 @@ def create_app(config: Dict[str, Any] = None) -> FastMCP:
     # Add logger to the app instance
     app.logger = logger
     
-    # Initialize plugin system
-    plugin_manager = PluginManager(app)
-    
-    # Load plugins from config
-    if "plugins" in config:
-        plugin_manager.load_from_config(config["plugins"])
-    
-    # Add health check endpoint
-    @app.get("/health")
-    async def health_check() -> Dict[str, Any]:
-        """Health check endpoint."""
-        return {
-            "status": "ok",
-            "service": "pywinauto-mcp",
-            "version": "1.0.0",
-            "plugins": list(plugin_manager.plugins.keys())
-        }
-    
-    # Register cleanup handler using FastMCP 2.10.2 event system
-    @app.shutdown_event()
-    def on_shutdown():
-        """Clean up resources on shutdown."""
-        plugin_manager.shutdown()
+    # Include API router
+    app.include_router(api_router)
     
     return app
 

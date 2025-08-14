@@ -26,18 +26,9 @@ classifiers = [
     "Topic :: System :: Systems Administration",
 ]
 
-[project.urls]
-Homepage = "https://github.com/yourusername/pywinauto-mcp"
-Documentation = "https://github.com/yourusername/pywinauto-mcp#readme"
-Issues = "https://github.com/yourusername/pywinauto-mcp/issues"
-Source = "https://github.com/yourusername/pywinauto-mcp"
-
-[project.scripts]
-pywinauto-mcp = "pywinauto_mcp.main:main"
-
 dependencies = [
     # Core dependencies
-    "fastmcp>=2.10.0,<3.0.0",
+    "fastmcp>=2.10.1,<3.0.0",
     "fastapi>=0.95.0",
     "uvicorn[standard]>=0.22.0",
     "python-dotenv>=1.0.0",
@@ -46,7 +37,7 @@ dependencies = [
     # Windows automation
     "pywinauto>=0.6.8,<1.0.0",
     "pywin32>=300; platform_system=='Windows'",
-    "psutil>=5.9.0; platform_system=='Windows'",
+    "psutil>=5.9.0",
     "pygetwindow>=0.0.9,<1.0.0",
     
     # Image processing and OCR
@@ -59,12 +50,27 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
     "python-multipart>=0.0.6",
+    "bcrypt>=4.0.1",
     
     # Utilities
     "typing-extensions>=4.5.0",
     "python-dateutil>=2.8.2",
     "httpx>=0.24.0",
+    "aiofiles>=23.1.0",
+    "python-multipart>=0.0.6",
+    "python-slugify>=7.0.0",
+    "email-validator>=2.0.0",
+    "orjson>=3.8.0"
 ]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/pywinauto-mcp"
+Documentation = "https://github.com/yourusername/pywinauto-mcp#readme"
+Issues = "https://github.com/yourusername/pywinauto-mcp/issues"
+Source = "https://github.com/yourusername/pywinauto-mcp"
+
+[project.scripts]
+pywinauto-mcp = "pywinauto_mcp.main:main"
 
 [project.optional-dependencies]
 dev = [
@@ -108,8 +114,8 @@ docs = [
     "mkdocs-jupyter>=0.24.1",
 ]
 
-[project.entry-points.fastmcp.plugins]
-pywinauto = "pywinauto_mcp.plugins:setup_plugin"
+[project.entry-points]
+"fastmcp.plugins" = { pywinauto = "pywinauto_mcp.plugins:setup_plugin" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
