@@ -46,6 +46,86 @@ __all__ = [
 ]
 
 @register_tool(
+    name="save_screenshot",
+    description="Saves a screenshot to a file. Takes either image data or captures a new screenshot.",
+    category="visual"
+)
+def save_screenshot(
+    output_path: str,
+    image_data: Optional[str] = None,
+    window_handle: Optional[int] = None,
+    region: Optional[Tuple[int, int, int, int]] = None
+) -> Dict[str, Any]:
+    """
+    Save a screenshot to a file.
+
+    Args:
+        output_path: Path to save the screenshot
+        image_data: Base64 encoded image data (optional, if not provided takes a new screenshot)
+        window_handle: Handle of the window to capture (if not using image_data)
+        region: Region to capture (left, top, right, bottom) (if not using image_data)
+
+    Returns:
+        Dict containing the result of the operation
+    """
+    try:
+        if image_data:
+            # Decode base64 image data
+            img_data = base64.b64decode(image_data)
+            img = Image.open(io.BytesIO(img_data))
+        else:
+            # Take a new screenshot
+            if window_handle is not None:
+                if not validate_window_handle(window_handle):
+                    return ErrorResponse(
+                        error=f"Invalid window handle: {window_handle}",
+                        error_type="InvalidWindowHandle"
+                    ).dict()
+                
+                window = get_desktop().window(handle=window_handle)
+                if not window.is_visible():
+                    return ErrorResponse(
+                        error=f"Window {window_handle} is not visible",
+                        error_type="WindowNotVisible"
+                    ).dict()
+                
+                rect = window.rectangle()
+                if region:
+                    # Adjust region to be relative to the window
+                    left = rect.left + region[0]
+                    top = rect.top + region[1]
+                    right = min(rect.left + region[2], rect.right)
+                    bottom = min(rect.top + region[3], rect.bottom)
+                    region = (left, top, right, bottom)
+                else:
+                    region = (rect.left, rect.top, rect.right, rect.bottom)
+                
+                img = ImageGrab.grab(bbox=region)
+            else:
+                if region:
+                    img = ImageGrab.grab(bbox=region)
+                else:
+                    img = ImageGrab.grab()
+        
+        # Ensure the directory exists
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save the image
+        img.save(output_path)
+        
+        return SuccessResponse(
+            message=f"Screenshot saved to {output_path}",
+            data={"path": str(output_path.absolute())}
+        ).dict()
+        
+    except Exception as e:
+        return ErrorResponse(
+            error=f"Failed to save screenshot: {str(e)}",
+            error_type="ScreenshotError"
+        ).dict()
+
+@register_tool(
     name="take_screenshot",
     description="Takes a screenshot of the entire screen or a specific window.",
     category="visual"
@@ -264,6 +344,82 @@ def extract_text(
         return ErrorResponse(
             error=f"Failed to extract text: {str(e)}",
             error_type="OCRError"
+        ).dict()
+
+@register_tool(
+    name="extract_region",
+    description="Extracts a region from an image or screenshot.",
+    category="visual"
+)
+def extract_region(
+    output_path: str,
+    image_path: Optional[str] = None,
+    window_handle: Optional[int] = None,
+    region: Optional[Tuple[int, int, int, int]] = None
+) -> Dict[str, Any]:
+    """
+    Extract a region from an image or screenshot and save it to a file.
+
+    Args:
+        output_path: Path to save the extracted region
+        image_path: Path to the source image (if not using window_handle)
+        window_handle: Handle of the window to capture (if not using image_path)
+        region: Region to extract (left, top, right, bottom)
+
+    Returns:
+        Dict containing the result of the operation
+    """
+    try:
+        if region is None:
+            return ErrorResponse(
+                error="Region must be specified",
+                error_type="InvalidArgument"
+            ).dict()
+
+        if window_handle is not None:
+            # Take a screenshot of the window
+            screenshot = take_screenshot(
+                window_handle=window_handle,
+                region=region,
+                format="png"
+            )
+        elif image_path:
+            # Load the source image
+            if not os.path.isfile(image_path):
+                return ErrorResponse(
+                    error=f"Image file not found: {image_path}",
+                    error_type="FileNotFound"
+                ).dict()
+            
+            with Image.open(image_path) as img:
+                # Convert to RGB if needed
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                
+                # Crop the region
+                img = img.crop(region)
+                
+                # Ensure the output directory exists
+                output_path = Path(output_path)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                # Save the extracted region
+                img.save(output_path)
+                
+                return SuccessResponse(
+                    message=f"Region extracted and saved to {output_path}",
+                    data={"path": str(output_path.absolute())}
+                ).dict()
+        else:
+            return ErrorResponse(
+                error="Either image_path or window_handle must be provided",
+                error_type="MissingArgument"
+            ).dict()
+            
+    except Exception as e:
+        return ErrorResponse(
+            error=f"Failed to extract region: {str(e)}",
+            error_type="ExtractionError"
         ).dict()
 
 @register_tool(

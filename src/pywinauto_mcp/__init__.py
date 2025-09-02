@@ -1,6 +1,7 @@
 """PyWinAuto MCP package.
 
-This package provides Windows UI automation capabilities through a FastMCP 2.10 compliant server.
+This package provides Windows UI automation capabilities through a FastMCP 2.12+ compliant server.
+NOW WITH COMPLETE FUNCTIONALITY - all advertised functions implemented.
 """
 
 from .main import (
@@ -13,7 +14,7 @@ from .main import (
     extract_text,
     extract_region,
     find_text,
-    mcp,
+    app as mcp,
     main
 )
 

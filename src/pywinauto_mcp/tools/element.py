@@ -7,7 +7,8 @@ including clicking, double-clicking, right-clicking, and hovering.
 import logging
 from typing import Dict, Optional, Tuple, Any, List
 
-from pywinauto import ElementNotFoundError, ElementNotVisible, InvalidWindowHandle
+from pywinauto.findwindows import ElementNotFoundError, ElementAmbiguousError
+from pywinauto.base_wrapper import ElementNotVisible
 from pywinauto.controls.uia_controls import ButtonWrapper, EditWrapper, ComboBoxWrapper
 
 from .utils import (

@@ -5,7 +5,7 @@ This module provides functions for managing windows, including maximizing,
 minimizing, restoring, and setting window positions.
 """
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from pywinauto import WindowNotFoundError
 

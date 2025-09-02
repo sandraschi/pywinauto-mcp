@@ -52,30 +52,6 @@ app = FastMCP(
     version="0.1.0"
 )
 
-# Import all tools modules for dynamic registration
-from .tools import mouse, element_tools, system_tools, visual_tools, element, input, visual, window
-
-# Function to register all tools from a module
-def register_tools_from_module(module):
-    """Register all tools from a module using FastMCP app.tool() decorator."""
-    for tool_name in getattr(module, '__all__', []):
-        tool_func = getattr(module, tool_name)
-        if callable(tool_func):
-            app.tool()(tool_func)
-            logger.info(f"Registered tool: {tool_name}")
-
-# Register all tools from all modules
-register_tools_from_module(mouse)
-register_tools_from_module(element_tools)
-register_tools_from_module(system_tools)
-register_tools_from_module(visual_tools)
-register_tools_from_module(element)
-register_tools_from_module(input)
-register_tools_from_module(visual)
-register_tools_from_module(window)
-
-logger.info("All tools registered successfully with FastMCP 2.12+")
-
 
 class Rectangle(BaseModel):
     """Rectangle coordinates and dimensions."""

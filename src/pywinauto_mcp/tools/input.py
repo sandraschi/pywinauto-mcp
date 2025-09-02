@@ -10,7 +10,8 @@ from typing import Dict, List, Optional, Union, Any
 
 import pywinauto.keyboard as keyboard
 import pywinauto.mouse as mouse
-from pywinauto import ElementNotFoundError, ElementNotVisible, InvalidWindowHandle
+from pywinauto.findwindows import ElementNotFoundError, ElementAmbiguousError
+from pywinauto.base_wrapper import ElementNotVisible
 
 from .utils import (
     register_tool,
