@@ -3,258 +3,406 @@ Mouse interaction tools for PyWinAuto MCP.
 
 This module provides mouse-related functionality including movement, clicking, dragging, and scrolling.
 """
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Dict, Any, TypedDict
 import time
 import pyautogui
+import logging
 from pywinauto import Application
-from pywinauto.controls.hwndwrapper import HwndWrapper
 from pywinauto.timings import Timings
-from ..core.decorators import tool, stateful
+
+# Define a type for element info dict
+class ElementInfo(TypedDict, total=False):
+    rect: Any  # Can be a rectangle object with left, top, width, height
+    x: int
+    y: int
+    width: int
+    height: int
+
+# Import the FastMCP app instance from the main package
+try:
+    from pywinauto_mcp.main import app
+    logger = logging.getLogger(__name__)
+    logger.info("Successfully imported FastMCP app instance in mouse tools")
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.error(f"Failed to import FastMCP app in mouse tools: {e}")
+    app = None
 
 # Set default delay between mouse actions
 pyautogui.PAUSE = 0.1
 pyautogui.FAILSAFE = True
 
-@tool
-def mouse_move_relative(x: int, y: int) -> dict:
-    """
-    Move mouse relative to current position.
-    
-    Args:
-        x: Pixels to move horizontally (positive = right, negative = left)
-        y: Pixels to move vertically (positive = down, negative = up)
-        
-    Returns:
-        dict: Status and new position
-    """
-    current_x, current_y = pyautogui.position()
-    new_x = current_x + x
-    new_y = current_y + y
-    pyautogui.moveTo(new_x, new_y)
-    return {"status": "success", "position": (new_x, new_y)}
+# Only proceed with tool registration if app is available
+if app is not None:
+    logger.info("Registering mouse tools with FastMCP")
 
-@tool
-def mouse_move_to_element(element: Union[HwndWrapper, dict], x: int = None, y: int = None) -> dict:
-    """
-    Move mouse to a UI element.
-    
-    Args:
-        element: Pywinauto element or element info dict
-        x: Optional x offset from element's center
-        y: Optional y offset from element's center
+    @app.tool(
+        name="mouse_move_relative",
+        description="Move mouse relative to current position."
+    )
+    def mouse_move_relative(x: int, y: int) -> Dict[str, Any]:
+        """
+        Move mouse relative to current position.
         
-    Returns:
-        dict: Status and position
-    """
-    if hasattr(element, 'rectangle'):
-        rect = element.rectangle()
-        center_x = (rect.left + rect.right) // 2
-        center_y = (rect.top + rect.bottom) // 2
-    elif isinstance(element, dict) and 'rect' in element:
-        rect = element['rect']
-        center_x = (rect['left'] + rect['right']) // 2
-        center_y = (rect['top'] + rect['bottom']) // 2
-    else:
-        raise ValueError("Invalid element type. Must be Pywinauto element or element info dict.")
-    
-    target_x = center_x + (x or 0)
-    target_y = center_y + (y or 0)
-    
-    pyautogui.moveTo(target_x, target_y)
-    return {"status": "success", "position": (target_x, target_y)}
+        Args:
+            x: Pixels to move horizontally (positive = right, negative = left)
+            y: Pixels to move vertically (positive = down, negative = up)
+            
+        Returns:
+            dict: Status and new position
+        """
+        try:
+            current_x, current_y = pyautogui.position()
+            new_x = current_x + x
+            new_y = current_y + y
+            pyautogui.moveTo(new_x, new_y)
+            return {
+                "status": "success",
+                "position": (new_x, new_y),
+                "moved_from": (current_x, current_y),
+                "offset": (x, y)
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
-@tool
-def mouse_hover(element: Union[HwndWrapper, dict], duration: float = 0.5) -> dict:
-    """
-    Hover over an element.
-    
-    Args:
-        element: Pywinauto element or element info dict
-        duration: Time in seconds to hover (default: 0.5)
+    @app.tool(
+        name="mouse_move_to_element",
+        description="Move mouse to a UI element."
+    )
+    def mouse_move_to_element(element: ElementInfo, x: Optional[int] = None, y: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Move mouse to a UI element.
         
-    Returns:
-        dict: Status and hover position
-    """
-    result = mouse_move_to_element(element)
-    time.sleep(duration)
-    return result
+        Args:
+            element: Element info dict with rect/position
+            x: Optional x offset from element's center
+            y: Optional y offset from element's center
+            
+        Returns:
+            dict: Status and position
+        """
+        try:
+            # Handle different element info formats
+            if 'rect' in element and hasattr(element['rect'], 'left'):
+                # Handle rectangle object
+                rect = element['rect']
+                center_x = rect.left + (rect.width() // 2)
+                center_y = rect.top + (rect.height() // 2)
+            elif all(k in element for k in ['x', 'y', 'width', 'height']):
+                # Handle dict with coordinates
+                center_x = element['x'] + (element['width'] // 2)
+                center_y = element['y'] + (element['height'] // 2)
+            else:
+                raise ValueError("Invalid element format. Must contain 'rect' or x/y/width/height")
+            
+            target_x = center_x + (x if x is not None else 0)
+            target_y = center_y + (y if y is not None else 0)
+            
+            pyautogui.moveTo(target_x, target_y)
+            
+            return {
+                "status": "success",
+                "position": (target_x, target_y),
+                "element_center": (center_x, center_y),
+                "offset": (x or 0, y or 0)
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
-@tool
-def drag_and_drop(source: Union[HwndWrapper, dict], 
-                 target: Union[HwndWrapper, dict], 
-                 duration: float = 0.5) -> dict:
-    """
-    Drag from source to target element.
-    
-    Args:
-        source: Source element to drag from
-        target: Target element to drop to
-        duration: Duration of the drag in seconds (default: 0.5)
+    @app.tool(
+        name="mouse_hover",
+        description="Hover over an element."
+    )
+    def mouse_hover(element: ElementInfo, duration: float = 0.5) -> Dict[str, Any]:
+        """
+        Hover over an element.
         
-    Returns:
-        dict: Status and positions
-    """
-    # Get source and target positions
-    src_pos = mouse_move_to_element(source)
-    time.sleep(0.1)  # Small delay before drag
-    
-    # Get target position
-    target_pos = mouse_move_to_element(target)
-    
-    # Perform drag and drop
-    pyautogui.mouseDown()
-    time.sleep(0.1)  # Small delay after mouse down
-    
-    # Move to target
-    pyautogui.moveTo(target_pos['position'][0], target_pos['position'][1], duration=duration)
-    time.sleep(0.1)  # Small delay before release
-    
-    pyautogui.mouseUp()
-    
-    return {
-        "status": "success",
-        "source_position": src_pos['position'],
-        "target_position": target_pos['position']
-    }
+        Args:
+            element: Element info dict with rect/position
+            duration: Time in seconds to hover (default: 0.5)
+            
+        Returns:
+            dict: Status and hover position
+        """
+        try:
+            # Handle different element info formats
+            if 'rect' in element and hasattr(element['rect'], 'left'):
+                # Handle rectangle object
+                rect = element['rect']
+                center_x = rect.left + (rect.width() // 2)
+                center_y = rect.top + (rect.height() // 2)
+            elif all(k in element for k in ['x', 'y', 'width', 'height']):
+                # Handle dict with coordinates
+                center_x = element['x'] + (element['width'] // 2)
+                center_y = element['y'] + (element['height'] // 2)
+            else:
+                raise ValueError("Invalid element format. Must contain 'rect' or x/y/width/height")
+            
+            pyautogui.moveTo(center_x, center_y, duration=duration)
+            
+            return {
+                "status": "success",
+                "position": (center_x, center_y),
+                "duration": duration
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
-@tool
-def right_click(element: Optional[Union[HwndWrapper, dict]] = None, 
-               x: int = None, y: int = None) -> dict:
-    """
-    Right-click on an element or at specific coordinates.
-    
-    Args:
-        element: Optional element to click on
-        x: X coordinate (if element not provided)
-        y: Y coordinate (if element not provided)
+    @app.tool(
+        name="drag_and_drop",
+        description="Drag from source to target element."
+    )
+    def drag_and_drop(
+        source: ElementInfo,
+        target: ElementInfo,
+        duration: float = 0.5
+    ) -> Dict[str, Any]:
+        """
+        Drag from source to target element.
         
-    Returns:
-        dict: Status and click position
-    """
-    if element is not None:
-        pos = mouse_move_to_element(element, x, y)['position']
-    elif x is not None and y is not None:
-        pos = (x, y)
-        pyautogui.moveTo(x, y)
-    else:
-        pos = pyautogui.position()
-    
-    pyautogui.rightClick()
-    return {"status": "success", "position": pos}
+        Args:
+            source: Source element info dict with rect/position
+            target: Target element info dict with rect/position
+            duration: Duration of the drag in seconds (default: 0.5)
+            
+        Returns:
+            dict: Status and positions
+        """
+        try:
+            # Get source center
+            if 'rect' in source and hasattr(source['rect'], 'left'):
+                # Handle rectangle object
+                src_rect = source['rect']
+                src_x = src_rect.left + (src_rect.width() // 2)
+                src_y = src_rect.top + (src_rect.height() // 2)
+            elif all(k in source for k in ['x', 'y', 'width', 'height']):
+                # Handle dict with coordinates
+                src_x = source['x'] + (source['width'] // 2)
+                src_y = source['y'] + (source['height'] // 2)
+            else:
+                raise ValueError("Invalid source element format. Must contain 'rect' or x/y/width/height")
+            
+            # Get target center
+            if 'rect' in target and hasattr(target['rect'], 'left'):
+                # Handle rectangle object
+                tgt_rect = target['rect']
+                tgt_x = tgt_rect.left + (tgt_rect.width() // 2)
+                tgt_y = tgt_rect.top + (tgt_rect.height() // 2)
+            elif all(k in target for k in ['x', 'y', 'width', 'height']):
+                # Handle dict with coordinates
+                tgt_x = target['x'] + (target['width'] // 2)
+                tgt_y = target['y'] + (target['height'] // 2)
+            else:
+                raise ValueError("Invalid target element format. Must contain 'rect' or x/y/width/height")
+            
+            # Perform drag and drop
+            pyautogui.moveTo(src_x, src_y)
+            pyautogui.dragTo(tgt_x, tgt_y, duration=duration, button='left')
+            
+            return {
+                "status": "success",
+                "source_position": (src_x, src_y),
+                "target_position": (tgt_x, tgt_y),
+                "duration": duration
+            }
+        except Exception as e:
+            # Ensure mouse button is released on error
+            try:
+                pyautogui.mouseUp(button='left')
+            except:
+                pass
+                
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
-@tool
-def double_click(element: Optional[Union[HwndWrapper, dict]] = None, 
-               x: int = None, y: int = None) -> dict:
-    """
-    Double-click on an element or at specific coordinates.
-    
-    Args:
-        element: Optional element to click on
-        x: X coordinate (if element not provided)
-        y: Y coordinate (if element not provided)
+    @app.tool(
+        name="right_click",
+        description="Right-click on an element or at specific coordinates."
+    )
+    def right_click(
+        element: Optional[ElementInfo] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Right-click on an element or at specific coordinates.
         
-    Returns:
-        dict: Status and click position
-    """
-    if element is not None:
-        pos = mouse_move_to_element(element, x, y)['position']
-    elif x is not None and y is not None:
-        pos = (x, y)
-        pyautogui.moveTo(x, y)
-    else:
-        pos = pyautogui.position()
-    
-    pyautogui.doubleClick()
-    return {"status": "success", "position": pos}
+        Args:
+            element: Optional element info dict to click on
+            x: X coordinate (if element not provided)
+            y: Y coordinate (if element not provided)
+            
+        Returns:
+            dict: Status and click position
+        """
+        try:
+            if element is not None:
+                if 'rect' in element and hasattr(element['rect'], 'left'):
+                    # Handle rectangle object
+                    rect = element['rect']
+                    x = rect.left + (rect.width() // 2)
+                    y = rect.top + (rect.height() // 2)
+                elif all(k in element for k in ['x', 'y', 'width', 'height']):
+                    # Handle dict with coordinates
+                    x = element['x'] + (element['width'] // 2)
+                    y = element['y'] + (element['height'] // 2)
+                else:
+                    raise ValueError("Invalid element format. Must contain 'rect' or x/y/width/height")
+            elif x is not None and y is not None:
+                pass  # Use provided coordinates
+            else:
+                # Click at current position if no element or coordinates provided
+                x, y = pyautogui.position()
+                
+            pyautogui.rightClick(x, y)
+            
+            return {
+                "status": "success",
+                "position": (x, y),
+                "action": "right_click"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
-@tool
-def mouse_scroll(amount: int, x: int = None, y: int = None) -> dict:
-    """
-    Scroll the mouse wheel.
-    
-    Args:
-        amount: Number of 'clicks' to scroll (positive = up, negative = down)
-        x: Optional X coordinate to move to before scrolling
-        y: Optional Y coordinate to move to before scrolling
+    @app.tool(
+        name="double_click",
+        description="Double-click on an element or at specific coordinates."
+    )
+    def double_click(
+        element: Optional[ElementInfo] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Double-click on an element or at specific coordinates.
         
-    Returns:
-        dict: Status and scroll position
-    """
-    if x is not None and y is not None:
-        pyautogui.moveTo(x, y)
-    
-    pyautogui.scroll(amount)
-    
-    return {
-        "status": "success", 
-        "position": pyautogui.position(),
-        "scroll_amount": amount
-    }
+        Args:
+            element: Optional element info dict to click on
+            x: X coordinate (if element not provided)
+            y: Y coordinate (if element not provided)
+            
+        Returns:
+            dict: Status and click position
+        """
+        try:
+            if element is not None:
+                if 'rect' in element and hasattr(element['rect'], 'left'):
+                    # Handle rectangle object
+                    rect = element['rect']
+                    x = rect.left + (rect.width() // 2)
+                    y = rect.top + (rect.height() // 2)
+                elif all(k in element for k in ['x', 'y', 'width', 'height']):
+                    # Handle dict with coordinates
+                    x = element['x'] + (element['width'] // 2)
+                    y = element['y'] + (element['height'] // 2)
+                else:
+                    raise ValueError("Invalid element format. Must contain 'rect' or x/y/width/height")
+            elif x is not None and y is not None:
+                pass  # Use provided coordinates
+            else:
+                # Click at current position if no element or coordinates provided
+                x, y = pyautogui.position()
+                
+            pyautogui.doubleClick(x, y)
+            
+            return {
+                "status": "success",
+                "position": (x, y),
+                "action": "double_click",
+                "clicks": 2
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
-@tool
-def get_cursor_position() -> dict:
-    """
-    Get current cursor position.
-    
-    Returns:
-        dict: Current cursor position (x, y)
-    """
-    x, y = pyautogui.position()
-    return {"status": "success", "position": (x, y)}
+    @app.tool(
+        name="mouse_scroll",
+        description="Scroll the mouse wheel."
+    )
+    def mouse_scroll(
+        amount: int,
+        x: Optional[int] = None,
+        y: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Scroll the mouse wheel.
+        
+        Args:
+            amount: Number of 'clicks' to scroll (positive = up, negative = down)
+            x: Optional X coordinate to move to before scrolling
+            y: Optional Y coordinate to move to before scrolling
+            
+        Returns:
+            dict: Status and scroll position
+        """
+        try:
+            if x is not None and y is not None:
+                pyautogui.moveTo(x, y)
+                position = (x, y)
+            else:
+                position = pyautogui.position()
+            
+            pyautogui.scroll(amount)
+            
+            return {
+                "status": "success",
+                "position": position,
+                "scroll_amount": amount
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
-@tool
-def highlight_element(element: Union[HwndWrapper, dict], duration: float = 2.0) -> dict:
-    """
-    Visually highlight an element by drawing a rectangle around it.
-    
-    Args:
-        element: Element to highlight
-        duration: Duration in seconds to show the highlight (default: 2.0)
+    @app.tool(
+        name="get_cursor_position",
+        description="Get current cursor position."
+    )
+    def get_cursor_position() -> Dict[str, Any]:
+        """
+        Get current cursor position.
         
-    Returns:
-        dict: Status and element bounds
-    """
-    try:
-        import cv2
-        import numpy as np
-        from PIL import ImageGrab
-        
-        # Get element rectangle
-        if hasattr(element, 'rectangle'):
-            rect = element.rectangle()
-            left, top, right, bottom = rect.left, rect.top, rect.right, rect.bottom
-        elif isinstance(element, dict) and 'rect' in element:
-            rect = element['rect']
-            left, top, right, bottom = rect['left'], rect['top'], rect['right'], rect['bottom']
-        else:
-            raise ValueError("Invalid element type. Must be Pywinauto element or element info dict.")
-        
-        # Take screenshot of the screen
-        screenshot = ImageGrab.grab()
-        img = np.array(screenshot)
-        
-        # Convert RGB to BGR (OpenCV uses BGR by default)
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        
-        # Draw rectangle
-        color = (0, 255, 0)  # Green
-        thickness = 3
-        cv2.rectangle(img, (left, top), (right, bottom), color, thickness)
-        
-        # Show the image
-        cv2.imshow('Element Highlight', img)
-        cv2.waitKey(int(duration * 1000))  # Convert seconds to milliseconds
-        cv2.destroyAllWindows()
-        
-        return {
-            "status": "success",
-            "bounds": {"left": left, "top": top, "right": right, "bottom": bottom}
-        }
-    except ImportError:
-        return {
-            "status": "warning",
-            "message": "Highlighting requires OpenCV and Pillow. Install with: pip install opencv-python pillow"
-        }
+        Returns:
+            dict: Current cursor position (x, y)
+        """
+        try:
+            x, y = pyautogui.position()
+            return {
+                "status": "success",
+                "position": (x, y),
+                "x": x,
+                "y": y
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
 
 # Add all tools to __all__
 __all__ = [
@@ -265,6 +413,5 @@ __all__ = [
     'right_click',
     'double_click',
     'mouse_scroll',
-    'get_cursor_position',
-    'highlight_element'
+    'get_cursor_position'
 ]

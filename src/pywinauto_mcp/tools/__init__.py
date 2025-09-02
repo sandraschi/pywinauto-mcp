@@ -1,31 +1,54 @@
 """
 PyWinAuto MCP Tools Package
 
-This package contains various tools for window automation, element interaction,
-and system operations. Each submodule contains related functionality grouped by category.
+This package contains all the tools for the PyWinAuto MCP server.
 """
 
-from .window import *
-from .element import *
-from .input import *
-from .visual import *
-from .mouse import *
-from .system_tools import *
-from .element_tools import *
-from .visual_tools import *
+import logging
+from typing import List, Any
 
-# Import modules that don't have __all__ exports separately
-from . import utils
-from . import auto_discovery
+# Set up logging
+logger = logging.getLogger(__name__)
 
+# Import the app instance from the main package
+try:
+    from pywinauto_mcp.main import app
+    logger.info("Successfully imported FastMCP app instance")
+except ImportError as e:
+    logger.error(f"Failed to import FastMCP app: {e}")
+    app = None
+
+# List of all tool modules to import
+TOOL_MODULES = [
+    'basic_tools',    # Basic input and system tools
+    'window',         # Window management tools
+    'element',        # Element interaction tools
+    'input',          # Input simulation tools
+    'mouse',          # Mouse interaction tools
+    'system_tools',   # System-level tools
+    'visual',         # Visual tools (screenshots, OCR, etc.)
+    'face_recognition' # Face recognition tools
+]
+
+# Import all tool modules - this will trigger their registration with FastMCP
+if app is not None:
+    for module_name in TOOL_MODULES:
+        try:
+            __import__(f'{__name__}.{module_name}', fromlist=['*'])
+            logger.info(f"Successfully imported {module_name} tools")
+        except ImportError as e:
+            logger.error(f"Failed to import {module_name} tools: {e}")
+        except Exception as e:
+            logger.error(f"Error initializing {module_name} tools: {e}")
+
+# Export the main components and all tool modules
 __all__ = [
-    # Re-export all tools from submodules that have __all__
-    *window.__all__,
-    *element.__all__,
-    *input.__all__,
-    *visual.__all__,
-    *mouse.__all__,
-    *system_tools.__all__,
-    *element_tools.__all__,
-    *visual_tools.__all__,
+    'app',
+    'basic_tools',
+    'window',
+    'element',
+    'input',
+    'visual_tools',
+    'mouse',
+    'system_tools'
 ]

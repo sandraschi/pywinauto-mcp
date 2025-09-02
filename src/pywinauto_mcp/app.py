@@ -1,68 +1,42 @@
 """
-PyWinAutoMCP - Windows UI Automation MCP Server.
+FastMCP application instance for PyWinAuto MCP.
 
-This module provides the main application setup for the PyWinAutoMCP server.
+This module creates the FastMCP app instance to avoid circular imports
+between main.py and the tools modules.
 """
+
 import logging
-from typing import Dict, Any
-from fastmcp import FastMCP
 import sys
-from pathlib import Path
 
-# Add the project root to the Python path
-project_root = Path(__file__).parent
-if str(project_root) not in sys.path:
-    sys.path.append(str(project_root))
+logger = logging.getLogger(__name__)
 
-from pywinauto_mcp.core.config import get_config
-from pywinauto_mcp.api import api_router
-
-
-def create_app(config: Dict[str, Any] = None) -> FastMCP:
-    """Create and configure the FastMCP application.
+# Import FastMCP and create the app instance
+try:
+    from fastmcp import FastMCP
+    logger.info("Successfully imported FastMCP")
     
-    Args:
-        config: Optional configuration dictionary. If not provided,
-                configuration will be loaded using get_config().
-                
-    Returns:
-        FastMCP: Configured FastMCP application instance
-    """
-    # Load configuration if not provided
-    if config is None:
-        config = get_config()
-    
-    # Set up logging
-    log_level = config.get("log_level", "INFO").upper()
-    logging.basicConfig(level=log_level)
-    logger = logging.getLogger("pywinauto-mcp")
-    
-    # Initialize FastMCP with required parameters
+    # Create the FastMCP app instance
     app = FastMCP(
         name="pywinauto-mcp",
-        version="1.0.0"
+        version="0.1.0"
     )
     
-    # Set additional configuration
-    app.structured_output = True
-    app.enable_elicitation = True
+    logger.info("FastMCP app instance created successfully")
     
-    # Add tool categories
-    app.tool_categories = [
-        {"name": "windows", "description": "Window management operations"},
-        {"name": "elements", "description": "UI element interactions"},
-        {"name": "input", "description": "Keyboard and mouse input"},
-        {"name": "info", "description": "Information retrieval"},
-    ]
-    
-    # Add logger to the app instance
-    app.logger = logger
-    
-    # Include API router
-    app.include_router(api_router)
-    
-    return app
+except ImportError as e:
+    logger.critical(f"Failed to import FastMCP: {e}")
+    logger.critical("Please install FastMCP 2.12+ using: pip install fastmcp>=2.12.0")
+    app = None
+except Exception as e:
+    logger.critical(f"Error creating FastMCP app: {e}", exc_info=True)
+    app = None
 
-
-# Create the application instance
-app = create_app()
+# Check OCR dependencies
+try:
+    import pytesseract
+    from PIL import Image, ImageGrab
+    OCR_AVAILABLE = True
+    logger.info("OCR dependencies available")
+except ImportError:
+    OCR_AVAILABLE = False
+    logger.warning("OCR dependencies not available")

@@ -1,0 +1,8 @@
+# FastMCP requirements
+fastmcp>=2.12.0
+pywinauto
+pyautogui
+pytesseract
+Pillow
+pygetwindow
+python-xlib

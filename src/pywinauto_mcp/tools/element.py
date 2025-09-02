@@ -5,23 +5,819 @@ This module provides functions for interacting with UI elements within windows,
 including clicking, double-clicking, right-clicking, and hovering.
 """
 import logging
-from typing import Dict, Optional, Tuple, Any, List
+import time
+from typing import Dict, Optional, Tuple, Any, List, Union
 
 from pywinauto.findwindows import ElementNotFoundError, ElementAmbiguousError
 from pywinauto.base_wrapper import ElementNotVisible
 from pywinauto.controls.uia_controls import ButtonWrapper, EditWrapper, ComboBoxWrapper
 
-from .utils import (
-    register_tool,
-    validate_window_handle,
-    get_desktop,
-    SuccessResponse,
-    ErrorResponse,
-    timer
-)
+# Import the FastMCP app instance from the main package
+try:
+    from pywinauto_mcp.main import app
+    logger = logging.getLogger(__name__)
+    logger.info("Successfully imported FastMCP app instance in element tools")
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.error(f"Failed to import FastMCP app in element tools: {e}")
+    app = None
 
-logger = logging.getLogger(__name__)
+# Only proceed with tool registration if app is available
+if app is not None:
+    logger.info("Registering element tools with FastMCP")
 
+    def _get_element(window, control_id: Optional[str] = None, x: Optional[int] = None, y: Optional[int] = None):
+        """
+        Get an element by control ID or coordinates.
+        
+        Args:
+            window: The parent window
+            control_id: The control ID
+            x: X coordinate (if using coordinates)
+            y: Y coordinate (if using coordinates)
+            
+        Returns:
+            The UI element
+        """
+        try:
+            if control_id is not None:
+                return window.child_window(control_id=control_id)
+            elif x is not None and y is not None:
+                return window.from_point(x, y)
+            else:
+                raise ValueError("Either control_id or both x and y must be provided")
+        except (ElementNotFoundError, ElementNotVisible) as e:
+            logger.error(f"Element not found or not visible: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Error getting element: {e}")
+            raise
+
+    @app.tool(
+        name="click_element",
+        description="Click on a UI element."
+    )
+    def click_element(
+        window_handle: int,
+        control_id: Optional[str] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        button: str = "left",
+        double: bool = False,
+        absolute: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Click on a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element to click (optional if x and y are provided)
+            x: X coordinate relative to the window (optional if control_id is provided)
+            y: Y coordinate relative to the window (optional if control_id is provided)
+            button: The mouse button to use ("left", "right", "middle")
+            double: Whether to perform a double-click
+            absolute: Whether the coordinates are screen-absolute (default: window-relative)
+            
+        Returns:
+            Dict containing the result of the operation
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            
+            if control_id is not None:
+                element = window.child_window(control_id=control_id)
+                if not element.exists():
+                    return {
+                        "status": "error",
+                        "error": f"Element with control_id '{control_id}' not found",
+                        "error_type": "ElementNotFoundError"
+                    }
+                
+                if double:
+                    element.double_click(button=button)
+                else:
+                    element.click(button=button)
+                
+                return {
+                    "status": "success",
+                    "action": "double_click" if double else "click",
+                    "control_id": control_id,
+                    "button": button,
+                    "timestamp": time.time()
+                }
+            
+            elif x is not None and y is not None:
+                if absolute:
+                    if double:
+                        pyautogui.doubleClick(x, y, button=button)
+                    else:
+                        pyautogui.click(x, y, button=button)
+                    
+                    return {
+                        "status": "success",
+                        "action": "double_click" if double else "click",
+                        "x": x,
+                        "y": y,
+                        "absolute": True,
+                        "button": button,
+                        "timestamp": time.time()
+                    }
+                else:
+                    window_rect = window.rectangle()
+                    screen_x = window_rect.left + x
+                    screen_y = window_rect.top + y
+                    
+                    if double:
+                        pyautogui.doubleClick(screen_x, screen_y, button=button)
+                    else:
+                        pyautogui.click(screen_x, screen_y, button=button)
+                    
+                    return {
+                        "status": "success",
+                        "action": "double_click" if double else "click",
+                        "x": x,
+                        "y": y,
+                        "screen_x": screen_x,
+                        "screen_y": screen_y,
+                        "absolute": False,
+                        "button": button,
+                        "timestamp": time.time()
+                    }
+            else:
+                return {
+                    "status": "error",
+                    "error": "Either control_id or both x and y must be provided",
+                    "error_type": "ValueError"
+                }
+                
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except ElementNotVisible as e:
+            return {
+                "status": "error",
+                "error": f"Element not visible: {str(e)}",
+                "error_type": "ElementNotVisible"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="double_click_element",
+        description="Double-click on a UI element."
+    )
+    def double_click_element(
+        window_handle: int,
+        control_id: Optional[str] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        button: str = "left"
+    ) -> Dict[str, Any]:
+        """
+        Double-click on a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element to click (optional if x and y are provided)
+            x: X coordinate relative to the window (optional if control_id is provided)
+            y: Y coordinate relative to the window (optional if control_id is provided)
+            button: The mouse button to use ("left", "right", "middle")
+            
+        Returns:
+            Dict containing the result of the operation
+        """
+        return click_element(
+            window_handle=window_handle,
+            control_id=control_id,
+            x=x,
+            y=y,
+            button=button,
+            double=True
+        )
+
+    @app.tool(
+        name="right_click_element",
+        description="Right-click on a UI element."
+    )
+    def right_click_element(
+        window_handle: int,
+        control_id: Optional[str] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Right-click on a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element to click (optional if x and y are provided)
+            x: X coordinate relative to the window (optional if control_id is provided)
+            y: Y coordinate relative to the window (optional if control_id is provided)
+            
+        Returns:
+            Dict containing the result of the operation
+        """
+        return click_element(
+            window_handle=window_handle,
+            control_id=control_id,
+            x=x,
+            y=y,
+            button="right"
+        )
+
+    @app.tool(
+        name="hover_element",
+        description="Hover the mouse over a UI element."
+    )
+    def hover_element(
+        window_handle: int,
+        control_id: Optional[str] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        duration: float = 0.5
+    ) -> Dict[str, Any]:
+        """
+        Hover the mouse over a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element to hover over (optional if x and y are provided)
+            x: X coordinate relative to the window (optional if control_id is provided)
+            y: Y coordinate relative to the window (optional if control_id is provided)
+            duration: Duration of the hover in seconds
+            
+        Returns:
+            Dict containing the result of the operation
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            
+            if control_id is not None:
+                element = window.child_window(control_id=control_id)
+                if not element.exists():
+                    return {
+                        "status": "error",
+                        "error": f"Element with control_id '{control_id}' not found",
+                        "error_type": "ElementNotFoundError"
+                    }
+                
+                element.draw_outline()
+                rect = element.rectangle()
+                center_x = rect.left + (rect.width() // 2)
+                center_y = rect.top + (rect.height() // 2)
+                
+                pyautogui.moveTo(center_x, center_y, duration=0.5)
+                time.sleep(duration)
+                
+                return {
+                    "status": "success",
+                    "action": "hover",
+                    "control_id": control_id,
+                    "position": (center_x, center_y),
+                    "duration": duration,
+                    "timestamp": time.time()
+                }
+            
+            elif x is not None and y is not None:
+                window_rect = window.rectangle()
+                screen_x = window_rect.left + x
+                screen_y = window_rect.top + y
+                
+                pyautogui.moveTo(screen_x, screen_y, duration=0.5)
+                time.sleep(duration)
+                
+                return {
+                    "status": "success",
+                    "action": "hover",
+                    "x": x,
+                    "y": y,
+                    "screen_x": screen_x,
+                    "screen_y": screen_y,
+                    "duration": duration,
+                    "timestamp": time.time()
+                }
+            else:
+                return {
+                    "status": "error",
+                    "error": "Either control_id or both x and y must be provided",
+                    "error_type": "ValueError"
+                }
+                
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="get_element_info",
+        description="Get detailed information about a UI element."
+    )
+    def get_element_info(window_handle: int, control_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element
+            
+        Returns:
+            Dict containing element information
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            element = window.child_window(control_id=control_id)
+            
+            if not element.exists():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' not found",
+                    "error_type": "ElementNotFoundError"
+                }
+            
+            rect = element.rectangle()
+            
+            info = {
+                "status": "success",
+                "control_id": control_id,
+                "class_name": element.class_name(),
+                "text": element.window_text(),
+                "is_visible": element.is_visible(),
+                "is_enabled": element.is_enabled(),
+                "has_keyboard_focus": element.has_keyboard_focus(),
+                "position": {
+                    "left": rect.left,
+                    "top": rect.top,
+                    "right": rect.right,
+                    "bottom": rect.bottom,
+                    "width": rect.width(),
+                    "height": rect.height()
+                },
+                "timestamp": time.time()
+            }
+            
+            # Add element-specific properties
+            if isinstance(element, ButtonWrapper):
+                info["element_type"] = "button"
+            elif isinstance(element, EditWrapper):
+                info["element_type"] = "edit"
+                info["is_readonly"] = element.is_read_only()
+            elif isinstance(element, ComboBoxWrapper):
+                info["element_type"] = "combobox"
+                try:
+                    info["items"] = element.item_texts()
+                    info["selected_index"] = element.selected_index()
+                    info["selected_text"] = element.selected_text()
+                except:
+                    pass
+            
+            return info
+            
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="get_element_text",
+        description="Get the text of a UI element."
+    )
+    def get_element_text(window_handle: int, control_id: str) -> Dict[str, Any]:
+        """
+        Get the text of a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element
+            
+        Returns:
+            Dict containing the element text
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            element = window.child_window(control_id=control_id)
+            
+            if not element.exists():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' not found",
+                    "error_type": "ElementNotFoundError"
+                }
+            
+            text = element.window_text()
+            
+            return {
+                "status": "success",
+                "control_id": control_id,
+                "text": text,
+                "length": len(text),
+                "timestamp": time.time()
+            }
+            
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="set_element_text",
+        description="Set the text of a UI element."
+    )
+    def set_element_text(window_handle: int, control_id: str, text: str) -> Dict[str, Any]:
+        """
+        Set the text of a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element
+            text: The text to set
+            
+        Returns:
+            Dict containing the result of the operation
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            element = window.child_window(control_id=control_id)
+            
+            if not element.exists():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' not found",
+                    "error_type": "ElementNotFoundError"
+                }
+            
+            if not element.is_enabled():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' is not enabled",
+                    "error_type": "ElementNotEnabled"
+                }
+            
+            if not element.is_visible():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' is not visible",
+                    "error_type": "ElementNotVisible"
+                }
+            
+            # Try to set the text directly first
+            try:
+                element.set_text(text)
+                return {
+                    "status": "success",
+                    "control_id": control_id,
+                    "text_set": text,
+                    "length": len(text),
+                    "method": "direct",
+                    "timestamp": time.time()
+                }
+            except:
+                # Fall back to keyboard input if direct setting fails
+                try:
+                    element.set_focus()
+                    element.type_keys("{VK_HOME}+{VK_SHIFT}{END}{DELETE}")  # Select all and delete
+                    element.type_keys(text)
+                    return {
+                        "status": "success",
+                        "control_id": control_id,
+                        "text_set": text,
+                        "length": len(text),
+                        "method": "keyboard",
+                        "timestamp": time.time()
+                    }
+                except Exception as e:
+                    return {
+                        "status": "error",
+                        "error": f"Failed to set text: {str(e)}",
+                        "error_type": type(e).__name__
+                    }
+            
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="get_element_rect",
+        description="Get the rectangle of a UI element."
+    )
+    def get_element_rect(window_handle: int, control_id: str) -> Dict[str, Any]:
+        """
+        Get the rectangle of a UI element.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element
+            
+        Returns:
+            Dict containing the element rectangle
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            element = window.child_window(control_id=control_id)
+            
+            if not element.exists():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' not found",
+                    "error_type": "ElementNotFoundError"
+                }
+            
+            rect = element.rectangle()
+            
+            return {
+                "status": "success",
+                "control_id": control_id,
+                "left": rect.left,
+                "top": rect.top,
+                "right": rect.right,
+                "bottom": rect.bottom,
+                "width": rect.width(),
+                "height": rect.height(),
+                "timestamp": time.time()
+            }
+            
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="is_element_visible",
+        description="Check if a UI element is visible."
+    )
+    def is_element_visible(window_handle: int, control_id: str) -> Dict[str, Any]:
+        """
+        Check if a UI element is visible.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element
+            
+        Returns:
+            Dict containing the visibility status
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            element = window.child_window(control_id=control_id)
+            
+            if not element.exists():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' not found",
+                    "error_type": "ElementNotFoundError"
+                }
+            
+            visible = element.is_visible()
+            
+            return {
+                "status": "success",
+                "control_id": control_id,
+                "is_visible": visible,
+                "timestamp": time.time()
+            }
+            
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="is_element_enabled",
+        description="Check if a UI element is enabled."
+    )
+    def is_element_enabled(window_handle: int, control_id: str) -> Dict[str, Any]:
+        """
+        Check if a UI element is enabled.
+        
+        Args:
+            window_handle: The handle of the parent window
+            control_id: The control ID of the element
+            
+        Returns:
+            Dict containing the enabled status
+        """
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            element = window.child_window(control_id=control_id)
+            
+            if not element.exists():
+                return {
+                    "status": "error",
+                    "error": f"Element with control_id '{control_id}' not found",
+                    "error_type": "ElementNotFoundError"
+                }
+            
+            enabled = element.is_enabled()
+            
+            return {
+                "status": "success",
+                "control_id": control_id,
+                "is_enabled": enabled,
+                "timestamp": time.time()
+            }
+            
+        except ElementNotFoundError as e:
+            return {
+                "status": "error",
+                "error": f"Element not found: {str(e)}",
+                "error_type": "ElementNotFoundError"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+    @app.tool(
+        name="get_all_elements",
+        description="Get all UI elements in a window."
+    )
+    def get_all_elements(window_handle: int, max_depth: int = 3) -> Dict[str, Any]:
+        """
+        Get all UI elements in a window.
+        
+        Args:
+            window_handle: The handle of the parent window
+            max_depth: Maximum depth to traverse the element tree
+            
+        Returns:
+            Dict containing information about all elements
+        """
+        def get_element_info(element, depth=0):
+            if depth > max_depth:
+                return None
+                
+            try:
+                control_id = element.element_info.control_id
+                class_name = element.class_name()
+                text = element.window_text()
+                
+                info = {
+                    "control_id": control_id,
+                    "class_name": class_name,
+                    "text": text,
+                    "is_visible": element.is_visible(),
+                    "is_enabled": element.is_enabled(),
+                    "children": []
+                }
+                
+                # Get element type
+                if isinstance(element, ButtonWrapper):
+                    info["element_type"] = "button"
+                elif isinstance(element, EditWrapper):
+                    info["element_type"] = "edit"
+                    info["is_readonly"] = element.is_read_only()
+                elif isinstance(element, ComboBoxWrapper):
+                    info["element_type"] = "combobox"
+                    try:
+                        info["items"] = element.item_texts()
+                        info["selected_index"] = element.selected_index()
+                        info["selected_text"] = element.selected_text()
+                    except:
+                        pass
+                
+                # Get position if available
+                try:
+                    rect = element.rectangle()
+                    info["position"] = {
+                        "left": rect.left,
+                        "top": rect.top,
+                        "right": rect.right,
+                        "bottom": rect.bottom,
+                        "width": rect.width(),
+                        "height": rect.height()
+                    }
+                except:
+                    pass
+                
+                # Recursively get children
+                try:
+                    children = element.children()
+                    for child in children:
+                        child_info = get_element_info(child, depth + 1)
+                        if child_info:
+                            info["children"].append(child_info)
+                except:
+                    pass
+                
+                return info
+                
+            except Exception as e:
+                logger.warning(f"Error getting element info: {e}")
+                return None
+        
+        try:
+            desktop = get_desktop()
+            window = desktop.window(handle=window_handle)
+            
+            if not window.exists():
+                return {
+                    "status": "error",
+                    "error": f"Window with handle {window_handle} not found",
+                    "error_type": "WindowNotFoundError"
+                }
+            
+            # Start with the root element (window itself)
+            elements = []
+            try:
+                children = window.children()
+                for child in children:
+                    element_info = get_element_info(child)
+                    if element_info:
+                        elements.append(element_info)
+            except Exception as e:
+                logger.warning(f"Error getting window children: {e}")
+            
+            return {
+                "status": "success",
+                "window_handle": window_handle,
+                "element_count": len(elements),
+                "elements": elements,
+                "max_depth": max_depth,
+                "timestamp": time.time()
+            }
+            
+        except Exception as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "error_type": type(e).__name__
+            }
+
+def get_desktop():
+    """Get a Desktop instance with proper error handling."""
+    try:
+        from pywinauto import Desktop
+        return Desktop(backend="uia")
+    except Exception as e:
+        logger.error(f"Failed to get Desktop instance: {e}")
+        raise
+
+# Add all tools to __all__
 __all__ = [
     'click_element',
     'double_click_element',
@@ -35,779 +831,3 @@ __all__ = [
     'is_element_enabled',
     'get_all_elements'
 ]
-
-def _get_element(window, control_id: Optional[str] = None, x: Optional[int] = None, y: Optional[int] = None):
-    """
-    Get an element by control ID or coordinates.
-    
-    Args:
-        window: The parent window
-        control_id: The control ID
-        x: X coordinate (if using coordinates)
-        y: Y coordinate (if using coordinates)
-        
-    Returns:
-        The UI element
-        
-    Raises:
-        ElementNotFound: If the element is not found
-        ElementNotVisible: If the element is not visible
-    """
-    if control_id is not None:
-        # Get element by control ID
-        element = window.child_window(control_id=control_id)
-        if not element.exists():
-            raise ElementNotFound(f"Element with control_id '{control_id}' not found")
-    elif x is not None and y is not None:
-        # Get element by coordinates
-        element = window.from_point(x, y)
-        if not element.exists():
-            raise ElementNotFound(f"No element found at coordinates ({x}, {y})")
-    else:
-        raise ValueError("Either control_id or both x and y coordinates must be provided")
-    
-    if not element.is_visible():
-        raise ElementNotVisible("Element exists but is not visible")
-    
-    return element
-
-@register_tool(
-    name="click_element",
-    description="Clicks on a UI element.",
-    category="element"
-)
-def click_element(
-    window_handle: int,
-    control_id: Optional[str] = None,
-    x: Optional[int] = None,
-    y: Optional[int] = None,
-    button: str = "left",
-    double: bool = False,
-    absolute: bool = False
-) -> Dict[str, Any]:
-    """
-    Click on a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element to click (optional if x and y are provided)
-        x: X coordinate relative to the window (optional if control_id is provided)
-        y: Y coordinate relative to the window (optional if control_id is provided)
-        button: The mouse button to use ("left", "right", "middle")
-        double: Whether to perform a double-click
-        absolute: Whether the coordinates are screen-absolute (default: window-relative)
-
-    Returns:
-        Dict containing the result of the operation
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if control_id is None and (x is None or y is None):
-        return ErrorResponse(
-            error="Either control_id or both x and y coordinates must be provided",
-            error_type="InvalidArguments"
-        ).dict()
-    
-    if button.lower() not in ["left", "right", "middle"]:
-        return ErrorResponse(
-            error=f"Invalid button: {button}. Must be one of: left, right, middle",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Clicking element with control_id={control_id} at ({x}, {y})"):
-            window = get_desktop().window(handle=window_handle)
-            
-            if control_id:
-                element = window.child_window(control_id=control_id)
-                if not element.exists():
-                    return ErrorResponse(
-                        error=f"Element with control_id '{control_id}' not found",
-                        error_type="ElementNotFound"
-                    ).dict()
-                
-                if not element.is_visible():
-                    return ErrorResponse(
-                        error=f"Element with control_id '{control_id}' is not visible",
-                        error_type="ElementNotVisible"
-                    ).dict()
-                
-                # Click the element
-                if double:
-                    element.double_click(button=button)
-                else:
-                    element.click(button=button)
-                
-                return SuccessResponse(
-                    data={"message": f"Successfully clicked element with control_id '{control_id}'"}
-                ).dict()
-            else:
-                # Click at coordinates
-                if absolute:
-                    import pyautogui
-                    pyautogui.click(x, y, button=button, clicks=2 if double else 1)
-                else:
-                    window.click_input(button=button, coords=(x, y), double=double)
-                
-                return SuccessResponse(
-                    data={"message": f"Successfully clicked at coordinates ({x}, {y})"}
-                ).dict()
-                
-    except ElementNotFound as e:
-        return ErrorResponse(
-            error=str(e),
-            error_type="ElementNotFound"
-        ).dict()
-    except ElementNotVisible as e:
-        return ErrorResponse(
-            error=str(e),
-            error_type="ElementNotVisible"
-        ).dict()
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error clicking element: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="double_click_element",
-    description="Double-clicks on a UI element.",
-    category="element"
-)
-def double_click_element(
-    window_handle: int,
-    control_id: Optional[str] = None,
-    x: Optional[int] = None,
-    y: Optional[int] = None,
-    button: str = "left"
-) -> Dict[str, Any]:
-    """
-    Double-click on a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element to click (optional if x and y are provided)
-        x: X coordinate relative to the window (optional if control_id is provided)
-        y: Y coordinate relative to the window (optional if control_id is provided)
-        button: The mouse button to use ("left", "right", "middle")
-
-    Returns:
-        Dict containing the result of the operation
-    """
-    return click_element(
-        window_handle=window_handle,
-        control_id=control_id,
-        x=x,
-        y=y,
-        button=button,
-        double=True
-    )
-
-@register_tool(
-    name="right_click_element",
-    description="Right-clicks on a UI element.",
-    category="element"
-)
-def right_click_element(
-    window_handle: int,
-    control_id: Optional[str] = None,
-    x: Optional[int] = None,
-    y: Optional[int] = None
-) -> Dict[str, Any]:
-    """
-    Right-click on a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element to click (optional if x and y are provided)
-        x: X coordinate relative to the window (optional if control_id is provided)
-        y: Y coordinate relative to the window (optional if control_id is provided)
-
-    Returns:
-        Dict containing the result of the operation
-    """
-    return click_element(
-        window_handle=window_handle,
-        control_id=control_id,
-        x=x,
-        y=y,
-        button="right"
-    )
-
-@register_tool(
-    name="hover_element",
-    description="Hovers the mouse over a UI element.",
-    category="element"
-)
-def hover_element(
-    window_handle: int,
-    control_id: Optional[str] = None,
-    x: Optional[int] = None,
-    y: Optional[int] = None,
-    duration: float = 0.5
-) -> Dict[str, Any]:
-    """
-    Hover the mouse over a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element to hover over (optional if x and y are provided)
-        x: X coordinate relative to the window (optional if control_id is provided)
-        y: Y coordinate relative to the window (optional if control_id is provided)
-        duration: Duration of the hover in seconds
-
-    Returns:
-        Dict containing the result of the operation
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if control_id is None and (x is None or y is None):
-        return ErrorResponse(
-            error="Either control_id or both x and y coordinates must be provided",
-            error_type="InvalidArguments"
-        ).dict()
-    
-    if duration < 0:
-        return ErrorResponse(
-            error="Duration must be a non-negative number",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Hovering over element with control_id={control_id} at ({x}, {y}) for {duration}s"):
-            window = get_desktop().window(handle=window_handle)
-            
-            if control_id:
-                element = window.child_window(control_id=control_id)
-                if not element.exists():
-                    return ErrorResponse(
-                        error=f"Element with control_id '{control_id}' not found",
-                        error_type="ElementNotFound"
-                    ).dict()
-                
-                if not element.is_visible():
-                    return ErrorResponse(
-                        error=f"Element with control_id '{control_id}' is not visible",
-                        error_type="ElementNotVisible"
-                    ).dict()
-                
-                # Hover over the element
-                element.hover()
-                
-                # If duration is specified, wait before moving the mouse away
-                if duration > 0:
-                    import time
-                    time.sleep(duration)
-                
-                return SuccessResponse(
-                    data={"message": f"Successfully hovered over element with control_id '{control_id}'"}
-                ).dict()
-            else:
-                # Hover at coordinates
-                window.move_mouse(coords=(x, y))
-                
-                # If duration is specified, wait before moving the mouse away
-                if duration > 0:
-                    import time
-                    time.sleep(duration)
-                
-                return SuccessResponse(
-                    data={"message": f"Successfully hovered at coordinates ({x}, {y})"}
-                ).dict()
-                
-    except ElementNotFound as e:
-        return ErrorResponse(
-            error=str(e),
-            error_type="ElementNotFound"
-        ).dict()
-    except ElementNotVisible as e:
-        return ErrorResponse(
-            error=str(e),
-            error_type="ElementNotVisible"
-        ).dict()
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error hovering over element: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="get_element_info",
-    description="Gets detailed information about a UI element.",
-    category="element"
-)
-def get_element_info(window_handle: int, control_id: str) -> Dict[str, Any]:
-    """
-    Get detailed information about a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element
-
-    Returns:
-        Dict containing element information
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if not control_id:
-        return ErrorResponse(
-            error="control_id is required",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Getting info for element with control_id '{control_id}'"):
-            window = get_desktop().window(handle=window_handle)
-            element = window.child_window(control_id=control_id)
-            
-            if not element.exists():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' not found",
-                    error_type="ElementNotFound"
-                ).dict()
-            
-            # Get basic properties
-            rect = element.rectangle()
-            element_info = {
-                "control_id": control_id,
-                "class_name": element.class_name(),
-                "text": element.window_text(),
-                "is_visible": element.is_visible(),
-                "is_enabled": element.is_enabled(),
-                "position": {
-                    "left": rect.left,
-                    "top": rect.top,
-                    "width": rect.width(),
-                    "height": rect.height()
-                },
-                "control_type": element.element_info.control_type,
-                "automation_id": element.element_info.automation_id,
-                "name": element.element_info.name,
-                "runtime_id": element.element_info.runtime_id,
-                "process_id": element.element_info.process_id,
-                "handle": element.handle
-            }
-            
-            # Get additional properties based on control type
-            if isinstance(element, ButtonWrapper):
-                element_info["control_type"] = "Button"
-                element_info["is_checked"] = element.get_toggle_state() if hasattr(element, 'get_toggle_state') else None
-            elif isinstance(element, EditWrapper):
-                element_info["control_type"] = "Edit"
-                element_info["text_length"] = len(element.get_value())
-                element_info["is_readonly"] = element.is_read_only()
-            elif isinstance(element, ComboBoxWrapper):
-                element_info["control_type"] = "ComboBox"
-                element_info["items"] = element.item_count()
-                element_info["selected_index"] = element.selected_index()
-            
-            return SuccessResponse(
-                data={"element": element_info}
-            ).dict()
-            
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error getting element info: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="get_element_text",
-    description="Gets the text of a UI element.",
-    category="element"
-)
-def get_element_text(window_handle: int, control_id: str) -> Dict[str, Any]:
-    """
-    Get the text of a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element
-
-    Returns:
-        Dict containing the element text
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if not control_id:
-        return ErrorResponse(
-            error="control_id is required",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Getting text for element with control_id '{control_id}'"):
-            window = get_desktop().window(handle=window_handle)
-            element = window.child_window(control_id=control_id)
-            
-            if not element.exists():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' not found",
-                    error_type="ElementNotFound"
-                ).dict()
-            
-            if not element.is_visible():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' is not visible",
-                    error_type="ElementNotVisible"
-                ).dict()
-            
-            text = element.window_text()
-            
-            return SuccessResponse(
-                data={"text": text}
-            ).dict()
-            
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error getting element text: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="set_element_text",
-    description="Sets the text of a UI element.",
-    category="element"
-)
-def set_element_text(window_handle: int, control_id: str, text: str) -> Dict[str, Any]:
-    """
-    Set the text of a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element
-        text: The text to set
-
-    Returns:
-        Dict containing the result of the operation
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if not control_id:
-        return ErrorResponse(
-            error="control_id is required",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Setting text for element with control_id '{control_id}'"):
-            window = get_desktop().window(handle=window_handle)
-            element = window.child_window(control_id=control_id)
-            
-            if not element.exists():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' not found",
-                    error_type="ElementNotFound"
-                ).dict()
-            
-            if not element.is_visible():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' is not visible",
-                    error_type="ElementNotVisible"
-                ).dict()
-            
-            if not element.is_enabled():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' is not enabled",
-                    error_type="ElementNotEnabled"
-                ).dict()
-            
-            # Set the text
-            element.set_text(text)
-            
-            # Verify the text was set
-            current_text = element.window_text()
-            if current_text == text:
-                return SuccessResponse(
-                    data={"message": f"Successfully set text for element with control_id '{control_id}'"}
-                ).dict()
-            else:
-                return ErrorResponse(
-                    error=f"Failed to set text for element with control_id '{control_id}'. Expected: '{text}', Actual: '{current_text}'",
-                    error_type="ElementOperationFailed"
-                ).dict()
-            
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error setting element text: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="get_element_rect",
-    description="Gets the rectangle of a UI element.",
-    category="element"
-)
-def get_element_rect(window_handle: int, control_id: str) -> Dict[str, Any]:
-    """
-    Get the rectangle of a UI element.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element
-
-    Returns:
-        Dict containing the element rectangle
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if not control_id:
-        return ErrorResponse(
-            error="control_id is required",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Getting rectangle for element with control_id '{control_id}'"):
-            window = get_desktop().window(handle=window_handle)
-            element = window.child_window(control_id=control_id)
-            
-            if not element.exists():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' not found",
-                    error_type="ElementNotFound"
-                ).dict()
-            
-            rect = element.rectangle()
-            
-            return SuccessResponse(
-                data={
-                    "left": rect.left,
-                    "top": rect.top,
-                    "right": rect.right,
-                    "bottom": rect.bottom,
-                    "width": rect.width(),
-                    "height": rect.height()
-                }
-            ).dict()
-            
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error getting element rectangle: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="is_element_visible",
-    description="Checks if a UI element is visible.",
-    category="element"
-)
-def is_element_visible(window_handle: int, control_id: str) -> Dict[str, Any]:
-    """
-    Check if a UI element is visible.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element
-
-    Returns:
-        Dict containing the visibility status
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if not control_id:
-        return ErrorResponse(
-            error="control_id is required",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Checking visibility for element with control_id '{control_id}'"):
-            window = get_desktop().window(handle=window_handle)
-            element = window.child_window(control_id=control_id)
-            
-            if not element.exists():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' not found",
-                    error_type="ElementNotFound"
-                ).dict()
-            
-            is_visible = element.is_visible()
-            
-            return SuccessResponse(
-                data={"is_visible": is_visible}
-            ).dict()
-            
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error checking element visibility: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="is_element_enabled",
-    description="Checks if a UI element is enabled.",
-    category="element"
-)
-def is_element_enabled(window_handle: int, control_id: str) -> Dict[str, Any]:
-    """
-    Check if a UI element is enabled.
-
-    Args:
-        window_handle: The handle of the parent window
-        control_id: The control ID of the element
-
-    Returns:
-        Dict containing the enabled status
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if not control_id:
-        return ErrorResponse(
-            error="control_id is required",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    try:
-        with timer(f"Checking enabled status for element with control_id '{control_id}'"):
-            window = get_desktop().window(handle=window_handle)
-            element = window.child_window(control_id=control_id)
-            
-            if not element.exists():
-                return ErrorResponse(
-                    error=f"Element with control_id '{control_id}' not found",
-                    error_type="ElementNotFound"
-                ).dict()
-            
-            is_enabled = element.is_enabled()
-            
-            return SuccessResponse(
-                data={"is_enabled": is_enabled}
-            ).dict()
-            
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error checking element enabled status: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()
-
-@register_tool(
-    name="get_all_elements",
-    description="Gets all UI elements in a window.",
-    category="element"
-)
-def get_all_elements(window_handle: int, max_depth: int = 3) -> Dict[str, Any]:
-    """
-    Get all UI elements in a window.
-
-    Args:
-        window_handle: The handle of the parent window
-        max_depth: Maximum depth to traverse the element tree
-
-    Returns:
-        Dict containing information about all elements
-    """
-    if not validate_window_handle(window_handle):
-        return ErrorResponse(
-            error=f"Invalid window handle: {window_handle}",
-            error_type="InvalidWindowHandle"
-        ).dict()
-    
-    if max_depth < 1 or max_depth > 10:
-        return ErrorResponse(
-            error="max_depth must be between 1 and 10",
-            error_type="InvalidArgument"
-        ).dict()
-    
-    def get_element_info(element, depth: int = 0) -> Dict[str, Any]:
-        if depth > max_depth:
-            return None
-            
-        try:
-            if not element.exists():
-                return None
-                
-            rect = element.rectangle()
-            
-            element_info = {
-                "class_name": element.class_name(),
-                "control_type": element.element_info.control_type if hasattr(element, 'element_info') else None,
-                "automation_id": element.element_info.automation_id if hasattr(element, 'element_info') else None,
-                "name": element.element_info.name if hasattr(element, 'element_info') else None,
-                "text": element.window_text(),
-                "is_visible": element.is_visible(),
-                "is_enabled": element.is_enabled(),
-                "position": {
-                    "left": rect.left,
-                    "top": rect.top,
-                    "width": rect.width(),
-                    "height": rect.height()
-                },
-                "children": []
-            }
-            
-            # Get children
-            try:
-                for child in element.children():
-                    child_info = get_element_info(child, depth + 1)
-                    if child_info:
-                        element_info["children"].append(child_info)
-            except Exception as e:
-                logger.debug(f"Error getting children: {str(e)}")
-                
-            return element_info
-            
-        except Exception as e:
-            logger.debug(f"Error getting element info: {str(e)}")
-            return None
-    
-    try:
-        with timer(f"Getting all elements in window {window_handle} with max_depth={max_depth}"):
-            window = get_desktop().window(handle=window_handle)
-            
-            if not window.exists():
-                return ErrorResponse(
-                    error=f"Window with handle {window_handle} not found",
-                    error_type="WindowNotFound"
-                ).dict()
-            
-            # Get the root element
-            root_element = get_element_info(window)
-            
-            if not root_element:
-                return ErrorResponse(
-                    error="Failed to get root element",
-                    error_type="ElementOperationError"
-                ).dict()
-            
-            return SuccessResponse(
-                data={"elements": root_element}
-            ).dict()
-            
-    except Exception as e:
-        return ErrorResponse(
-            error=f"Error getting all elements: {str(e)}",
-            error_type="ElementOperationError"
-        ).dict()

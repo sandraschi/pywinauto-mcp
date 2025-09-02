@@ -4,29 +4,11 @@ UI Element tools for PyWinAuto MCP.
 This module provides tools for interacting with and validating UI elements.
 """
 import logging
-from typing import Optional, Dict, Any, List, TypedDict, Union, Tuple
+from typing import Optional, Dict, Any, List, Union, Tuple
 import time
 from pywinauto import Application, findwindows
+from pywinauto.controls.hwndwrapper import HwndWrapper
 from pywinauto.timings import Timings
-
-# Define a type for element info dict
-class ElementInfo(TypedDict, total=False):
-    rect: Any  # Can be a rectangle object with left, top, width, height
-    x: int
-    y: int
-    width: int
-    height: int
-    class_name: str
-    text: str
-    control_id: int
-    process_id: int
-    is_visible: bool
-    is_enabled: bool
-    handle: int
-    runtime_id: Any
-    automation_id: str
-    name: str
-    control_type: str
 
 # Import the FastMCP app instance from the main package
 try:
@@ -37,55 +19,57 @@ except ImportError as e:
     logger.error(f"Failed to import FastMCP app in element_tools: {e}")
     app = None
 
-def _get_element_info(element) -> ElementInfo:
+def _get_element_info(element) -> Dict[str, Any]:
     """Extract relevant information from a UI element."""
-    element_info: ElementInfo = {}
-    
     try:
-        # Handle both element objects and dicts
-        if hasattr(element, 'class_name'):
-            # It's a UI element object
-            element_info = {
-                "class_name": element.class_name(),
-                "text": element.window_text(),
-                "control_id": element.control_id(),
-                "process_id": element.process_id(),
-                "is_visible": element.is_visible(),
-                "is_enabled": element.is_enabled(),
-                "handle": element.handle,
-                "runtime_id": element.runtime_id() if hasattr(element, 'runtime_id') else None,
-                "automation_id": element.automation_id() if hasattr(element, 'automation_id') else None,
-                "name": element.element_info.name if hasattr(element, 'element_info') else None,
-                "control_type": str(element.element_info.control_type) if hasattr(element, 'element_info') else None,
-            }
-            
-            try:
-                rect = element.rectangle()
-                element_info.update({
-                    "x": rect.left,
-                    "y": rect.top,
-                    "width": rect.width(),
-                    "height": rect.height()
-                })
-            except Exception:
-                pass
-        elif isinstance(element, dict):
-            # It's already a dict, just ensure it has the right structure
-            element_info = element
-    except Exception as e:
-        logger.error(f"Error getting element info: {e}")
+        element_info = {
+            "class_name": element.class_name(),
+            "text": element.window_text(),
+            "control_id": element.control_id(),
+            "process_id": element.process_id(),
+            "is_visible": element.is_visible(),
+            "is_enabled": element.is_enabled(),
+            "handle": element.handle,
+            "runtime_id": element.runtime_id() if hasattr(element, 'runtime_id') else None,
+            "automation_id": element.automation_id() if hasattr(element, 'automation_id') else None,
+            "name": element.element_info.name if hasattr(element, 'element_info') else None,
+            "control_type": element.element_info.control_type if hasattr(element, 'element_info') else None,
+        }
         
-    return element_info
+        try:
+            rect = element.rectangle()
+            element_info["rect"] = {
+                "left": rect.left,
+                "top": rect.top,
+                "right": rect.right,
+                "bottom": rect.bottom,
+                "width": rect.width(),
+                "height": rect.height()
+            }
+        except Exception:
+            pass
+            
+        # Add any custom properties if they exist
+        if hasattr(element, 'get_properties'):
+            element_info["properties"] = element.get_properties()
+            
+        return element_info
+    except Exception as e:
+        return {
+            "error": f"Failed to get element info: {str(e)}",
+            "element_type": str(type(element))
+        }
 
 # Only register tools if app is available
 if app is not None:
     @app.tool(
         name="element_exists",
-        description="Check if a UI element exists."
+        description="Check if a UI element exists.",
+        category="element"
     )
-    def element_exists(selector: Union[str, ElementInfo], 
+    def element_exists(selector: Union[str, Dict[str, Any]], 
                      timeout: float = 5.0, 
-                     app_param: Optional[Application] = None) -> Dict[str, Any]:
+                     app_param: Optional[Application] = None) -> dict:
         """
         Check if a UI element exists.
         
@@ -140,11 +124,12 @@ if app is not None:
 
     @app.tool(
         name="wait_for_element",
-        description="Wait for a UI element to appear."
+        description="Wait for a UI element to appear.",
+        category="element"
     )
-    def wait_for_element(selector: Union[str, ElementInfo], 
+    def wait_for_element(selector: Union[str, Dict[str, Any]], 
                        timeout: float = 10.0,
-                       app_param: Optional[Application] = None) -> Dict[str, Any]:
+                       app_param: Optional[Application] = None) -> dict:
         """
         Wait for a UI element to appear.
         
@@ -170,13 +155,14 @@ if app is not None:
 
     @app.tool(
         name="verify_text",
-        description="Verify that an element contains the expected text."
+        description="Verify that an element contains the expected text.",
+        category="element"
     )
-    def verify_text(selector: Union[str, ElementInfo], 
+    def verify_text(selector: Union[str, Dict[str, Any]], 
                    expected_text: str,
                    exact_match: bool = True,
                    timeout: float = 5.0,
-                   app_param: Optional[Application] = None) -> Dict[str, Any]:
+                   app_param: Optional[Application] = None) -> dict:
         """
         Verify that an element contains the expected text.
         
@@ -212,11 +198,12 @@ if app is not None:
 
     @app.tool(
         name="get_element_rect",
-        description="Get the position and size of a UI element."
+        description="Get the position and size of a UI element.",
+        category="element"
     )
-    def get_element_rect(selector: Union[str, ElementInfo],
+    def get_element_rect(selector: Union[str, Dict[str, Any]],
                        timeout: float = 5.0,
-                       app_param: Optional[Application] = None) -> Dict[str, Any]:
+                       app_param: Optional[Application] = None) -> dict:
         """
         Get the position and size of a UI element.
         
