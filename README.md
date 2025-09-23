@@ -1,17 +1,31 @@
 # PyWinAuto MCP
 
-A modular, FastMCP 2.10+ compliant server for Windows UI automation using PyWinAuto. Features a plugin-based architecture for extensibility and maintainability.
+**Version 0.2.0** | **22 Comprehensive Automation Tools** | **Enterprise-Grade Windows UI Automation**
+
+A sophisticated, FastMCP 2.10+ compliant server for Windows UI automation using PyWinAuto. Features a comprehensive tool ecosystem, face recognition security, and professional DXT packaging with extensive prompt templates for conversational AI interaction.
 
 ## 🚀 Features
 
-### Dual Interface Architecture
+### 🏆 **22 Comprehensive Automation Tools**
+PyWinAuto MCP provides the most complete Windows automation toolkit available:
 
-PyWinAuto MCP is designed with a powerful dual-interface architecture that supports both MCP tools for Claude/LLM integration and REST API endpoints for direct testing and integration:
+- **🔍 Window Management** (6 tools): Find, activate, maximize, minimize, position, and close windows
+- **🖱️ Mouse Control** (7 tools): Click, move, scroll, drag-and-drop with precision coordinates
+- **⌨️ Keyboard Input** (3 tools): Type text, send key combinations, special shortcuts
+- **🎯 UI Elements** (6 tools): Click, type, inspect, verify text, get info, check states
+- **📸 Visual Intelligence** (3 tools): Screenshots, OCR text extraction, image recognition
+- **🔒 Face Recognition** (4 tools): Add faces, recognize, list known faces, webcam verification
 
-- **MCP Tools**: Optimized for Claude and other LLM agents via the MCP protocol
-- **REST API**: Standard HTTP endpoints for testing, debugging, and direct integration
-- **Feature Parity**: Both interfaces provide access to the same core functionality
-- **Plugin Support**: All plugins are automatically exposed through both interfaces
+### 🤖 **Conversational AI Integration**
+- **Extensive Prompt Templates**: 100+ detailed prompts for natural language interaction
+- **Contextual Examples**: Real-world usage scenarios for each tool
+- **Smart Defaults**: Intelligent parameter handling and error recovery
+
+### 🏗️ **Enterprise Architecture**
+- **Dual Interface Design**: MCP tools + REST API with complete feature parity
+- **Security-First**: Face recognition authentication and access controls
+- **Professional Packaging**: Complete DXT distribution with all dependencies
+- **Plugin System**: Extensible architecture for custom automation tools
 
 ### Example: Finding a Window
 
@@ -115,8 +129,15 @@ GET /api/v1/windows/find?title=Untitled%20-%20Notepad&class_name=Notepad
 3. **Install the DXT package**:
 
    ```bash
-   dxt install dxt/pywinauto-mcp-0.1.0.dxt
+   dxt install dist/pywinauto-mcp-0.2.0.dxt
    ```
+
+   **Package Features:**
+   - **281KB comprehensive package** with all dependencies
+   - **22 automation tools** across 6 categories
+   - **100+ prompt templates** for conversational AI
+   - **Face recognition security** and webcam integration
+   - **OCR and visual intelligence** capabilities
 
 4. **Start the server**:
 
@@ -294,11 +315,28 @@ curl -X POST "http://localhost:8000/security/monitor/intruder/start" \
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+We welcome contributions! PyWinAuto MCP has comprehensive contribution guidelines and a structured process:
+
+### 📋 **Getting Started**
+- 📖 **[Contributing Guide](CONTRIBUTING.md)**: Complete development workflow and guidelines
+- 🐛 **[Issue Templates](.github/ISSUE_TEMPLATE/)**: Structured bug reports and feature requests
+- 🔄 **CI/CD Pipeline**: Automated testing and quality assurance
+
+### 🛠️ **Development Workflow**
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/your-feature`)
+3. **Develop** following our coding standards
+4. **Test** your changes thoroughly
+5. **Submit** a pull request with detailed description
+
+### 📚 **Documentation**
+- 📋 **[Status Report](docs/STATUS_REPORT.md)**: Comprehensive project assessment and roadmap
+- 📝 **[API Documentation](docs/)**: Technical documentation and guides
+- 🔄 **[Changelog](CHANGELOG.md)**: Version history and release notes
+
+### 🤝 **Community Standards**
+- 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community guidelines and expectations
+- 🔒 **[Security Policy](SECURITY.md)**: Vulnerability reporting and security features
 
 ## 📄 License
 
