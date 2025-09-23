@@ -45,8 +45,16 @@ class UIElementWalker:
                 info['id'] = len(self.elements)
                 self.elements.append(info)
 
+            # Handle Desktop object specially - use windows() instead of children()
+            if hasattr(element, 'windows') and callable(getattr(element, 'windows')):
+                # This is a Desktop object
+                children = element.windows()
+            else:
+                # This is a regular UI element
+                children = element.children()
+
             # Recurse children
-            for child in element.children():
+            for child in children:
                 self._recurse(child, depth + 1)
 
         except Exception as e:
@@ -62,8 +70,16 @@ class UIElementWalker:
             # Get parent window
             parent_window = self._get_parent_window(element)
 
+            # Handle control type for different backends
+            if hasattr(element, 'element_info') and hasattr(element.element_info, 'control_type'):
+                # UIA backend
+                control_type = element.element_info.control_type
+            else:
+                # Win32 backend or fallback
+                control_type = getattr(element, 'control_type', 'Unknown')
+
             info = {
-                'type': element.control_type,
+                'type': control_type,
                 'name': element.window_text(),
                 'app': parent_window.window_text() if parent_window else 'Desktop',
                 'bounds': {
@@ -80,7 +96,8 @@ class UIElementWalker:
 
             return info
 
-        except Exception:
+        except Exception as e:
+            # Skip problematic elements
             return None
 
     def _get_parent_window(self, element):
