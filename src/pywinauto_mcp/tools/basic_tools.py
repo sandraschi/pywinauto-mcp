@@ -62,10 +62,10 @@ if app is not None:
                 "description": "Comprehensive Windows UI automation with 23+ tools across 7 categories",
                 "total_tools": 23,
                 "categories": {
-                    "system": 4,
+                    "system": 5,
                     "windows": 6,
                     "elements": 6,
-                    "mouse": 7,
+                    "mouse": 8,
                     "input": 3,
                     "visual": 3,
                     "face-recognition": 4,
@@ -100,10 +100,10 @@ if app is not None:
 
             # General help overview
             help_info["overview"] = {
-                "System Tools": ["health_check", "wait", "get_system_clipboard", "set_system_clipboard"],
+                "System Tools": ["health_check", "wait", "get_system_clipboard", "set_system_clipboard", "get_help"],
                 "Window Management": ["list_windows", "find_window_by_title", "maximize_window", "minimize_window", "restore_window", "set_window_position", "get_window_title", "close_window", "set_window_foreground"],
                 "UI Elements": ["click_element", "double_click_element", "right_click_element", "hover_element", "get_element_info", "get_element_text", "set_element_text", "get_element_rect", "is_element_visible", "is_element_enabled", "get_all_elements"],
-                "Mouse Control": ["get_cursor_position", "click_at_position", "move_mouse", "scroll_mouse", "mouse_move_relative", "mouse_move_to_element", "mouse_hover", "drag_and_drop", "right_click", "double_click", "mouse_scroll"],
+                "Mouse Control": ["get_cursor_position", "click_at_position", "move_mouse", "scroll_mouse", "hover_mouse", "mouse_move_relative", "mouse_move_to_element", "mouse_hover", "drag_and_drop", "right_click", "double_click", "mouse_scroll"],
                 "Keyboard Input": ["type_text", "send_keys", "press_key", "press_hotkey"],
                 "Visual Intelligence": ["take_screenshot", "extract_text", "find_image", "highlight_element"],
                 "Face Recognition": ["add_face", "recognize_face", "list_known_faces", "delete_face", "capture_and_recognize"],
@@ -373,6 +373,98 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
+    @app.tool(
+        name="hover_mouse",
+        description="Move mouse to coordinates and hover."
+    )
+    def hover_mouse(x: int, y: int, duration: float = 0.5) -> Dict[str, Any]:
+        """
+        Move mouse to coordinates and hover for specified duration.
+
+        Args:
+            x: X coordinate to hover at
+            y: Y coordinate to hover at
+            duration: How long to hover in seconds (default: 0.5)
+        """
+        try:
+            pyautogui.moveTo(x, y)
+            import time
+            time.sleep(duration)
+            return {
+                "status": "success",
+                "action": "hover",
+                "position": (x, y),
+                "duration": duration,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
+    @app.tool(
+        name="wait",
+        description="Pause execution for specified seconds."
+    )
+    def wait(seconds: float) -> Dict[str, Any]:
+        """
+        Pause execution for specified seconds.
+
+        Args:
+            seconds: Number of seconds to wait
+        """
+        try:
+            import time
+            time.sleep(seconds)
+            return {
+                "status": "success",
+                "action": "wait",
+                "duration": seconds,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
+    @app.tool(
+        name="get_system_clipboard",
+        description="Get current clipboard content."
+    )
+    def get_system_clipboard() -> Dict[str, Any]:
+        """Get current clipboard content."""
+        try:
+            import pyperclip
+            content = pyperclip.paste()
+            return {
+                "status": "success",
+                "content": content,
+                "length": len(content),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
+    @app.tool(
+        name="set_system_clipboard",
+        description="Set clipboard content."
+    )
+    def set_system_clipboard(content: str) -> Dict[str, Any]:
+        """
+        Set clipboard content.
+
+        Args:
+            content: Text content to copy to clipboard
+        """
+        try:
+            import pyperclip
+            pyperclip.copy(content)
+            return {
+                "status": "success",
+                "action": "clipboard_set",
+                "content": content,
+                "length": len(content),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
 else:
     logger = logging.getLogger(__name__)
     logger.warning("FastMCP app not available - basic tools will not be registered")
@@ -468,6 +560,38 @@ def _get_tool_details(tool_name: str) -> Optional[Dict[str, Any]]:
                 "image_path": {"type": "string", "description": "Path to image file containing the face"}
             },
             "examples": ["add_face(name='John Doe', image_path='john.jpg') - Add John's face"]
+        },
+        "hover_mouse": {
+            "name": "hover_mouse",
+            "category": "mouse",
+            "description": "Move mouse to coordinates and hover for specified duration",
+            "parameters": {
+                "x": {"type": "integer", "description": "X coordinate to hover at"},
+                "y": {"type": "integer", "description": "Y coordinate to hover at"},
+                "duration": {"type": "number", "default": 0.5, "description": "How long to hover in seconds"}
+            },
+            "examples": ["hover_mouse(x=500, y=300, duration=1.0) - Hover at position for 1 second"]
+        },
+        "wait": {
+            "name": "wait",
+            "category": "system",
+            "description": "Pause execution for specified seconds",
+            "parameters": {"seconds": {"type": "number", "description": "Number of seconds to wait"}},
+            "examples": ["wait(seconds=2.5) - Wait 2.5 seconds"]
+        },
+        "get_system_clipboard": {
+            "name": "get_system_clipboard",
+            "category": "system",
+            "description": "Get current clipboard content",
+            "parameters": {},
+            "examples": ["get_system_clipboard() - Get clipboard text"]
+        },
+        "set_system_clipboard": {
+            "name": "set_system_clipboard",
+            "category": "system",
+            "description": "Set clipboard content",
+            "parameters": {"content": {"type": "string", "description": "Text content to copy to clipboard"}},
+            "examples": ["set_system_clipboard(content='Hello World') - Copy text to clipboard"]
         }
     }
 
@@ -481,7 +605,8 @@ def _get_category_tools(category: str) -> Optional[List[Dict[str, Any]]]:
             {"name": "health_check", "description": "Check server health and status"},
             {"name": "wait", "description": "Pause execution for specified seconds"},
             {"name": "get_system_clipboard", "description": "Get clipboard content"},
-            {"name": "set_system_clipboard", "description": "Set clipboard content"}
+            {"name": "set_system_clipboard", "description": "Set clipboard content"},
+            {"name": "get_help", "description": "Get comprehensive help and documentation"}
         ],
         "windows": [
             {"name": "list_windows", "description": "List all visible windows"},
@@ -504,6 +629,7 @@ def _get_category_tools(category: str) -> Optional[List[Dict[str, Any]]]:
             {"name": "click_at_position", "description": "Click at screen coordinates"},
             {"name": "move_mouse", "description": "Move mouse to coordinates"},
             {"name": "scroll_mouse", "description": "Scroll mouse wheel"},
+            {"name": "hover_mouse", "description": "Move mouse and hover at position"},
             {"name": "drag_and_drop", "description": "Drag element to new position"}
         ],
         "input": [
@@ -533,13 +659,14 @@ def _get_category_tools(category: str) -> Optional[List[Dict[str, Any]]]:
 def _list_all_tools() -> List[str]:
     """List all available tool names."""
     return [
-        "health_check", "get_cursor_position", "click_at_position", "move_mouse", "scroll_mouse",
-        "list_windows", "find_window_by_title", "type_text", "send_keys",
+        "health_check", "get_cursor_position", "click_at_position", "move_mouse", "scroll_mouse", "hover_mouse",
+        "list_windows", "find_window_by_title", "type_text", "send_keys", "wait",
+        "get_system_clipboard", "set_system_clipboard", "get_help",
         "maximize_window", "minimize_window", "restore_window", "close_window",
         "click_element", "get_element_info", "get_element_text", "set_element_text",
         "take_screenshot", "extract_text", "find_image",
         "add_face", "recognize_face", "list_known_faces", "capture_and_recognize",
-        "get_desktop_state", "wait", "get_system_clipboard", "set_system_clipboard"
+        "get_desktop_state"
     ]
 
 
@@ -554,5 +681,9 @@ __all__ = [
     'find_window_by_title',
     'type_text',
     'send_keys',
+    'hover_mouse',
+    'wait',
+    'get_system_clipboard',
+    'set_system_clipboard',
     'get_help'
 ]
