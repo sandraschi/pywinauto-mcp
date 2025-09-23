@@ -13,6 +13,37 @@ The `get_desktop_state` tool provides comprehensive Windows UI element discovery
 - **OCR Text Extraction**: Extracts text from visual elements without accessible text
 - **Structured Output**: JSON-formatted results perfect for AI processing
 
+### 🚀 **Revolutionary Deep IDE Inspection**
+- **IDE State Analysis**: Inspects open Cursor/VSCode instances for development status
+- **Error Detection**: Discovers linter errors, syntax issues, and code quality problems
+- **File Content Access**: Reads open file contents through UI element discovery
+- **Development Monitoring**: Tracks coding activity and project health indicators
+- **Repository Awareness**: Identifies current projects and open repositories
+
+#### **How Deep IDE Inspection Works**
+
+The Desktop State tool uses Windows UI Automation (UIA) to perform deep introspection of development environments:
+
+1. **UI Tree Traversal**: Starting from the Desktop, recursively walks all visible windows and their child elements
+2. **IDE Detection**: Identifies Cursor/VSCode windows by class name and window text patterns
+3. **Element Discovery**: Extracts all UI elements within IDE windows (tabs, editors, panels, status bars)
+4. **Content Analysis**: Reads text content from editor areas, error panels, and status indicators
+5. **Context Mapping**: Correlates elements to understand file states, error locations, and project structure
+
+**Technical Implementation**:
+- **Backend**: PyWinAuto UIA (UI Automation) for comprehensive element access
+- **Traversal**: Recursive depth-first search with configurable depth limits
+- **Classification**: Intelligent categorization of interactive vs informative elements
+- **Text Extraction**: Direct text property access and OCR fallback for visual elements
+
+**What Gets Discovered**:
+- Open file names and paths in tabs
+- Syntax errors and linter warnings in error panels
+- Current cursor position and selection
+- Git status indicators and branch information
+- Terminal/command output in integrated terminals
+- Extension status and notifications
+
 ### 🎨 **Visual Intelligence**
 - **Element Highlighting**: Different colors for different element types
 - **Boundary Detection**: Precise element positioning and sizing
@@ -31,7 +62,8 @@ The `get_desktop_state` tool provides comprehensive Windows UI element discovery
 get_desktop_state(
     use_vision: bool = False,
     use_ocr: bool = False,
-    max_depth: int = 10
+    max_depth: int = 10,
+    element_timeout: float = 0.5
 ) -> Dict[str, Any]
 ```
 
@@ -54,6 +86,13 @@ get_desktop_state(
 - **Range**: 1-50 (higher = more elements, slower performance)
 - **Recommendation**: Start with 10, increase only if needed
 - **Example**: `max_depth=15`
+
+### `element_timeout` (float, default: 0.5)
+- **Purpose**: Timeout in seconds for processing each UI element
+- **When to Use**: When dealing with slow-responding applications like complex IDEs (Cursor, VSCode)
+- **Impact**: Lower values (0.1-0.3) are faster but may skip slow elements; higher values (0.5-1.0) are more thorough
+- **Recommendation**: Use 0.2 for fast scans, 0.5-0.8 for comprehensive IDE analysis
+- **Example**: `element_timeout=0.2` (fast), `element_timeout=0.8` (thorough)
 
 ## Return Format
 

@@ -3,6 +3,7 @@ UI Element Walker - Traverse Windows UI Automation tree and extract elements
 """
 
 from typing import List, Dict, Optional
+import threading
 from pywinauto import Desktop
 
 
@@ -19,8 +20,9 @@ class UIElementWalker:
         'Text', 'StatusBar', 'TitleBar', 'ToolBar', 'Header'
     }
 
-    def __init__(self, max_depth: int = 10):
+    def __init__(self, max_depth: int = 10, element_timeout: float = 0.5):
         self.max_depth = max_depth
+        self.element_timeout = element_timeout  # Timeout per element in seconds
         self.elements = []
 
     def walk(self, root_element=None) -> List[Dict]:
@@ -62,43 +64,54 @@ class UIElementWalker:
             pass
 
     def _extract_element_info(self, element) -> Optional[Dict]:
-        """Extract all relevant properties from element"""
-        try:
-            # Get bounding rectangle
-            rect = element.rectangle()
+        """Extract all relevant properties from element with timeout"""
+        result = [None]  # Use list to modify from thread
 
-            # Get parent window
-            parent_window = self._get_parent_window(element)
+        def extract_with_timeout():
+            try:
+                # Get bounding rectangle
+                rect = element.rectangle()
 
-            # Handle control type for different backends
-            if hasattr(element, 'element_info') and hasattr(element.element_info, 'control_type'):
-                # UIA backend
-                control_type = element.element_info.control_type
-            else:
-                # Win32 backend or fallback
-                control_type = getattr(element, 'control_type', 'Unknown')
+                # Get parent window
+                parent_window = self._get_parent_window(element)
 
-            info = {
-                'type': control_type,
-                'name': element.window_text(),
-                'app': parent_window.window_text() if parent_window else 'Desktop',
-                'bounds': {
-                    'x': rect.left,
-                    'y': rect.top,
-                    'width': rect.width(),
-                    'height': rect.height()
-                },
-                'is_visible': element.is_visible(),
-                'is_enabled': element.is_enabled(),
-                'shortcut': getattr(element, 'access_key', ''),
-                'class_name': element.class_name()
-            }
+                # Handle control type for different backends
+                if hasattr(element, 'element_info') and hasattr(element.element_info, 'control_type'):
+                    # UIA backend
+                    control_type = element.element_info.control_type
+                else:
+                    # Win32 backend or fallback
+                    control_type = getattr(element, 'control_type', 'Unknown')
 
-            return info
+                info = {
+                    'type': control_type,
+                    'name': element.window_text(),
+                    'app': parent_window.window_text() if parent_window else 'Desktop',
+                    'bounds': {
+                        'x': rect.left,
+                        'y': rect.top,
+                        'width': rect.width(),
+                        'height': rect.height()
+                    },
+                    'is_visible': element.is_visible(),
+                    'is_enabled': element.is_enabled(),
+                    'shortcut': getattr(element, 'access_key', ''),
+                    'class_name': element.class_name()
+                }
 
-        except Exception as e:
-            # Skip problematic elements
-            return None
+                result[0] = info
+
+            except Exception as e:
+                # Skip problematic elements
+                pass
+
+        # Run extraction in a separate thread with timeout
+        thread = threading.Thread(target=extract_with_timeout)
+        thread.daemon = True
+        thread.start()
+        thread.join(timeout=self.element_timeout)
+
+        return result[0]
 
     def _get_parent_window(self, element):
         """Find parent top-level window"""

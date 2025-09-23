@@ -195,15 +195,17 @@ click_details = get_help(tool_name="click_element")
 - **Face Recognition** (4): Security authentication features
 - **Desktop State** (1): Complete UI analysis and discovery
 
-### 📊 **Desktop State Capture**
+### 📊 **Desktop State Capture - Revolutionary Deep UI Analysis**
 
-The `get_desktop_state` tool provides comprehensive UI element discovery with optional visual annotations and OCR text extraction.
+The `get_desktop_state` tool provides **revolutionary deep UI introspection** capabilities, going far beyond traditional window enumeration to analyze the internal state of complex applications including development environments.
 
-**Key Features**:
-- **Complete UI Analysis**: Discovers all interactive and informative elements
-- **Visual Annotations**: Color-coded element boundaries on screenshots
-- **OCR Enhancement**: Extracts text from visual elements
-- **Structured Output**: JSON-formatted results for programmatic use
+**🚀 Revolutionary Capabilities**:
+- **Deep IDE Inspection**: Analyzes open Cursor/VSCode instances, discovering file contents, linter errors, and development status
+- **Complete UI Analysis**: Discovers all interactive and informative elements across the entire desktop
+- **Development Environment Awareness**: Identifies open repositories, current files, error states, and project status
+- **Visual Annotations**: Color-coded element boundaries on screenshots with intelligent highlighting
+- **OCR Enhancement**: Extracts text from visual elements that standard APIs can't access
+- **Real-time Development Status**: Monitors coding activity, error detection, and project health
 
 **Usage Examples**:
 ```python
@@ -211,12 +213,24 @@ The `get_desktop_state` tool provides comprehensive UI element discovery with op
 state = get_desktop_state()
 print(f"Found {state['element_count']} elements")
 
-# With visual annotations
-state = get_desktop_state(use_vision=True)
-# Includes base64-encoded annotated screenshot
+# Development environment analysis - discovers open IDEs and errors
+dev_state = get_desktop_state(max_depth=15)
+for element in dev_state['interactive_elements']:
+    if 'cursor' in element['app'].lower() or 'vscode' in element['app'].lower():
+        print(f"IDE Element: {element['name']} in {element['app']}")
 
-# Complete analysis with OCR
-state = get_desktop_state(use_vision=True, use_ocr=True, max_depth=15)
+# Fast IDE analysis (20-45 seconds)
+state = get_desktop_state(max_depth=15, element_timeout=0.2)
+# Quick scan of development environments
+
+# With visual annotations - highlights development errors and status
+state = get_desktop_state(use_vision=True, element_timeout=0.3)
+# Includes base64-encoded annotated screenshot with error highlighting
+
+# Complete analysis with OCR - reads error messages and code content
+state = get_desktop_state(use_vision=True, use_ocr=True, max_depth=20, element_timeout=0.5)
+# Extracts text from linter errors, terminal output, and code editors
+# ⚠️ Note: Deep analysis may take 1-3 minutes for comprehensive results
 ```
 
 📖 **[Complete Desktop State Tool Documentation](docs/desktop-state-tool.md)**
