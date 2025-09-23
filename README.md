@@ -169,6 +169,58 @@ GET /api/v1/windows/find?title=Untitled%20-%20Notepad&class_name=Notepad
    } | ConvertTo-Json) -ContentType "application/json"
    ```
 
+## 🛠️ **Tool Discovery & Help**
+
+PyWinAuto MCP includes a comprehensive help system to discover and understand all available tools:
+
+#### Get Help Tool
+```python
+# Get overview of all tools
+help_info = get_help()
+
+# Get tools by category
+window_tools = get_help(category="windows")
+
+# Get detailed tool information
+click_details = get_help(tool_name="click_element")
+```
+
+#### Tool Categories
+- **System Tools** (4): Health checks, clipboard, timing
+- **Window Management** (6): Find, manipulate, and control windows
+- **UI Elements** (6): Click, type, inspect, and interact with controls
+- **Mouse Control** (7): Precise cursor movement and clicking
+- **Keyboard Input** (3): Text input and key combinations
+- **Visual Intelligence** (3): Screenshots, OCR, image recognition
+- **Face Recognition** (4): Security authentication features
+- **Desktop State** (1): Complete UI analysis and discovery
+
+### 📊 **Desktop State Capture**
+
+The `get_desktop_state` tool provides comprehensive UI element discovery with optional visual annotations and OCR text extraction.
+
+**Key Features**:
+- **Complete UI Analysis**: Discovers all interactive and informative elements
+- **Visual Annotations**: Color-coded element boundaries on screenshots
+- **OCR Enhancement**: Extracts text from visual elements
+- **Structured Output**: JSON-formatted results for programmatic use
+
+**Usage Examples**:
+```python
+# Basic UI discovery
+state = get_desktop_state()
+print(f"Found {state['element_count']} elements")
+
+# With visual annotations
+state = get_desktop_state(use_vision=True)
+# Includes base64-encoded annotated screenshot
+
+# Complete analysis with OCR
+state = get_desktop_state(use_vision=True, use_ocr=True, max_depth=15)
+```
+
+📖 **[Complete Desktop State Tool Documentation](docs/desktop-state-tool.md)**
+
 ## 🧩 Plugin System
 
 PyWinAuto MCP uses a modular plugin system to extend its functionality. Plugins can be enabled/disabled via configuration.
