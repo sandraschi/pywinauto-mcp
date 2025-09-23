@@ -20,6 +20,7 @@ PyWinAuto MCP provides the most complete Windows automation toolkit available:
 - **Extensive Prompt Templates**: 100+ detailed prompts for natural language interaction
 - **Contextual Examples**: Real-world usage scenarios for each tool
 - **Smart Defaults**: Intelligent parameter handling and error recovery
+- **Desktop State Capture**: Complete UI element discovery with visual annotations
 
 ### 🏗️ **Enterprise Architecture**
 - **Dual Interface Design**: MCP tools + REST API with complete feature parity
@@ -134,10 +135,11 @@ GET /api/v1/windows/find?title=Untitled%20-%20Notepad&class_name=Notepad
 
    **Package Features:**
    - **281KB comprehensive package** with all dependencies
-   - **22 automation tools** across 6 categories
+   - **23 automation tools** across 7 categories (including Desktop State Capture)
    - **100+ prompt templates** for conversational AI
    - **Face recognition security** and webcam integration
    - **OCR and visual intelligence** capabilities
+   - **Complete desktop UI analysis** with element discovery
 
 4. **Start the server**:
 
@@ -246,6 +248,13 @@ class MyCustomPlugin(PyWinAutoPlugin):
 - `POST /api/v1/element/type` - Type text into an element
 - `POST /api/v1/element/get` - Get element information
 - `POST /api/v1/element/screenshot` - Take a screenshot of an element
+
+### Desktop State
+
+- `POST /api/v1/desktop_state/capture` - Capture complete desktop state with UI elements
+  - Optional: `use_vision=true` for annotated screenshots
+  - Optional: `use_ocr=true` for text extraction from elements
+  - Optional: `max_depth=10` for UI tree traversal depth
 
 ## 🔧 Configuration
 

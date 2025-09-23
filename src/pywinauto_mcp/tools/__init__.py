@@ -27,7 +27,8 @@ TOOL_MODULES = [
     'mouse',          # Mouse interaction tools
     'system_tools',   # System-level tools
     'visual',         # Visual tools (screenshots, OCR, etc.)
-    'face_recognition' # Face recognition tools
+    'face_recognition', # Face recognition tools
+    'desktop_state'   # Desktop state capture tools
 ]
 
 # Import all tool modules - this will trigger their registration with FastMCP
