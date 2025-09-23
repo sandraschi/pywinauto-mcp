@@ -1,0 +1,567 @@
+{
+  "name": "pywinauto-mcp",
+  "display_name": "PyWinAuto MCP",
+  "version": "0.2.0",
+  "description": "Comprehensive Windows UI Automation MCP server with face recognition, OCR, and advanced automation capabilities",
+  "author": "Sandra Schi",
+  "license": "MIT",
+  "repository": "https://github.com/sandraschi/pywinauto-mcp",
+  "categories": ["automation", "productivity", "testing", "security", "ocr", "computer-vision"],
+  "keywords": ["windows", "automation", "ui-testing", "face-recognition", "ocr", "screenshot", "mouse", "keyboard"],
+  "requirements": ["pywinauto>=0.6.8", "pywin32>=300", "opencv-python>=4.5.0", "face-recognition>=1.3.0", "pytesseract>=0.3.10"],
+  "dependencies": {
+    "python": ">=3.10",
+    "windows": ["pywin32>=311"]
+  },
+  
+  "server": {
+    "command": "python -m pywinauto_mcp.main",
+    "url": "http://localhost:8000",
+    "timeout": 30,
+    "features": ["face-recognition", "ocr", "screenshot", "mouse-control", "keyboard-input"]
+  },
+
+  "tools": [
+    {
+      "name": "health_check",
+      "description": "Check if the PyWinAuto MCP server is running and operational",
+      "category": "system",
+      "parameters": {},
+      "examples": [
+        {
+          "name": "Check server status",
+          "input": {},
+          "description": "Verify the MCP server is running and responsive"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "System Health Check",
+          "description": "Verify the automation server is operational",
+          "template": "Let me check if the PyWinAuto MCP server is running properly before we start automating tasks."
+        }
+      ]
+    },
+    {
+      "name": "get_cursor_position",
+      "description": "Get current mouse cursor position on screen",
+      "category": "mouse",
+      "parameters": {},
+      "examples": [
+        {
+          "name": "Get mouse position",
+          "input": {},
+          "description": "Get the current coordinates of the mouse cursor"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Current Mouse Position",
+          "description": "Find where the mouse cursor is currently located",
+          "template": "Where is the mouse cursor right now? I need to know its exact screen coordinates."
+        }
+      ]
+    },
+    {
+      "name": "click_at_position",
+      "description": "Click at specific screen coordinates",
+      "category": "mouse",
+      "parameters": {
+        "x": {"type": "integer", "description": "X coordinate"},
+        "y": {"type": "integer", "description": "Y coordinate"},
+        "button": {"type": "string", "default": "left", "enum": ["left", "right", "middle"]}
+      },
+      "examples": [
+        {
+          "name": "Click at coordinates",
+          "input": {"x": 100, "y": 200},
+          "description": "Click at screen position (100, 200)"
+        },
+        {
+          "name": "Right-click at position",
+          "input": {"x": 500, "y": 300, "button": "right"},
+          "description": "Right-click at screen position (500, 300)"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Click Coordinates",
+          "description": "Click at precise screen coordinates",
+          "template": "Click at coordinates ({x}, {y}) on the screen."
+        },
+        {
+          "name": "Right Click Position",
+          "description": "Right-click at specific screen coordinates",
+          "template": "I need to right-click at position ({x}, {y}) to open a context menu."
+        }
+      ]
+    },
+    {
+      "name": "move_mouse",
+      "description": "Move mouse to specific coordinates",
+      "category": "mouse",
+      "parameters": {
+        "x": {"type": "integer", "description": "X coordinate"},
+        "y": {"type": "integer", "description": "Y coordinate"}
+      },
+      "examples": [
+        {
+          "name": "Move mouse to position",
+          "input": {"x": 100, "y": 200},
+          "description": "Move mouse cursor to (100, 200)"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Move Mouse",
+          "description": "Move the mouse cursor to specific coordinates",
+          "template": "Move the mouse cursor to position ({x}, {y})."
+        }
+      ]
+    },
+    {
+      "name": "scroll_mouse",
+      "description": "Scroll mouse wheel at current or specified position",
+      "category": "mouse",
+      "parameters": {
+        "amount": {"type": "integer", "default": 1, "description": "Scroll amount (positive = up, negative = down)"},
+        "x": {"type": "integer", "description": "X coordinate (optional)"},
+        "y": {"type": "integer", "description": "Y coordinate (optional)"}
+      },
+      "examples": [
+        {
+          "name": "Scroll up",
+          "input": {"amount": 5},
+          "description": "Scroll mouse wheel up by 5 units"
+        },
+        {
+          "name": "Scroll down at position",
+          "input": {"amount": -3, "x": 500, "y": 300},
+          "description": "Scroll down by 3 units at position (500, 300)"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Scroll Page",
+          "description": "Scroll the mouse wheel to navigate",
+          "template": "Scroll {amount} units {direction} to navigate through the content."
+        }
+      ]
+    },
+    {
+      "name": "list_windows",
+      "description": "List all visible windows on the desktop",
+      "category": "windows",
+      "parameters": {},
+      "examples": [
+        {
+          "name": "List all windows",
+          "input": {},
+          "description": "Get a list of all visible windows"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "List Windows",
+          "description": "Get an overview of all open windows",
+          "template": "Show me all the windows that are currently open on the desktop."
+        }
+      ]
+    },
+    {
+      "name": "find_window_by_title",
+      "description": "Find window by title text",
+      "category": "windows",
+      "parameters": {
+        "title": {"type": "string", "description": "Window title to search for"},
+        "timeout": {"type": "number", "default": 10.0, "description": "Timeout in seconds"}
+      },
+      "examples": [
+        {
+          "name": "Find Notepad window",
+          "input": {"title": "Untitled - Notepad"},
+          "description": "Find the Notepad window with this title"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Find Window",
+          "description": "Locate a specific window by its title",
+          "template": "Find the window that has '{title}' in its title."
+        }
+      ]
+    },
+    {
+      "name": "type_text",
+      "description": "Type text at current cursor position",
+      "category": "input",
+      "parameters": {
+        "text": {"type": "string", "description": "Text to type"}
+      },
+      "examples": [
+        {
+          "name": "Type hello",
+          "input": {"text": "Hello World!"},
+          "description": "Type 'Hello World!' at current cursor position"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Type Text",
+          "description": "Type text into the currently focused element",
+          "template": "Type '{text}' into whatever has focus right now."
+        }
+      ]
+    },
+    {
+      "name": "send_keys",
+      "description": "Send special key combinations",
+      "category": "input",
+      "parameters": {
+        "keys": {"type": "string", "description": "Keys to send (e.g., 'ctrl+c', 'alt+f4')"}
+      },
+      "examples": [
+        {
+          "name": "Copy with Ctrl+C",
+          "input": {"keys": "ctrl+c"},
+          "description": "Send Ctrl+C key combination"
+        },
+        {
+          "name": "Close with Alt+F4",
+          "input": {"keys": "alt+f4"},
+          "description": "Send Alt+F4 to close current window"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Send Keys",
+          "description": "Send keyboard shortcuts or special key combinations",
+          "template": "Press {keys} to perform a keyboard shortcut."
+        }
+      ]
+    },
+    {
+      "name": "click_element",
+      "description": "Click on a UI element",
+      "category": "elements",
+      "parameters": {
+        "window_handle": {"type": "integer", "description": "Handle of the window"},
+        "control_id": {"type": "string", "description": "Automation ID of the element"},
+        "title": {"type": "string", "description": "Title of the element"},
+        "button": {"type": "string", "default": "left", "enum": ["left", "right", "middle"]}
+      },
+      "examples": [
+        {
+          "name": "Click OK button",
+          "input": {"window_handle": 123456, "control_id": "btnOK"},
+          "description": "Click the OK button"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Click Element",
+          "description": "Click on a specific UI element",
+          "template": "Click on the '{control_id}' element in the window."
+        },
+        {
+          "name": "Button Click",
+          "description": "Click a button or interactive element",
+          "template": "Click the '{control_id}' button to proceed."
+        }
+      ]
+    },
+    {
+      "name": "set_element_text",
+      "description": "Set the text of a UI element",
+      "category": "elements",
+      "parameters": {
+        "window_handle": {"type": "integer", "description": "Handle of the window"},
+        "control_id": {"type": "string", "description": "Automation ID of the element"},
+        "text": {"type": "string", "description": "Text to set"}
+      },
+      "examples": [
+        {
+          "name": "Set username",
+          "input": {"window_handle": 123456, "control_id": "txtUsername", "text": "john.doe"},
+          "description": "Set username field to 'john.doe'"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Set Text",
+          "description": "Type text into an input field or element",
+          "template": "Type '{text}' into the '{control_id}' field."
+        },
+        {
+          "name": "Fill Form",
+          "description": "Fill out a form field with text",
+          "template": "Enter '{text}' in the '{control_id}' input field."
+        }
+      ]
+    },
+    {
+      "name": "get_element_info",
+      "description": "Get detailed information about a UI element",
+      "category": "elements",
+      "parameters": {
+        "window_handle": {"type": "integer", "description": "Handle of the window"},
+        "control_id": {"type": "string", "description": "Automation ID of the element"}
+      },
+      "examples": [
+        {
+          "name": "Get button info",
+          "input": {"window_handle": 123456, "control_id": "btnSubmit"},
+          "description": "Get information about submit button"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Element Information",
+          "description": "Get detailed information about a UI element",
+          "template": "What can you tell me about the '{control_id}' element?"
+        }
+      ]
+    },
+    {
+      "name": "take_screenshot",
+      "description": "Take a screenshot of the screen or a specific region",
+      "category": "visual",
+      "parameters": {
+        "region": {"type": "object", "description": "Screenshot region (optional)", "properties": {
+          "x": {"type": "integer", "description": "X coordinate"},
+          "y": {"type": "integer", "description": "Y coordinate"},
+          "width": {"type": "integer", "description": "Width"},
+          "height": {"type": "integer", "description": "Height"}
+        }},
+        "window_handle": {"type": "integer", "description": "Handle of specific window (optional)"}
+      },
+      "examples": [
+        {
+          "name": "Full screen screenshot",
+          "input": {},
+          "description": "Take a screenshot of the entire screen"
+        },
+        {
+          "name": "Region screenshot",
+          "input": {"region": {"x": 100, "y": 100, "width": 300, "height": 200}},
+          "description": "Take screenshot of specific region"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Take Screenshot",
+          "description": "Capture an image of the screen or a specific area",
+          "template": "Take a screenshot of {region_description}."
+        },
+        {
+          "name": "Screen Capture",
+          "description": "Capture the current state of the display",
+          "template": "I need to see what's currently on the screen."
+        }
+      ]
+    },
+    {
+      "name": "extract_text",
+      "description": "Extract text from an image or screen region using OCR",
+      "category": "visual",
+      "parameters": {
+        "image_path": {"type": "string", "description": "Path to image file"},
+        "region": {"type": "object", "description": "Region coordinates (optional)"},
+        "lang": {"type": "string", "default": "eng", "description": "Language for OCR"}
+      },
+      "examples": [
+        {
+          "name": "Extract text from image",
+          "input": {"image_path": "screenshot.png", "lang": "eng"},
+          "description": "Extract English text from image"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "OCR Text",
+          "description": "Use OCR to read text from an image or screen area",
+          "template": "Extract the text from {image_path}."
+        },
+        {
+          "name": "Read Image",
+          "description": "Convert an image to text using OCR",
+          "template": "What text can you read from the {image_path} image?"
+        }
+      ]
+    },
+    {
+      "name": "get_system_clipboard",
+      "description": "Get the current content of the system clipboard",
+      "category": "system",
+      "parameters": {},
+      "examples": [
+        {
+          "name": "Get clipboard content",
+          "input": {},
+          "description": "Get current clipboard text"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Clipboard Content",
+          "description": "Get what's currently in the clipboard",
+          "template": "What text is currently in the clipboard?"
+        }
+      ]
+    },
+    {
+      "name": "set_system_clipboard",
+      "description": "Set the content of the system clipboard",
+      "category": "system",
+      "parameters": {
+        "text": {"type": "string", "description": "Text to put in clipboard"}
+      },
+      "examples": [
+        {
+          "name": "Copy text to clipboard",
+          "input": {"text": "Hello World"},
+          "description": "Put 'Hello World' in clipboard"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Copy to Clipboard",
+          "description": "Put text into the system clipboard",
+          "template": "Copy '{text}' to the clipboard."
+        }
+      ]
+    },
+    {
+      "name": "wait",
+      "description": "Wait for the specified number of seconds",
+      "category": "system",
+      "parameters": {
+        "seconds": {"type": "number", "description": "Number of seconds to wait"}
+      },
+      "examples": [
+        {
+          "name": "Wait 5 seconds",
+          "input": {"seconds": 5},
+          "description": "Wait for 5 seconds"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Wait Time",
+          "description": "Pause execution for a specific duration",
+          "template": "Wait {seconds} seconds before continuing."
+        }
+      ]
+    },
+    {
+      "name": "add_face",
+      "description": "Add a new face to the recognition system",
+      "category": "face-recognition",
+      "parameters": {
+        "name": {"type": "string", "description": "Name of the person"},
+        "image_path": {"type": "string", "description": "Path to image file"}
+      },
+      "examples": [
+        {
+          "name": "Add face",
+          "input": {"name": "John Doe", "image_path": "john.jpg"},
+          "description": "Add John Doe's face to the recognition system"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Add Face",
+          "description": "Add a new person to the face recognition system",
+          "template": "Add {name}'s face to the recognition system from the {image_path} image."
+        }
+      ]
+    },
+    {
+      "name": "recognize_face",
+      "description": "Recognize faces in an image",
+      "category": "face-recognition",
+      "parameters": {
+        "image_path": {"type": "string", "description": "Path to image file"},
+        "confidence_threshold": {"type": "number", "default": 0.7, "description": "Confidence threshold"}
+      },
+      "examples": [
+        {
+          "name": "Recognize faces",
+          "input": {"image_path": "group_photo.jpg", "confidence_threshold": 0.8},
+          "description": "Recognize faces in group photo with 80% confidence"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Recognize Faces",
+          "description": "Identify people in an image using face recognition",
+          "template": "Who can you recognize in the {image_path} image?"
+        }
+      ]
+    },
+    {
+      "name": "list_known_faces",
+      "description": "List all known faces in the system",
+      "category": "face-recognition",
+      "parameters": {},
+      "examples": [
+        {
+          "name": "List known faces",
+          "input": {},
+          "description": "List all people in the face recognition system"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Known Faces",
+          "description": "List all people registered in the face recognition system",
+          "template": "Who do you know? List all the people in your face recognition database."
+        }
+      ]
+    },
+    {
+      "name": "delete_face",
+      "description": "Delete a known face from the system",
+      "category": "face-recognition",
+      "parameters": {
+        "name": {"type": "string", "description": "Name of the person to delete"}
+      },
+      "examples": [
+        {
+          "name": "Delete face",
+          "input": {"name": "John Doe"},
+          "description": "Remove John Doe from the recognition system"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Remove Face",
+          "description": "Remove a person from the face recognition system",
+          "template": "Remove {name} from the face recognition system."
+        }
+      ]
+    },
+    {
+      "name": "capture_and_recognize",
+      "description": "Capture an image from the webcam and recognize faces in it",
+      "category": "face-recognition",
+      "parameters": {
+        "confidence_threshold": {"type": "number", "default": 0.7, "description": "Confidence threshold"}
+      },
+      "examples": [
+        {
+          "name": "Capture and recognize",
+          "input": {"confidence_threshold": 0.8},
+          "description": "Take a webcam photo and recognize faces"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "Webcam Recognition",
+          "description": "Take a photo with the webcam and identify faces",
+          "template": "Take a picture with the webcam and tell me who you can recognize."
+        }
+      ]
+    }
+  ]
+}

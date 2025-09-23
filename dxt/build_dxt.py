@@ -10,7 +10,7 @@ from typing import Dict, Any
 
 def load_manifest() -> Dict[str, Any]:
     """Load and validate the DXT manifest."""
-    manifest_path = Path("dxt_manifest.json")
+    manifest_path = Path(__file__).parent / "dxt_manifest.json"
     if not manifest_path.exists():
         raise FileNotFoundError(f"Manifest file not found: {manifest_path}")
     
@@ -38,27 +38,39 @@ def create_dxt_structure(version: str, build_dir: Path) -> Path:
 
 def copy_source_files(build_dir: Path) -> None:
     """Copy required source files to the build directory."""
-    # Copy Python package
-    src_dir = Path("src") / "pywinauto_mcp"
-    if not src_dir.exists():
-        raise FileNotFoundError(f"Source directory not found: {src_dir}")
-    
+    # Get the parent directory (where the dxt folder is located)
+    parent_dir = Path(__file__).parent.parent
+    src_dir = parent_dir / "src"
+    target_dir = None
+
+    # Look for directories starting with pywinauto_mcp
+    for item in src_dir.iterdir():
+        if item.is_dir() and item.name.startswith("pywinauto_mcp"):
+            target_dir = item
+            break
+
+    if target_dir is None:
+        raise FileNotFoundError(f"pywinauto_mcp source directory not found in {src_dir}")
+
+    print(f"Found source directory: {target_dir}")
+
     # Copy package files
-    shutil.copytree(src_dir, build_dir / "server" / "pywinauto_mcp")
+    shutil.copytree(target_dir, build_dir / "server" / target_dir.name)
     
     # Copy requirements.txt
-    requirements = Path("requirements.txt")
+    requirements = parent_dir / "requirements.txt"
     if requirements.exists():
         shutil.copy2(requirements, build_dir / "requirements.txt")
-    
+
     # Copy README and LICENSE if they exist
     for f in ["README.md", "LICENSE"]:
-        if Path(f).exists():
-            shutil.copy2(f, build_dir / f)
+        file_path = parent_dir / f
+        if file_path.exists():
+            shutil.copy2(file_path, build_dir / f)
 
-def create_zip_archive(build_dir: Path, version: str) -> Path:
+def create_zip_archive(build_dir: Path, version: str, parent_dir: Path) -> Path:
     """Create a zip archive of the DXT package."""
-    dist_dir = Path("dist")
+    dist_dir = parent_dir / "dist"
     dist_dir.mkdir(exist_ok=True)
     
     zip_path = dist_dir / f"pywinauto-mcp-{version}.dxt"
@@ -77,27 +89,30 @@ def create_zip_archive(build_dir: Path, version: str) -> Path:
 def main() -> None:
     """Main function to build the DXT package."""
     try:
+        # Get the parent directory (where the dxt folder is located)
+        parent_dir = Path(__file__).parent.parent
+
         # Load and validate manifest
         manifest = load_manifest()
         version = manifest["version"]
-        
+
         print(f"Building PyWinAutoMCP DXT package v{version}")
-        
+
         # Create build directory
-        build_root = Path("build")
+        build_root = parent_dir / "build"
         build_root.mkdir(exist_ok=True)
         build_dir = create_dxt_structure(version, build_root)
         
         # Copy source files
         print("Copying source files...")
         copy_source_files(build_dir)
-        
+
         # Copy manifest
-        shutil.copy2("dxt_manifest.json", build_dir / "manifest.json")
-        
+        shutil.copy2(Path(__file__).parent / "dxt_manifest.json", build_dir / "manifest.json")
+
         # Create ZIP archive
         print("Creating DXT package...")
-        zip_path = create_zip_archive(build_dir, version)
+        zip_path = create_zip_archive(build_dir, version, parent_dir)
         
         print(f"\n✅ DXT package created successfully: {zip_path}")
         print(f"   Size: {zip_path.stat().st_size / (1024 * 1024):.2f} MB")

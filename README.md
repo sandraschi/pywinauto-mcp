@@ -115,7 +115,7 @@ GET /api/v1/windows/find?title=Untitled%20-%20Notepad&class_name=Notepad
 3. **Install the DXT package**:
 
    ```bash
-   dxt install pywinauto-mcp-0.1.0.dxt
+   dxt install dxt/pywinauto-mcp-0.1.0.dxt
    ```
 
 4. **Start the server**:

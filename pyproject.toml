@@ -36,7 +36,7 @@ dependencies = [
     
     # Windows automation
     "pywinauto>=0.6.8,<1.0.0",
-    "pywin32>=300; platform_system=='Windows'",
+    "pywin32>=311; platform_system=='Windows'",
     "psutil>=5.9.0",
     "pygetwindow>=0.0.9,<1.0.0",
     

@@ -70,7 +70,7 @@ SECURITY_ALERT_EMAIL=your-email@example.com
 2. Build the DXT package:
 
    ```bash
-   python build_dxt.py
+   python dxt/build_dxt.py
    ```
 
 3. The package will be created in the `dist` directory.

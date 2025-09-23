@@ -12,7 +12,7 @@ pygetwindow>=0.0.9
 pillow>=9.0.0
 numpy>=1.21.0
 uvicorn[standard]>=0.20.0
-pywin32>=300; platform_system=='Windows'
+pywin32>=311; platform_system=='Windows'
 pytesseract>=0.3.10
 opencv-python-headless>=4.5.0  # For image processing
 pydantic-settings>=2.0.0

@@ -1,251 +1,139 @@
-# 🛠 DXT Building Guide
-
-## 📋 Table of Contents
-
-1. [Development Setup](#1-development-setup)
-2. [Project Structure](#2-project-structure)
-3. [Building DXT Packages](#3-building-dxt-packages)
-4. [Testing & Validation](#4-testing--validation)
-5. [Versioning & Release](#5-versioning--release)
-6. [CI/CD Integration](#6-cicd-integration)
-7. [Troubleshooting](#7-troubleshooting)
-
-## 1. Development Setup
-
-This section covers the initial setup required for developing an MCP server with DXT.
-
-### 1. Prerequisites
-
-- Python 3.8+
-- pip (Python package manager)
-- Git
-- DXT CLI (for package management)
-
-### Project Initialization
-
-```bash
-# Create project structure
-mkdir my-mcp-server
-cd my-mcp-server
-python -m venv venv
-.\venv\Scripts\activate
-
-# Initialize git
-git init
-git add .
-git commit -m "Initial commit"
-
-# Create basic structure
-mkdir -p src/my_mcp/handlers tests
-```
-
-### 3. Project Configuration
-
-Create `pyproject.toml` with the following content:
-
-```toml
-[tool.poetry]
-name = "my-mcp"
-version = "0.1.0"
-description = "My Awesome MCP Server"
-authors = ["Your Name <your.email@example.com>"]
-
-[tool.poetry.dependencies]
-python = "^3.9"
-fastmcp = "^2.13"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-```
-
-### 4. Development Tools Setup
-
-1. Install development tools:
-
-   ```bash
-   pip install poetry pre-commit
-   poetry install
-   ```
-
-2. Create `.pre-commit-config.yaml`:
-
-   ```yaml
-   repos:
-   - repo: https://github.com/psf/black
-     rev: 23.7.0
-     hooks:
-     - id: black
-       language_version: python3.9
-
-   - repo: https://github.com/pycqa/isort
-     rev: 5.12.0
-     hooks:
-     - id: isort
-       name: isort (python)
-       types: [python]
-
-   - repo: https://github.com/charliermarsh/ruff-pre-commit
-     rev: v0.0.284
-     hooks:
-       - id: ruff
-         args: [--fix, --exit-non-zero-on-fix]
-   ```
-
-## 3. Building DXT Packages
-
-This section explains how to build and package your MCP server as a DXT package.
-
-### 1. Create Build Script
-
-Create `build.ps1`:
-
-```powershell
-# Create dist directory if it doesn't exist
-$distDir = "dist"
-if (-not (Test-Path -Path $distDir)) {
-    New-Item -ItemType Directory -Path $distDir | Out-Null
-}
-
-# Get the current directory name for the output filename
-$currentDir = Split-Path -Leaf (Get-Location)
-$outputFile = "$distDir\$currentDir.dxt"
-
-# Build the DXT package
-Write-Host "Building DXT package to $outputFile"
-dxt pack . $distDir
-
-# Verify the file was created
-if (Test-Path -Path $outputFile) {
-    Write-Host "✅ Successfully created DXT package at $outputFile"
-    exit 0
-} else {
-    Write-Host "❌ Failed to create DXT package"
-    exit 1
-}
-```
-
-### Build Process
-
-```bash
-# Run tests
-pytest
-
-# Build package
-.\build.ps1
-
-# Verify package
-dxt info dist/package.dxt
-```
-
-## 4. Testing & Validation
-
-This section covers testing strategies for your MCP server.
-
-### 1. Unit Tests
-
-Create `tests/test_handlers.py`:
-
-```python
-def test_my_handler():
-    # Test implementation
-    assert 1 + 1 == 2
-```
-
-### Integration Testing
-
-```bash
-# Start test server
-dxt serve dist/package.dxt --port 8000
-
-# Test endpoints
-curl http://localhost:8000/health
-```
-
-## 5. Versioning & Release
-
-This section explains the versioning and release process for your MCP server.
-
-### 1. Update Version
-
-```bash
-# Update version in pyproject.toml
-poetry version patch  # or minor/major
-
-# Generate changelog
-git-chglog -o CHANGELOG.md
-```
-
-### Commit Changes
-
-```bash
-git add .
-git commit -m "chore: prepare release v0.1.0"
-git tag -a v0.1.0 -m "v0.1.0"
-git push origin main --tags
-```
-
-## 6. GitHub Release Process
-
-This section covers the process of creating GitHub releases for your MCP server.
-
-### 1. Create GitHub Release
-
-```bash
-# Create release from tag
-gh release create v0.1.0 \
-  --title "v0.1.0 - Initial Release" \
-  --notes "$(cat CHANGELOG.md | sed -n '/## \[0.1.0\]/,/## \[0.0.1\]/p' | head -n -2)" \
-  dist/*.dxt
-```
-
-### Verify Release
-
-1. Go to GitHub Releases page
-2. Verify assets are attached
-3. Test installation:
-
-   ```bash
-   dxt install --source github:your-org/your-repo#v0.1.0
-   ```
-
-## 7. Post-Release Activities
-
-This section covers activities to perform after a successful release.
-
-### 1. Update Documentation
-
-- Update README with new features
-- Add usage examples
-- Document breaking changes
-
-### Announce Release
-
-- Internal team notification
-- Update project boards
-- Share in relevant channels
-
-### Monitor & Gather Feedback
-
-- Monitor error logs
-- Collect user feedback
-- Create issues for bugs/improvements
-
-## 🎉 Next Steps
-
-- [ ] Set up CI/CD pipeline
-- [ ] Add automated testing
-- [ ] Implement monitoring
-- [ ] Plan next features
-
----
-
 # DXT Extension Building - Complete Guide for MCP Servers
 
 **Version:** 3.0.0  
 **Date:** 2025-08-22  
 **Applies to:** ALL MCP server repositories  
 **AI Tools:** Windsurf, Cursor, Claude Code  
+
+## 🌟 What is DXT?
+
+DXT (Deployment eXtension Toolkit) is a powerful framework developed by Anthropic specifically for packaging and distributing MCP (Model Control Protocol) servers. It provides a standardized way to package, version, and deploy MCP server implementations with all their dependencies.
+
+### Key Components of DXT
+
+1. **DXT CLI**: Command-line interface for managing the DXT packaging and deployment lifecycle
+2. **DXT Runtime**: Execution environment for MCP servers
+3. **DXT Registry**: Central repository for versioned MCP server packages
+4. **DXT SDK**: Tools and libraries for MCP server development
+
+## 🏗️ DXT Manifest (dxt_manifest.json)
+
+The `dxt_manifest.json` file is the heart of any MCP server package. It defines the server's metadata, configuration, dependencies, and runtime requirements.
+
+### Manifest Creation Methods
+
+#### 1. Manual Creation (Not Recommended)
+
+```bash
+dxt init  # Creates a basic manifest (not recommended for production)
+```
+
+This method creates a minimal `dxt_manifest.json` that requires manual updates. It's only suitable for quick testing.
+
+#### 2. AI-Powered Generation (Recommended)
+
+The preferred method is to use AI-powered tools that analyze your repository and generate a comprehensive manifest:
+
+```bash
+# Using Windsurf AI (recommended)
+windsurf dxt analyze --path ./src --output dxt_manifest.json
+
+# Or using the DXT CLI with AI enhancement
+dxt analyze --ai --output dxt_manifest.json
+```
+
+These tools will:
+- Analyze your codebase structure
+- Detect entry points and dependencies
+- Generate appropriate configuration
+- Create proper API bindings
+- Set up required permissions
+
+### Key Manifest Sections
+
+```json
+{
+  "name": "your-extension",
+  "version": "1.0.0",
+  "description": "Your extension description",
+  "main": "dist/main.js",
+  "docker": {
+    "image": "your-org/your-image:tag",
+    "ports": ["8080"]
+  },
+  "ui": {
+    "dashboard-tab": "./ui/dashboard.html"
+  },
+  "permissions": [
+    "containers:read",
+    "images:list"
+  ]
+}
+```
+
+## 🤖 Prompt Templates in DXT
+
+Prompt templates are JSON files that define how AI models should interact with your extension. They're crucial for creating consistent and effective AI-driven features.
+
+### Template Structure
+
+```json
+{
+  "name": "container-inspection",
+  "description": "Inspects a container and provides detailed analysis",
+  "parameters": {
+    "container_id": {
+      "type": "string",
+      "description": "ID of the container to inspect"
+    }
+  },
+  "prompt": "Analyze the container with ID {{container_id}}. Check its status, resources, and potential issues.",
+  "examples": [
+    {
+      "input": {"container_id": "abc123"},
+      "output": "Container abc123 is running with 2 CPUs and 4GB memory..."
+    }
+  ]
+}
+```
+
+### Automatic Template Generation
+
+DXT can generate prompt templates by analyzing your code and documentation:
+
+```bash
+# Generate prompt templates from code analysis
+dxt generate-prompts --source ./src --output ./prompts
+
+# Or use AI to enhance existing prompts
+dxt enhance-prompts --input ./prompts --output ./enhanced-prompts
+```
+
+### Prompt Template Features
+
+1. **Variables**: Use `{{variable}}` syntax for dynamic content
+2. **Validation**: Automatic parameter validation
+3. **Versioning**: Track changes to prompts over time
+4. **Localization**: Support for multiple languages
+5. **Testing**: Built-in testing framework for prompts
+
+## 🏭 DXT Standards and Governance
+
+DXT is developed and maintained by Anthropic with contributions from the open-source community. The project follows semantic versioning and has a well-defined RFC process for major changes.
+
+### Key Standards
+
+1. **Extension Packaging**: OCI-compliant containers
+2. **API Design**: RESTful principles with OpenAPI specifications
+3. **Security**: OAuth 2.0 and mTLS for authentication
+4. **UI/UX**: Follows Docker Design System
+5. **Logging**: Structured logging in JSON format
+
+### Versioning
+
+- **Major**: Breaking changes
+- **Minor**: New features (backward compatible)
+- **Patch**: Bug fixes and improvements
 
 ## 🎯 CRITICAL RULES - READ FIRST
 
@@ -496,7 +384,7 @@ Packaged with your extension and used by the DXT runtime. Defines how your exten
   "license": "MIT",
   "outputDir": "dist",
   "mcp": {
-    "version": "2.10.1",
+    "version": "2.12.0",
     "server": {
       "command": "python",
       "args": ["-m", "your.package.module"],
@@ -606,7 +494,7 @@ your-mcp/
 
 ### FastMCP Server Best Practices
 
-- Use FastMCP 2.10.1 or later
+- Use FastMCP 2.12.0 or later
 - Implement proper signal handling
 - Use structured logging
 - Handle all exceptions gracefully
@@ -934,13 +822,13 @@ jobs:
 
 ## 🔧 FASTMCP VERSION REQUIREMENT
 
-**CRITICAL**: Must use fastmcp>=2.10.1,<3.0.0 for DXT compatibility.
+**CRITICAL**: Must use fastmcp>=2.12.0 for DXT compatibility.
 
 **requirements.txt:**
 
 ```txt
-# Core MCP dependencies - EXACT VERSION REQUIRED
-fastmcp>=2.10.1,<3.0.0
+# Core MCP dependencies - VERSION REQUIREMENT
+fastmcp>=2.12.0,<3.0.0
 fastapi>=0.95.0
 uvicorn[standard]>=0.22.0
 pydantic>=2.0.0,<3.0.0
@@ -958,9 +846,9 @@ httpx>=0.24.0
 # mypy>=1.4.0
 ```
 
-**Why fastmcp 2.10.1?**
+**Why fastmcp 2.12.0?**
 
-- Fixes critical DXT runtime compatibility issues
+- Includes all critical DXT runtime compatibility fixes
 - Resolves async/await handling in DXT environments
 - Proper error handling for extension context
 - Stable API surface for production use
@@ -1071,7 +959,7 @@ httpx>=0.24.0
   "name": "example-mcp",
   "version": "1.0.0",
   "description": "Example MCP server with external tool integration",
-  "long_description": "Comprehensive MCP server that demonstrates proper external dependency handling, user configuration, and professional tool integration patterns using FastMCP 2.10.1+.",
+  "long_description": "Comprehensive MCP server that demonstrates proper external dependency handling, user configuration, and professional tool integration patterns using FastMCP 2.12.0+.",
   "author": {
     "name": "Sandra Schi",
     "email": "sandra@sandraschi.dev",
@@ -1183,7 +1071,7 @@ httpx>=0.24.0
     }
   },
   "dependencies": [
-    "fastmcp>=2.10.1,<3.0.0",
+    "fastmcp>=2.12.0,<3.0.0",
     "pydantic>=2.0.0",
     "httpx>=0.25.0",
     "loguru>=0.7.0"
@@ -1200,7 +1088,7 @@ httpx>=0.24.0
 npm install -g @anthropic-ai/dxt
 
 # Install Python dependencies (EXACT VERSIONS)
-pip install "fastmcp>=2.10.1,<3.0.0"
+pip install "fastmcp>=2.12.0,<3.0.0"
 pip install -r requirements.txt
 ```
 
@@ -1491,14 +1379,14 @@ ImportError: cannot import name 'FastMCP' from 'fastmcp'
 AttributeError: 'FastMCP' object has no attribute 'some_method'
 ```
 
-#### Solution: Update to FastMCP 2.10.1+
+#### Solution: Update to FastMCP 2.12.0+
 
 ```bash
 # Uninstall old version
 pip uninstall fastmcp
 
 # Install exact version
-pip install "fastmcp>=2.10.1,<3.0.0"
+pip install "fastmcp>=2.12.0,<3.0.0"
 
 # Verify installation
 python -c "import fastmcp; print(fastmcp.__version__)"
@@ -1508,7 +1396,7 @@ python -c "import fastmcp; print(fastmcp.__version__)"
 
 ```txt
 # CRITICAL: Use exact version constraints
-fastmcp>=2.10.1,<3.0.0
+fastmcp>=2.12.0,<3.0.0
 fastapi>=0.95.0
 uvicorn[standard]>=0.22.0
 pydantic>=2.0.0,<3.0.0
@@ -1558,7 +1446,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install "fastmcp>=2.10.1,<3.0.0"
+        pip install "fastmcp>=2.12.0,<3.0.0"
         pip install -r requirements.txt
         
     - name: Create dist directory
@@ -1625,7 +1513,7 @@ dxt validate dxt/manifest.json
 
 # Common issues:
 # - Missing cwd and PYTHONPATH for Python servers
-# - fastmcp version < 2.10.1 in dependencies
+# - fastmcp version < 2.12.0 in dependencies
 # - Invalid template literal syntax
 # - Incorrect user_config types
 ```
@@ -1640,8 +1528,8 @@ python -c "import your_mcp.server; print('✅ Module imports successfully')"
 # Test FastMCP version
 python -c "import fastmcp; print(f'FastMCP version: {fastmcp.__version__}')"
 
-# Verify >= 2.10.1
-python -c "import fastmcp; assert fastmcp.__version__ >= '2.10.1', 'Update FastMCP!'"
+# Verify >= 2.12.0
+python -c "import fastmcp; assert fastmcp.__version__ >= '2.12.0', 'Update FastMCP!'"
 ```
 
 ### DXT Package Testing
@@ -1747,7 +1635,7 @@ dxt pack . ../package.dxt
 
 ### Development
 
-- [ ] Use fastmcp>=2.10.1,<3.0.0 in requirements.txt
+- [ ] Use fastmcp>=2.12.0,<3.0.0 in requirements.txt
 - [ ] Structure Python modules in `src/your_mcp/` directory
 - [ ] Create comprehensive manifest.json with AI
 - [ ] Include `cwd: "src"` and `PYTHONPATH: "src"` in mcp_config
@@ -1766,7 +1654,7 @@ dxt pack . ../package.dxt
 ### Release
 
 - [ ] Setup GitHub Actions workflow with Python 3.11
-- [ ] Include fastmcp>=2.10.1 installation step in CI
+- [ ] Include fastmcp>=2.12.0 installation step in CI
 - [ ] Create release tag: `git tag v1.0.0`
 - [ ] Verify automatic build and release
 - [ ] Test downloaded .dxt package installation
@@ -1788,7 +1676,7 @@ dxt pack . ../package.dxt
 
 ```json
 {
-  "dependencies": ["fastmcp>=2.10.1,<3.0.0"],
+  "dependencies": ["fastmcp>=2.12.0,<3.0.0"],
   "server": {
     "type": "python",
     "entry_point": "src/blender_mcp/server.py",
@@ -1809,7 +1697,7 @@ dxt pack . ../package.dxt
 
 ```json
 {
-  "dependencies": ["fastmcp>=2.10.1,<3.0.0"],
+  "dependencies": ["fastmcp>=2.12.0,<3.0.0"],
   "server": {
     "type": "python", 
     "entry_point": "src/docker_mcp/server.py",
@@ -1830,7 +1718,7 @@ dxt pack . ../package.dxt
 
 ```json
 {
-  "dependencies": ["fastmcp>=2.10.1,<3.0.0"],
+  "dependencies": ["fastmcp>=2.12.0,<3.0.0"],
   "server": {
     "type": "python",
     "entry_point": "src/database_mcp/server.py", 
@@ -1867,7 +1755,7 @@ dxt pack . ../package.dxt
 
 ### Critical Updates
 
-1. **FastMCP 2.10.1 Requirement**: Mandatory for DXT compatibility
+1. **FastMCP 2.12.0 Requirement**: Mandatory for DXT compatibility
 2. **Python Path Fix**: Explicit `cwd` and `PYTHONPATH` configuration
 3. **Updated Examples**: All examples include new requirements
 4. **Enhanced Troubleshooting**: Manual MCP fallback procedures
@@ -1875,13 +1763,13 @@ dxt pack . ../package.dxt
 
 ### Breaking Changes
 
-- **FastMCP < 2.10.1 no longer supported** in DXT extensions
+- **FastMCP < 2.12.0 no longer supported** in DXT extensions
 - **Python servers require explicit path configuration** in manifest
 - **All existing DXT packages need rebuilding** with new requirements
 
 ### Migration Guide
 
-1. Update `requirements.txt`: `fastmcp>=2.10.1,<3.0.0`
+1. Update `requirements.txt`: `fastmcp>=2.12.0,<3.0.0`
 2. Add to manifest `mcp_config`: `"cwd": "src"` and `"PYTHONPATH": "src"`
 3. Rebuild DXT package: `dxt pack . ../dist/updated-package.dxt`
 4. Test installation and fallback to manual MCP if needed
