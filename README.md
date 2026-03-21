@@ -4,6 +4,8 @@
 
 **Stack:** v0.3.2 · FastMCP 3.1+ · Python 3.12+ · Windows 10/11  
 
+**Web dashboard (optional):** This repo ships **`web_sota`** — a local browser UI (Vite; default **http://localhost:10788**) that talks to the same backend as the REST API (**http://127.0.0.1:10789**). Use it for a **tools hub**, safety/help pages, **local LLM chat** (Ollama or LM Studio), **camera** selection, biometrics, and overview — run **`web_sota/start.ps1`**. You do **not** need the webapp for normal MCP **stdio** use in an IDE; it is an extra operator surface.
+
 **Important:** This is **not** a browser sandbox. It runs in **your** desktop session and can move the real cursor, type into real windows, and drive the same UI you see. Read **[docs/SAFETY.md](docs/SAFETY.md)** before you wire it into an IDE. For throwaway desktops (Windows Sandbox, VMs, mapped folders), use **[virtualization-mcp](https://github.com/sandraschi/virtualization-mcp)** alongside this project. Fleet notes: `mcp-central-docs/patterns/PYWINAUTO_MCP_SAFETY.md`. Optional **face** features are off until you opt in — see **SAFETY §5** and `PYWINAUTO_MCP_ENABLE_FACE`.
 
 ### Discovery (GitHub, Glama, MCP catalogs)
@@ -14,6 +16,7 @@
 ### Product & docs
 
 - **PRD / index:** [`docs/PRD.md`](docs/PRD.md) · [`docs/README.md`](docs/README.md)
+- **Web dashboard:** [`web_sota/`](web_sota/) — `start.ps1` (ports **10788** / **10789**)
 
 ### Prompts, skills, MCPB
 
