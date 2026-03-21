@@ -2,7 +2,7 @@
 
 ## 🛡️ Security Overview
 
-PyWinAuto MCP takes security seriously. As a Windows automation tool with face recognition capabilities, we implement multiple layers of security to protect user data and system integrity.
+PyWinAuto MCP takes security seriously. **Face recognition is optional** and only exposed when **`PYWINAUTO_MCP_ENABLE_FACE=1`** and the **`face`** extra are installed (see **`docs/SAFETY.md` §5**). Core desktop automation does not require it.
 
 ## 🚨 Reporting Security Vulnerabilities
 
@@ -23,10 +23,10 @@ When reporting a vulnerability, please provide:
 
 ## 🔐 Security Features
 
-### Face Recognition Security
-- **Encrypted Storage**: Face data is stored with strong encryption
-- **Access Controls**: Webcam access requires explicit user consent
-- **Privacy Protection**: Face recognition data never leaves the local system
+### Face recognition (when enabled)
+- **Opt-in**: Runtime flag **`PYWINAUTO_MCP_ENABLE_FACE`** plus **`face`** extra — see **`docs/SAFETY.md`**.
+- **Encrypted storage**: Face data is stored with strong encryption
+- **Local-only**: Intended for local operator-presence workflows; data does not leave the machine by design
 
 ### System Security
 - **Process Isolation**: Automation operations are sandboxed

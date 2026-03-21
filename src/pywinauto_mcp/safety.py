@@ -15,12 +15,19 @@ from typing import Any
 ENV_KILL_SWITCH = "PYWINAUTO_MCP_KILL_SWITCH"
 ENV_MAX_PER_MINUTE = "PYWINAUTO_MCP_MAX_ACTIONS_PER_MINUTE"
 ENV_DRY_RUN = "PYWINAUTO_MCP_DRY_RUN"
+# When set (e.g. 1), server registers `automation_face` if face deps are installed.
+ENV_ENABLE_FACE = "PYWINAUTO_MCP_ENABLE_FACE"
 
 
 def _truthy(val: str | None) -> bool:
     if val is None:
         return False
     return val.lower() in ("1", "true", "yes", "on")
+
+
+def is_face_tool_enabled() -> bool:
+    """Whether the operator opted in to exposing the face-recognition tool (see docs/SAFETY.md §5)."""
+    return _truthy(os.getenv(ENV_ENABLE_FACE))
 
 
 class MutationGate:

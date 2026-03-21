@@ -20,7 +20,7 @@ export interface AppEntry {
     tags: string[];
 }
 
-// SOTA App Catalog - Centralized Registry for Fleet Navigation
+// Optional shortcuts for related local apps (edit ports to match your machine)
 export const APPS_CATALOG: AppEntry[] = [
     {
         id: 'fleet-dashboard',

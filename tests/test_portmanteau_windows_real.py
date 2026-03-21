@@ -18,6 +18,8 @@ REAL_WINDOW_TESTS = os.environ.get("PYWINAUTO_TEST_REAL_WINDOWS", "").lower() in
 SKIP_REAL_TESTS = not REAL_WINDOW_TESTS or not sys.platform.startswith("win")
 
 
+@pytest.mark.requires_hardware
+@pytest.mark.destructive
 class TestPortmanteauWindowsReal:
     """Real window tests for the automation_windows portmanteau tool.
 

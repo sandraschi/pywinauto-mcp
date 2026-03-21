@@ -7,14 +7,8 @@ system operations into a single interface. This design:
 - Improves discoverability by grouping related operations together
 - Follows FastMCP 2.13+ best practices for feature-rich MCP servers
 
-SUPPORTED OPERATIONS:
-- health: Check server health and status
-- help: Get help information about available tools
-- wait: Pause execution for specified seconds
-- wait_for_window: Wait for a window to appear
-- clipboard_get: Get clipboard content
-- clipboard_set: Set clipboard content
-- process_list: Get list of running processes
+SUPPORTED OPERATIONS (see automation_system Literal):
+- status, help, wait, info, wait_for_window, clipboard_get, clipboard_set, processes, start_app
 """
 
 import logging
@@ -22,6 +16,7 @@ import os
 import shutil
 import time
 from datetime import datetime
+from importlib.metadata import PackageNotFoundError, version
 from typing import Any, Literal
 
 import psutil
@@ -29,7 +24,14 @@ import pygetwindow as gw
 import pywinauto
 from pywinauto import Application
 
-# Import the FastMCP app instance
+from pywinauto_mcp.safety import (
+    ENV_DRY_RUN,
+    ENV_ENABLE_FACE,
+    ENV_KILL_SWITCH,
+    ENV_MAX_PER_MINUTE,
+    is_face_tool_enabled,
+)
+
 try:
     from pywinauto_mcp.app import app
 
@@ -40,7 +42,6 @@ except ImportError as e:
     logger.error(f"Failed to import FastMCP app in portmanteau_system: {e}")
     app = None
 
-# Try to import clipboard
 try:
     import pyperclip
 
@@ -49,26 +50,120 @@ except ImportError:
     CLIPBOARD_AVAILABLE = False
 
 
+def _package_version() -> str:
+    try:
+        return version("pywinauto-mcp")
+    except PackageNotFoundError:
+        try:
+            from pywinauto_mcp import __version__ as v
+
+            return str(v)
+        except Exception:
+            return "unknown"
+
+
+def _build_help_payload() -> dict[str, Any]:
+    """Structured help for automation_system('help') — kept in sync with README and docs/SAFETY.md."""
+    face_on = is_face_tool_enabled()
+    return {
+        "server": "pywinauto-mcp",
+        "version": _package_version(),
+        "description": (
+            "Windows UI automation via PyWinAuto (FastMCP). Desktop control is high-privilege; "
+            "read docs/SAFETY.md before use."
+        ),
+        "documentation": {
+            "safety": "docs/SAFETY.md",
+            "operator_protocol": "docs/OPERATOR_PROTOCOL.md",
+            "security": "SECURITY.md",
+        },
+        "face_tool": {
+            "opt_in_env": ENV_ENABLE_FACE,
+            "opt_in_active": face_on,
+            "note": (
+                "automation_face is registered only when this env is set and the face extra is installed."
+            ),
+        },
+        "safety_environment": {
+            ENV_KILL_SWITCH: "Set to 1 to block mutating mouse/keyboard (after HITL gate; see automation_safety).",
+            ENV_MAX_PER_MINUTE: "Rolling 60s cap for mutating actions (default 120).",
+            ENV_DRY_RUN: "Set to 1 to record actions without sending input to the OS.",
+            ENV_ENABLE_FACE: "Set to 1 to allow registration of automation_face (requires face extra).",
+        },
+        "human_in_the_loop": {
+            "approve_automation": "Extends approval window for mouse/keyboard when enabled.",
+            "automation_safety": "operation=status | reset_counters — counters and env snapshot.",
+        },
+        "mcp_prompts": [
+            "desktop_automation_operator_protocol",
+            "desktop_automation_runbook",
+        ],
+        "portmanteau_tools": {
+            "automation_windows": {
+                "description": "Window management (list, find, maximize, etc.)",
+                "operations": 11,
+            },
+            "automation_elements": {
+                "description": "UI element interaction (click, hover, text, etc.)",
+                "operations": 14,
+            },
+            "automation_mouse": {
+                "description": "Mouse control (move, click, scroll, drag); HITL may apply",
+                "operations": 9,
+            },
+            "automation_keyboard": {
+                "description": "Keyboard input (type, press, hotkey); HITL may apply",
+                "operations": 4,
+            },
+            "automation_visual": {
+                "description": "Screenshots, OCR, find image",
+                "operations": 4,
+            },
+            "automation_face": {
+                "description": "Face recognition (opt-in only)",
+                "operations": 5,
+                "registered": face_on,
+            },
+            "automation_system": {
+                "description": "status, help, wait, info, wait_for_window, clipboard, processes, start_app",
+                "operations": "see automation_system Literal",
+            },
+            "get_desktop_state": {
+                "description": "Desktop UI tree / discovery",
+                "operations": 1,
+            },
+        },
+        "getting_started": [
+            "automation_system('status') — server health",
+            "automation_system('help') — this overview",
+            "automation_safety('status') — kill switch, rate limits, face opt-in flag",
+            "approve_automation(...) — before long mouse/keyboard sequences when HITL is on",
+            "automation_windows('list') — enumerate top-level windows",
+            "get_desktop_state(...) — structured UI discovery when selectors are unclear",
+        ],
+    }
+
+
 if app is not None:
     logger.info("Registering portmanteau_system tool with FastMCP")
 
     @app.tool(
         name="automation_system",
-        description="""Comprehensive system-level automation tool tracking SOTA 2026 standards.
+        description="""Host-level helpers: status, help, wait, system info, clipboard, processes, start app.
 
 SUPPORTED OPERATIONS:
-- status: Retrieves a high-level diagnostic overview of the host system.
-- processes: Enumerates active processes with detailed resource metadata.
-- info: Collects granular system environment data (OS, CPU, Network).
-- screenshot: Captures and encodes the primary visual output for analysis.
-- terminal: Executes privileged shell operations with secure feedback.
-
-DIALOGIC RETURN PATTERN:
-If system resources are constrained or security triggers are identified, returns clarification_needed.
+- status: PyWinAuto version and basic readiness.
+- help: Tool overview, safety env vars, documentation paths, registered MCP prompt names.
+- wait: Sleep for seconds (blocking).
+- info: CPU, memory, disk, network snapshot (best-effort).
+- wait_for_window: Block until a window title appears or timeout.
+- clipboard_get / clipboard_set: Text clipboard (if pyperclip available).
+- processes: List processes (optional name filter).
+- start_app: Launch an executable via PyWinAuto Application.start.
 
 Examples:
     automation_system("status")
-    automation_system("screenshot")
+    automation_system("help")
     automation_system("processes", filter="notepad")
 
 """,
@@ -76,14 +171,13 @@ Examples:
     def automation_system(
         operation: Literal[
             "status",
-            "processes",
+            "help",
+            "wait",
             "info",
-            "screenshot",
-            "terminal",
-            "wait",  # Keeping wait for now as it's not explicitly removed from the Literal
             "wait_for_window",
             "clipboard_get",
             "clipboard_set",
+            "processes",
             "start_app",
         ],
         seconds: float | None = None,
@@ -97,40 +191,7 @@ Examples:
         work_dir: str | None = None,
         filter: str | None = None,  # Added for processes operation
     ) -> dict[str, Any]:
-        """System operations for PyWinAuto MCP tracking SOTA 2026 standards.
-
-        PORTMANTEAU PATTERN RATIONALE:
-        Consolidates system-level management into a single interface to minimize tool sprawl
-        while providing deep diagnostic and operational control. Follows FastMCP 2.14.3
-        standardization for agentic interoperability.
-
-        SUPPORTED OPERATIONS:
-        - status: Retrieves a high-level diagnostic overview of the host system.
-        - processes: Enumerates active processes with detailed resource metadata.
-        - info: Collects granular system environment data (OS, CPU, Network).
-        - screenshot: Captures and encodes the primary visual output for analysis.
-        - terminal: Executes privileged shell operations with secure feedback.
-        - wait: Suspends execution for a specified duration in seconds.
-        - wait_for_window: Blocks until a specific window title appears or times out.
-        - clipboard_get: Retrieves current plaintext content from the system clipboard.
-        - clipboard_set: Updates the system clipboard with provided text content.
-        - start_app: Launches an executable with verification and search fallbacks.
-
-        DIALOGIC RETURN PATTERN:
-        This tool implements the SOTA 2026 Dialogic Return Pattern for ambiguity resolution.
-        When system resources are constrained or security triggers are identified, it does not fail with a
-        standard error. Instead, it transitions to a status of clarification_needed.
-        In this state, the tool returns structured metadata containing identified
-        available_tools such as WizFile or WizTree found on the host system.
-        The AI agent is expected to parse the recovery_options and ask the user for
-        explicit permission to utilize the search utility or provide an absolute path.
-        This ensures high-reliability execution loops without hallucinated paths.
-
-        USAGE AND RECOVERY:
-        For standard execution, provide the operation and its required parameters.
-        In recovery scenarios, use the returned search_tools information to guide
-        subsequent attempts. If multiple search utilities are found, prioritize
-        WizFile for rapid index lookups or WizTree for disk-wide content discovery.
+        """System helpers: diagnostics, help text, wait, clipboard, process list, start app.
 
         Args:
             operation (str, required): The specific system operation to execute.
@@ -154,7 +215,7 @@ Examples:
             system_metadata = {
                 "timestamp": timestamp,
                 "platform": "windows",
-                "identity": "pywinauto-mcp-sota-2026",
+                "identity": "pywinauto-mcp",
             }
 
             # === STATUS OPERATION (formerly HEALTH) ===
@@ -170,52 +231,8 @@ Examples:
 
             # === HELP OPERATION (kept for backward compatibility, though not in new description) ===
             elif operation == "help":
-                help_info = {
-                    "server": "PyWinAuto MCP v0.3.0",
-                    "description": "Windows UI automation with 8 comprehensive portmanteau tools",
-                    "total_tools": 8,
-                    "portmanteau_tools": {
-                        "automation_windows": {
-                            "description": "Window management (list, find, maximize, etc.)",
-                            "operations": 11,
-                        },
-                        "automation_elements": {
-                            "description": "UI element interaction (click, hover, text, etc.)",
-                            "operations": 14,
-                        },
-                        "automation_mouse": {
-                            "description": "Mouse control (move, click, scroll, drag)",
-                            "operations": 9,
-                        },
-                        "automation_keyboard": {
-                            "description": "Keyboard input (type, press, hotkey)",
-                            "operations": 4,
-                        },
-                        "automation_visual": {
-                            "description": "Visual operations (screenshot, OCR, find image)",
-                            "operations": 4,
-                        },
-                        "automation_face": {
-                            "description": "Face recognition (add, recognize, list, delete)",
-                            "operations": 5,
-                        },
-                        "automation_system": {
-                            "description": "System operations (health, clipboard, start_app)",
-                            "operations": 8,
-                        },
-                        "get_desktop_state": {
-                            "description": "Comprehensive desktop UI discovery",
-                            "operations": 1,
-                        },
-                    },
-                    "getting_started": [
-                        "Use automation_system('status') to check server status",
-                        "Use automation_system('help') for this overview",
-                        "Use automation_windows('list') to see all open windows",
-                        "Use get_desktop_state() for complete UI analysis",
-                    ],
-                    "timestamp": timestamp,
-                }
+                help_info = _build_help_payload()
+                help_info["timestamp"] = timestamp
 
                 # Filter by category if specified
                 if category:
@@ -498,13 +515,14 @@ Examples:
                     "status": "error",
                     "error": f"Unknown operation: {operation}",
                     "valid_operations": [
-                        "health",
+                        "status",
                         "help",
                         "wait",
+                        "info",
                         "wait_for_window",
                         "clipboard_get",
                         "clipboard_set",
-                        "process_list",
+                        "processes",
                         "start_app",
                     ],
                 }

@@ -1,4 +1,4 @@
-# Webapp Start - Standardized SOTA (Auto-Repaired V2.5)
+# web_sota: Vite frontend + uvicorn backend (see README)
 $WebPort = 10788
 $BackendPort = 10789
 $ProjectRoot = Split-Path -Parent $PSScriptRoot

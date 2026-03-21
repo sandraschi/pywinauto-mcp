@@ -17,7 +17,7 @@ from pywinauto_mcp.app import app
 logger = logging.getLogger(__name__)
 
 # Initialize router with OpenAPI tags
-router = APIRouter(tags=["tools"], prefix="/v1/tools")
+router = APIRouter(tags=["tools"])
 
 
 # Request/Response Models
@@ -72,41 +72,37 @@ async def list_tools() -> list[ToolInfo]:
                 detail="FastMCP app not initialized",
             )
 
+        # FastMCP 2.13+: list_tools is async; _tool_manager may be absent.
+        registered = await app.list_tools()
+
         tools: list[ToolInfo] = []
+        for tool in registered:
+            params: list[ToolParameter] = []
+            raw = getattr(tool, "parameters", None) or {}
+            if not isinstance(raw, dict):
+                raw = {}
+            schema = raw.get("properties") or {}
+            required_list = set(raw.get("required") or [])
 
-        # FastMCP 2.13.1 internal tool manager access
-        # This matches the get_registered_tools() logic in main.py
-        tool_sources = []
-        if hasattr(app, "_tool_manager") and hasattr(app._tool_manager, "tools"):
-            tool_sources = list(app._tool_manager.tools.values())
-        elif hasattr(app, "_tools"):
-            tool_sources = list(app._tools.values())
-
-        for tool in tool_sources:
-            params = []
-            # Extract parameter info if available (FastMCP 2.13.1 specific)
-            if hasattr(tool, "parameters"):
-                # FastMCP internal schema parsing
-                schema = (
-                    tool.parameters.get("properties", {}) if hasattr(tool, "parameters") else {}
-                )
-                required_list = (
-                    tool.parameters.get("required", []) if hasattr(tool, "parameters") else []
-                )
-
-                for p_name, p_info in schema.items():
-                    params.append(
-                        ToolParameter(
-                            name=p_name,
-                            type=p_info.get("type", "any"),
-                            description=p_info.get("description"),
-                            default=None,  # FastMCP doesn't expose defaults easily in the schema
-                            required=p_name in required_list,
-                        )
+            for p_name, p_info in schema.items():
+                if not isinstance(p_info, dict):
+                    p_info = {}
+                params.append(
+                    ToolParameter(
+                        name=p_name,
+                        type=str(p_info.get("type", "any")),
+                        description=p_info.get("description"),
+                        default=p_info.get("default"),
+                        required=p_name in required_list,
                     )
+                )
 
             tools.append(
-                ToolInfo(name=tool.name, description=tool.description or "", parameters=params)
+                ToolInfo(
+                    name=str(getattr(tool, "name", "")),
+                    description=str(getattr(tool, "description", "") or ""),
+                    parameters=params,
+                )
             )
 
         return tools

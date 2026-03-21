@@ -7,7 +7,6 @@ including window management, element interaction, and input simulation.
 import logging
 
 from fastapi import APIRouter, HTTPException, Query, status
-from fastmcp import mcp
 from pydantic import BaseModel, Field
 from pywinauto.application import Application
 from pywinauto.findwindows import ElementNotFoundError, find_window
@@ -16,7 +15,7 @@ from pywinauto.findwindows import ElementNotFoundError, find_window
 logger = logging.getLogger(__name__)
 
 # Initialize router with OpenAPI tags
-router = APIRouter(tags=["windows"], prefix="/v1/windows")
+router = APIRouter(tags=["windows"])
 
 
 # Request/Response Models
@@ -82,7 +81,6 @@ def _get_window_info(window) -> WindowInfo:
 
 
 # API Endpoints
-@mcp.tool("Find a window by title or class name")
 @router.get("/find", response_model=list[WindowInfo])
 async def find_windows(
     title: str | None = Query(None, description="Window title or part of it (case-insensitive)"),
@@ -133,7 +131,6 @@ async def find_windows(
         )
 
 
-@mcp.tool("Get information about a window")
 @router.get("/{window_handle}", response_model=WindowInfo)
 async def get_window_info(window_handle: int) -> WindowInfo:
     """Get detailed information about a specific window.
@@ -157,7 +154,6 @@ async def get_window_info(window_handle: int) -> WindowInfo:
         )
 
 
-@mcp.tool("Click an element in a window")
 @router.post("/click", status_code=status.HTTP_200_OK)
 async def click_element(request: ClickRequest) -> dict[str, str]:
     """Click an element in a window.
@@ -206,7 +202,6 @@ async def click_element(request: ClickRequest) -> dict[str, str]:
         )
 
 
-@mcp.tool("Type text into a window or element")
 @router.post("/type", status_code=status.HTTP_200_OK)
 async def type_text(request: TypeRequest) -> dict[str, str]:
     """Type text into a window or a specific element.
@@ -247,7 +242,6 @@ async def type_text(request: TypeRequest) -> dict[str, str]:
         )
 
 
-@mcp.tool("Get all child elements of a window")
 @router.get("/{window_handle}/elements", response_model=list[ElementInfo])
 async def get_window_elements(window_handle: int) -> list[ElementInfo]:
     """Get all child elements of a window.
@@ -291,7 +285,6 @@ async def get_window_elements(window_handle: int) -> list[ElementInfo]:
         )
 
 
-@mcp.tool("Close a window")
 @router.post("/{window_handle}/close", status_code=status.HTTP_200_OK)
 async def close_window(window_handle: int) -> dict[str, str]:
     """Close a window by its handle.

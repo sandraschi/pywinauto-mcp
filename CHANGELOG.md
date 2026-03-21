@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **ASGI composite server:** FastAPI **`/api/v1/*`** (REST) + FastMCP HTTP **`/mcp`** — `pywinauto_mcp.server:app` for uvicorn; CORS for `web_sota`.
+- **web_sota `/chat` — local LLM:** OpenAI-compatible proxy (`/api/v1/llm/*`) to **Ollama** / **LM Studio** on localhost only (SSRF-safe localhost); model list, **personas**, **prompt refiner**, optional **repo knowledge** from `llm_repo_context.py`. Env: **`PYWINAUTO_LLM_BASE_URL`**.
+- **Camera enumeration:** `GET /api/v1/cameras/` probes OpenCV indices; **Biometrics** + **Tools** (`camera_index` for `automation_face`) show a **dropdown when multiple cameras** exist; `localStorage` sync. Env: **`PYWINAUTO_MCP_CAMERA_MAX_INDEX`** (default 10).
+- **Environment-aware pytest** (aligned with **mcp-central-docs** `testing-environment-aware.md`): `tests/conftest_env.py`, markers (`requires_hardware`, `destructive`, …), **`docs/TESTING.md`** (fleet context), **`[tool.pytest.ini_options]`**; **`tests/test_cameras_api.py`**; real-window class marked for CI skip.
+- **Docs:** **`docs/PRD.md`** refreshed (web stack, REST, LLM, testing); **`docs/README.md`** index; **`docs/TESTING.md`**; **`docs/LLM_REPO_CONTEXT.md`** pointer; camera notes in **`docs/SAFETY.md`** §5.
+
+### Changed
+- **`automation_face` is opt-in at runtime:** set **`PYWINAUTO_MCP_ENABLE_FACE=1`** and install the **`face`** extra; otherwise the tool is not registered. **`automation_safety(status)`** reports **`face_tool_opt_in`**. Docs: **`docs/SAFETY.md` §5** (wording tightened; no “creepware” framing).
+- **README / help:** Marketing tone reduced; **`automation_system("help")`** returns structured docs (version, safety env, prompts, tool list). **`web_sota`** adds **`/help`** page; dashboard badges no longer show fake telemetry.
+
+### Changed (tooling)
+- **`automation_system`:** `Literal` aligned with implemented operations (`help` added; removed non-existent `screenshot` / `terminal` entries).
+
 ## [0.3.2] - 2026-03-21
 
 ### Changed

@@ -1,7 +1,6 @@
-"""PyWinAuto MCP - FastMCP 2.13.1 compliant Windows UI automation server.
-Portmanteau Edition: 8 comprehensive tools consolidating 60+ operations.
+"""PyWinAuto MCP — Windows UI automation server (FastMCP).
 
-This is a managed MCP server that is started and managed by the MCP client.
+Started and stopped by the MCP host (stdio or HTTP transport).
 """
 
 import logging
@@ -37,6 +36,12 @@ try:
         from pywinauto_mcp import tools  # noqa: F401
 
         logger.info("Successfully imported portmanteau tools")
+        try:
+            from pywinauto_mcp import prompts  # noqa: F401
+
+            logger.info("Successfully imported MCP prompts")
+        except Exception as e:
+            logger.warning("Prompts not loaded: %s", e)
     except Exception as e:
         logger.error(f"Error importing tools: {e}")
 

@@ -97,12 +97,19 @@ def automation_safety(
     """Inspect or reset server-side safety limits (rate, kill switch, dry-run). Not a substitute for HITL.
 
     Operations:
-    - status: Counters + env flags (PYWINAUTO_MCP_KILL_SWITCH, DRY_RUN, MAX_ACTIONS_PER_MINUTE).
+    - status: Counters + env flags (PYWINAUTO_MCP_KILL_SWITCH, DRY_RUN, MAX_ACTIONS_PER_MINUTE, ENABLE_FACE).
     - reset_counters: Clear rolling window counters (does not disable kill switch).
 
     See README "Safety" and mcp-central-docs patterns/PYWINAUTO_MCP_SAFETY.md.
     """
-    from pywinauto_mcp.safety import ENV_DRY_RUN, ENV_KILL_SWITCH, ENV_MAX_PER_MINUTE, get_gate
+    from pywinauto_mcp.safety import (
+        ENV_DRY_RUN,
+        ENV_ENABLE_FACE,
+        ENV_KILL_SWITCH,
+        ENV_MAX_PER_MINUTE,
+        get_gate,
+        is_face_tool_enabled,
+    )
 
     gate = get_gate()
     op = (operation or "status").lower().strip()
@@ -122,7 +129,9 @@ def automation_safety(
                 ENV_KILL_SWITCH: os.getenv(ENV_KILL_SWITCH),
                 ENV_DRY_RUN: os.getenv(ENV_DRY_RUN),
                 ENV_MAX_PER_MINUTE: os.getenv(ENV_MAX_PER_MINUTE),
+                ENV_ENABLE_FACE: os.getenv(ENV_ENABLE_FACE),
             },
+            "face_tool_opt_in": is_face_tool_enabled(),
             "hitl": {"safe_window_until": approval_state.safe_window_until},
         }
     return {

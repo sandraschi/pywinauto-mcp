@@ -1,92 +1,93 @@
-# PyWinAuto MCP - Portmanteau Edition
+# PyWinAuto MCP (portmanteau tools)
 
-**Version 0.3.2** | **SOTA 2026** | **FastMCP 3.1+** | **Last Sync: 2026-03-21**
+**Version 0.3.2** · **FastMCP 3.1+** · **Python 3.12+**
 
-> **New users — isolation:** This server automates **your Windows desktop** (high privilege). For **Windows Sandbox / disposable VMs** + mapped assets, **also install `virtualization-mcp`** alongside this server. **→ Full checklist:** [`docs/SAFETY.md`](docs/SAFETY.md) · fleet: `mcp-central-docs/patterns/PYWINAUTO_MCP_SAFETY.md`.
+> **Isolation:** This server drives **your Windows desktop** (high privilege). For **Windows Sandbox / disposable VMs** and mapped assets, install **`virtualization-mcp`** as well. Checklist: [`docs/SAFETY.md`](docs/SAFETY.md) · fleet: `mcp-central-docs/patterns/PYWINAUTO_MCP_SAFETY.md`.
 
-A FastMCP-compliant server for Windows UI automation using PyWinAuto. Portmanteau tools consolidate 60+ operations; see **[docs/SAFETY.md](docs/SAFETY.md)** before enabling in Cursor / Antigravity / Claude Desktop.
+Windows UI automation over MCP using PyWinAuto. Read **[docs/SAFETY.md](docs/SAFETY.md)** before enabling in an IDE. **`automation_face`** is **opt-in** (`PYWINAUTO_MCP_ENABLE_FACE=1` + `face` extra) — **SAFETY §5**.
 
 ### Discovery (GitHub, Glama, MCP catalogs)
 
-- **Safety first:** [`docs/SAFETY.md`](docs/SAFETY.md) is the checklist (kill switch, rate limits, HITL, dry-run).
-- **Real isolation:** Use **Windows Sandbox** or a disposable VM via **[`virtualization-mcp`](https://github.com/sandraschi/virtualization-mcp)** alongside this server — do not rely on repo stars as a safety signal.
-- **Stars:** Stars reflect **distribution / interest**, not verified safety.
+- **Safety:** [`docs/SAFETY.md`](docs/SAFETY.md) — kill switch, rate limits, HITL, dry-run.
+- **Isolation:** **Windows Sandbox** / VM via [`virtualization-mcp`](https://github.com/sandraschi/virtualization-mcp). Repo stars are **not** a safety guarantee.
 
-## 🚀 SOTA 2026 Updates
+### Product & docs
 
-### 💎 Gold Standard Examples
-We have transitioned from legacy scripts to a comprehensive Python-based example gallery:
-- [notepad_basic.py](examples/notepad_basic.py): Simple window automation flow.
-- [calculator_advanced.py](examples/calculator_advanced.py): Complex element tree traversal and interaction.
-- [system_monitoring.py](examples/system_monitoring.py): Background process and system tray management.
+- **PRD / index:** [`docs/PRD.md`](docs/PRD.md) · [`docs/README.md`](docs/README.md)
 
-### ⚡ Performance Benchmarks
-| Operation | Average Latency (ms) | Success Rate |
-|-----------|----------------------|--------------|
-| Window Discovery | 45ms | 99.8% |
-| Element Click | 120ms | 98.5% |
-| OCR Extraction | 450ms | 95.0% |
-| Face Recognition | 850ms | 99.2% |
+### Prompts, skills, MCPB
 
-### 🛠 Tool Consolidation (Portmanteau)
-The Portmanteau Edition consolidates 60+ legacy tools into **8 high-utility interfaces**:
+- **MCP prompts:** `desktop_automation_operator_protocol`, `desktop_automation_runbook` — [`src/pywinauto_mcp/prompts.py`](src/pywinauto_mcp/prompts.py).
+- **Cursor skill:** [`skills/desktop-automation-protocol/SKILL.md`](skills/desktop-automation-protocol/SKILL.md).
+- **Foreground:** [`docs/OPERATOR_PROTOCOL.md`](docs/OPERATOR_PROTOCOL.md) — keep the target app focused during automation.
+- **MCPB:** [`mcpb/manifest.json`](mcpb/manifest.json) packages the server; prompts come from the running process unless you extend the pack.
+
+### Planned / todo
+
+- **Optional voice (STT / keyword / speaker-adjacent):** Not implemented. Would mirror face: **env + optional extra**, local-first, same HITL/safety docs — not authentication.
+
+## Examples
+
+- [examples/notepad_basic.py](examples/notepad_basic.py) — simple window flow.
+- [examples/calculator_advanced.py](examples/calculator_advanced.py) — element tree.
+- [examples/system_monitoring.py](examples/system_monitoring.py) — processes / tray.
+
+Latency depends on the host, target app, and backends (OCR, etc.); treat any old benchmark tables as obsolete.
+
+## Tools (portmanteau)
+
+Seven core interfaces plus **`get_desktop_state`**, and **optional** `automation_face` when enabled:
 
 | Tool | Operations | Description |
 |------|------------|-------------|
 | `automation_windows` | 11 | Window management (list, find, maximize, etc.) |
 | `automation_elements` | 14 | UI element interaction (click, hover, text, etc.) |
-| `automation_mouse` | 9 | Mouse control (move, click, scroll, drag) |
-| `automation_keyboard` | 4 | Keyboard input (type, press, hotkey) |
-| `automation_visual` | 4 | Visual operations (screenshot, OCR, find image) |
-| `automation_face` | 5 | Face recognition (add, recognize, list, delete) |
-| `automation_system` | 7 | System utilities (health, help, processes) |
-| `get_desktop_state` | 1 | Comprehensive desktop UI discovery |
+| `automation_mouse` | 9 | Mouse (HITL may apply) |
+| `automation_keyboard` | 4 | Keyboard (HITL may apply) |
+| `automation_visual` | 4 | Screenshot, OCR, find image |
+| `automation_face` | 5 | Face (opt-in: env + `face` extra) |
+| `automation_system` | — | status, **help**, wait, info, clipboard, processes, start_app |
+| `get_desktop_state` | 1 | UI tree / discovery |
 
 ---
 
-## 🏆 Core Features
+## Usage snippets
 
-### 🔍 Window Management (`automation_windows`)
+### `automation_windows`
+
 ```python
-# Find window by title
 automation_windows("find", title="Notepad", partial=True)
-
-# Maximize, minimize, restore
 automation_windows("maximize", handle=12345)
 ```
 
-### 🎯 Element Interaction (`automation_elements`)
+### `automation_elements`
+
 ```python
-# Click and set text
 automation_elements("click", window_handle=12345, control_id="btnOK")
 automation_elements("set_text", window_handle=12345, control_id="Edit1", text="Hello!")
 ```
 
-### 📸 Visual Intelligence (`automation_visual`)
-```python
-# OCR text extraction
-automation_visual("extract_text", image_path="screen.png")
+### `automation_visual`
 
-# Find image on screen
+```python
+automation_visual("extract_text", image_path="screen.png")
 automation_visual("find_image", template_path="button.png", threshold=0.8)
 ```
 
 ---
 
-## 🚀 Installation
+## Installation
 
-### Prerequisites
-- [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
-- Python 3.12+
+**Prerequisites:** [uv](https://docs.astral.sh/uv/) recommended · Python 3.12+ · Windows 10/11 · Tesseract optional (visual/OCR).
 
-### 📦 Quick Start
-Run immediately via `uvx`:
+**Run with uvx (published package):**
+
 ```bash
 uvx pywinauto-mcp
 ```
 
-### 🎯 Claude Desktop Integration
-Add to your `claude_desktop_config.json`:
+**Claude Desktop (example):**
+
 ```json
 "mcpServers": {
   "pywinauto-mcp": {
@@ -95,79 +96,73 @@ Add to your `claude_desktop_config.json`:
   }
 }
 ```
-### Prerequisites
-- Windows 10/11 Pro
-- Python 3.10+
-- Tesseract OCR (Optional, for visual tools)
 
-### Install via MCPB (Recommended)
-```powershell
-mcpb install pywinauto-mcp
-```
+**Install from source:**
 
-### Install from source
 ```powershell
 uv pip install -e .
 ```
 
-## 🚀 Quick Start (Claude Desktop)
+**MCPB:**
 
-Add to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "pywinauto": {
-      "command": "python",
-      "args": ["-m", "pywinauto_mcp"],
-      "env": {
-        "PYTHONPATH": "D:\\Dev\\repos\\pywinauto-mcp"
-      }
-    }
-  }
-}
+```powershell
+mcpb install pywinauto-mcp
 ```
 
-## 🛡️ Safety
+---
 
-**Canonical doc:** **[`docs/SAFETY.md`](docs/SAFETY.md)** — two-server model (**pywinauto-mcp** + **`virtualization-mcp`** for Sandbox/VM), HITL, env vars, fleet links.
+## Safety
 
-**Summary:** Desktop UI automation is **not** sandboxed like a browser tab. **FastMCP 3.1 sampling** and **agentic** loops can multiply tool calls.
+**Canonical:** [`docs/SAFETY.md`](docs/SAFETY.md) — two-server model with **`virtualization-mcp`**, HITL, env vars, fleet docs.
+
+Desktop automation is **not** browser-sandboxed. **Sampling** and long agent loops can multiply tool calls.
 
 ### Human-in-the-loop
 
-- Call **`approve_automation(duration_minutes=...)`** before mutating **mouse** / **keyboard** automation, or those tools return `clarification_needed`.
+- **`approve_automation(duration_minutes=...)`** before mutating **mouse** / **keyboard**, or tools return `clarification_needed`.
 - **`automation_mouse("position")`** is read-only and skips approval.
 
-### Kill switch, rate limit, dry-run
+### Environment variables
 
 | Env | Purpose |
 |-----|---------|
-| `PYWINAUTO_MCP_KILL_SWITCH=1` | Emergency stop: blocks mutating mouse/keyboard after HITL. |
-| `PYWINAUTO_MCP_MAX_ACTIONS_PER_MINUTE` | Default `120` — max mutating actions per **rolling 60 seconds**. |
-| `PYWINAUTO_MCP_DRY_RUN=1` | Logically “execute” for metrics but **do not** call pyautogui (`dry_run` status). |
+| `PYWINAUTO_MCP_KILL_SWITCH=1` | Blocks mutating mouse/keyboard (after HITL path). |
+| `PYWINAUTO_MCP_MAX_ACTIONS_PER_MINUTE` | Default `120` — rolling 60s cap for mutating actions. |
+| `PYWINAUTO_MCP_DRY_RUN=1` | Count actions without sending input (`dry_run` in results). |
+| `PYWINAUTO_MCP_ENABLE_FACE=1` | Allows registering **`automation_face`** (needs `face` extra). |
+| `PYWINAUTO_LLM_BASE_URL` | Default OpenAI-compatible root for the **web_sota** local-LLM proxy (e.g. Ollama `http://127.0.0.1:11434/v1`, LM Studio `http://127.0.0.1:1234/v1`). The UI can override per session. |
+| `PYWINAUTO_MCP_CAMERA_MAX_INDEX` | Max OpenCV index to probe for **`GET /api/v1/cameras/`** (default `10`, capped at 32). |
 
-Tool **`automation_safety(operation="status"|"reset_counters")`** exposes counters and current flags.
+**`automation_safety(operation="status"|"reset_counters")`** — counters and flags. **`automation_system("help")`** returns a structured overview (version, tools, safety keys, doc paths).
 
-**Fleet (`mcp-central-docs`):** `patterns/PYWINAUTO_MCP_SAFETY.md` — vendor comparison, sampling amplification, IDE chain rules, guest-side Sandbox automation.
+**Fleet:** `mcp-central-docs` → `patterns/PYWINAUTO_MCP_SAFETY.md`.
 
-## 🤝 Maintenance Policy
-This repository follows the **Sandra SOTA 2026 Standards**:
-- **Zero Fiction**: Documentation reflects actual tool capabilities.
-- **Portmanteau Priority**: Tools are consolidated for discovery.
-- **Glama Freshness**: `glama.json` is updated weekly to prevent stale marketplace entries.
+---
 
-## 📄 License
-MIT License - Copyright (c) 2026 Sandra Schipal.
+## Testing (CI vs local)
 
+See **[docs/TESTING.md](docs/TESTING.md)** — environment-aware markers (`requires_hardware`, `destructive`, …) aligned with **mcp-central-docs** `standards/testing-environment-aware.md`. In CI, hardware-marked tests are skipped; run locally on Windows to exercise OpenCV / real window flows.
 
-## 🌐 Webapp Dashboard
+## Maintenance
 
-This MCP server includes a free, premium web interface for monitoring and control.
-By default, the web dashboard runs on port **10788**.
-*(Assigned ports: **10788** (Web dashboard frontend), **10789** (Web dashboard backend))*
+- Documentation should match **implemented** tools and env vars.
+- **`glama.json`:** update when releasing or when marketplace metadata changes.
 
-To start the webapp:
-1. Navigate to the `webapp` (or `web`, `frontend`) directory.
-2. Run `start.bat` (Windows) or `./start.ps1` (PowerShell).
-3. Open `http://localhost:10788` in your browser.
+## License
+
+MIT — Copyright (c) 2026 Sandra Schipal.
+
+---
+
+## Web dashboard (`web_sota`)
+
+Optional Vite UI + local backend. Default ports from **`web_sota/start.ps1`**: frontend **10788**, backend **10789**.
+
+```powershell
+Set-Location web_sota
+.\start.ps1
+```
+
+Open `http://localhost:10788` — **Help** route documents safety, env vars, and tool overview (same themes as `automation_system("help")`).
+
+**Local LLM chat** (`/chat`): proxies to **Ollama** or **LM Studio** (OpenAI-compatible `/v1` on localhost only). Pick a model, optional **personas**, **prompt refiner**, and **repo knowledge** pre-prompt (`src/pywinauto_mcp/llm_repo_context.py`) for questions like “can I click and drag?”. Start Ollama or LM Studio first; then **Refresh models**.

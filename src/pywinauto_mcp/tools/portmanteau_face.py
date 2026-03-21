@@ -1,5 +1,8 @@
 """Face recognition portmanteau tool for PyWinAuto MCP.
 
+Loaded only when the operator sets **PYWINAUTO_MCP_ENABLE_FACE=1** (and face deps are installed).
+See **docs/SAFETY.md** §5.
+
 PORTMANTEAU PATTERN RATIONALE:
 Instead of creating 5+ separate tools (one per face recognition operation), this tool consolidates
 related face recognition operations into a single interface. This design:
@@ -12,7 +15,7 @@ SUPPORTED OPERATIONS:
 - recognize: Recognize faces in an image
 - list: List all known faces
 - delete: Delete a known face
-- capture: Capture from webcam and recognize
+- capture: Capture from a local camera (OpenCV index) and recognize — use built-in or USB UVC webcam; not Tapo/IP cameras
 """
 
 import base64
@@ -160,17 +163,16 @@ if app is not None:
 
     @app.tool(
         name="automation_face",
-        description="""Face recognition and multimodal identity automation tracking SOTA 2026 standards.
+        description="""Optional face enrollment and matching (local). Requires PYWINAUTO_MCP_ENABLE_FACE=1 and the face extra.
+
+Capture uses OpenCV VideoCapture: built-in laptop camera or USB UVC webcam (camera_index 0, 1, …). Not Tapo/IP/RTSP.
 
 SUPPORTED OPERATIONS:
-- add: Enrolls a new face into the biometric database from an image file.
-- recognize: Analyzes an image to identify known faces or flag unknown subjects.
-- list: Retrieves a registry of all enrolled biometric profiles.
-- delete: Purges a specific biometric profile from the database.
-- capture: Direct acquisition from local visual sensor (webcam) followed by recognition.
-
-DIALOGIC RETURN PATTERN:
-If biometric confidence is low or sensor input is degraded, returns clarification_needed.
+- add: Register a face from an image file.
+- recognize: Match faces in an image.
+- list: List registered names.
+- delete: Remove a profile.
+- capture: Webcam capture then recognize.
 
 Examples:
     automation_face("add", name="John Doe", image_path="john.jpg")
@@ -192,7 +194,7 @@ Examples:
             operation: The operation to perform
             name: Person's name for add/delete operations
             image_path: Path to image file for add/recognize operations
-            camera_index: Camera index for capture operation
+            camera_index: OpenCV device index (0, 1, …) for built-in or USB UVC webcam — not Tapo/RTSP
             save_capture_path: Path to save captured image
             tolerance: Face matching tolerance (lower = stricter)
 

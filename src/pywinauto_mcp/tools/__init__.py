@@ -1,18 +1,18 @@
 """PyWinAuto MCP Tools Package - Portmanteau Edition.
 
-This package contains 8 comprehensive portmanteau tools for Windows UI automation,
-following FastMCP 2.13+ best practices for tool consolidation.
+This package registers **seven** core portmanteau tools plus **get_desktop_state**.
+**automation_face** is optional (off by default); see `docs/SAFETY.md` §5 and `PYWINAUTO_MCP_ENABLE_FACE`.
 
 PORTMANTEAU TOOL ARCHITECTURE:
 Instead of 60+ individual tools, this package consolidates related operations
-into 8 comprehensive portmanteau tools:
+into comprehensive portmanteau tools:
 
 1. automation_windows   - Window management (11 operations)
 2. automation_elements  - UI element interaction (14 operations)
 3. automation_mouse     - Mouse control (9 operations)
 4. automation_keyboard  - Keyboard input (4 operations)
 5. automation_visual    - Screenshots/OCR/image recognition (4 operations)
-6. automation_face      - Face recognition (5 operations)
+6. automation_face      - Face recognition (5 operations) — **opt-in** (`PYWINAUTO_MCP_ENABLE_FACE=1` + face extra)
 7. automation_system    - System utilities (7 operations)
 8. get_desktop_state    - Comprehensive desktop UI discovery (standalone)
 
@@ -37,17 +37,35 @@ except ImportError as e:
     logger.error(f"Failed to import FastMCP app: {e}")
     app = None
 
-# List of portmanteau tool modules to import
+try:
+    from pywinauto_mcp.safety import ENV_ENABLE_FACE, is_face_tool_enabled
+except ImportError:
+    ENV_ENABLE_FACE = "PYWINAUTO_MCP_ENABLE_FACE"
+
+    def is_face_tool_enabled() -> bool:
+        return False
+
+
+# List of portmanteau tool modules to import (face is opt-in: see docs/SAFETY.md §5)
 PORTMANTEAU_MODULES = [
     "portmanteau_windows",  # Window management
     "portmanteau_elements",  # UI element interaction
     "portmanteau_mouse",  # Mouse control
     "portmanteau_keyboard",  # Keyboard input
     "portmanteau_visual",  # Visual/screenshot/OCR
-    "portmanteau_face",  # Face recognition
     "portmanteau_system",  # System utilities
     "desktop_state",  # Desktop state capture (standalone)
 ]
+if is_face_tool_enabled():
+    # Insert before system so ordering matches historical "face before system" lists
+    idx = PORTMANTEAU_MODULES.index("portmanteau_system")
+    PORTMANTEAU_MODULES.insert(idx, "portmanteau_face")
+    logger.info("Face tool enabled (%s=1): will load portmanteau_face", ENV_ENABLE_FACE)
+else:
+    logger.info(
+        "automation_face not registered (opt-in). Set %s=1 and install the face extra to enable.",
+        ENV_ENABLE_FACE,
+    )
 
 # Import all portmanteau tool modules - this will trigger their registration with FastMCP
 if app is not None:

@@ -5,6 +5,7 @@ import { Windows } from '@/pages/windows';
 import { Elements } from '@/pages/elements';
 import { Biometrics } from '@/pages/biometrics';
 import { Settings } from '@/pages/settings';
+import { Help } from '@/pages/help';
 import { Tools } from '@/pages/tools';
 import { Control } from '@/pages/control'; // Fallback
 import { Visualizer } from '@/pages/visualizer'; // Fallback
@@ -23,6 +24,7 @@ function App() {
           <Route path="/visualizer" element={<Visualizer />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/tools" element={<Tools />} />
+          <Route path="/help" element={<Help />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

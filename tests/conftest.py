@@ -9,6 +9,14 @@ import pytest
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+# Environment-aware CI vs local (mcp-central-docs: standards/testing-environment-aware.md)
+from tests.conftest_env import (  # noqa: E402
+    environment_report,
+    pytest_configure,
+    pytest_runtest_setup,
+    skip_if_device_unreachable,
+)
+
 
 @pytest.fixture(scope="session")
 def app_instance():

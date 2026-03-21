@@ -7,9 +7,10 @@ import {
     ChevronRight,
     Activity,
     Monitor,
-    MousePointer2,
     Lock,
-    Wrench
+    Wrench,
+    BookOpen,
+    MessageSquare,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +26,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         { href: '/windows', label: 'Windows', icon: LayoutDashboard },
         { href: '/elements', icon: Monitor, label: 'UI Elements' },
         { href: '/tools', label: 'Tools Hub', icon: Wrench },
+        { href: '/chat', label: 'Local LLM', icon: MessageSquare },
+        { href: '/help', label: 'Help', icon: BookOpen },
         { href: '/biometrics', label: 'Biometrics', icon: Lock },
         { href: '/settings', label: 'Settings', icon: Settings },
     ];

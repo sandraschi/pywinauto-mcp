@@ -6,6 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Terminal, Play, Search, Wrench } from 'lucide-react';
+import { apiPath } from '@/lib/api';
+import { CameraSelect } from '@/components/CameraSelect';
+import { readStoredCameraIndex, useCameras, writeStoredCameraIndex } from '@/hooks/useCameras';
 
 interface ToolParameter {
     name: string;
@@ -26,14 +29,34 @@ export function Tools() {
     const [args, setArgs] = useState<Record<string, any>>({});
     const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const { cameras, loading: camerasLoading, error: camerasError, refresh: refreshCameras } = useCameras();
+
+    const hasCameraParam = Boolean(selectedTool?.parameters.some((p) => p.name === 'camera_index'));
 
     useEffect(() => {
         fetchTools();
     }, []);
 
+    useEffect(() => {
+        if (!hasCameraParam) return;
+        if (cameras.length === 0) return;
+        const stored = readStoredCameraIndex();
+        const pick =
+            stored !== null && cameras.some((c) => c.index === stored) ? stored : cameras[0].index;
+        setArgs((prev) => {
+            if (
+                typeof prev.camera_index === 'number' &&
+                cameras.some((c) => c.index === prev.camera_index)
+            ) {
+                return prev;
+            }
+            return { ...prev, camera_index: pick };
+        });
+    }, [selectedTool, cameras, hasCameraParam]);
+
     const fetchTools = async () => {
         try {
-            const response = await fetch('http://localhost:10794/api/v1/tools/');
+            const response = await fetch(apiPath('/api/v1/tools/'));
             const data = await response.json();
             setTools(data);
         } catch (error) {
@@ -45,7 +68,7 @@ export function Tools() {
         if (!selectedTool) return;
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:10794/api/v1/tools/call', {
+            const response = await fetch(apiPath('/api/v1/tools/call'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -67,11 +90,14 @@ export function Tools() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">MCP Tools Hub</h1>
-                    <p className="text-muted-foreground underline decoration-blue-500/50">Industrial-grade Windows Automation</p>
+                    <p className="text-muted-foreground">
+                        Uses the live REST bridge (<code className="text-xs text-slate-400">/api/v1/tools</code>) when the
+                        backend is running — not mock data.
+                    </p>
                 </div>
                 <Badge variant="outline" className="px-3 py-1 border-blue-500/20 text-blue-400">
                     <Wrench className="w-3 h-3 mr-2" />
-                    PYWINAUTO SOTA v1.0
+                    pywinauto-mcp
                 </Badge>
             </div>
 
@@ -124,8 +150,51 @@ export function Tools() {
                     <CardContent className="space-y-6">
                         {selectedTool && (
                             <>
+                                {hasCameraParam && cameras.length > 0 && (
+                                    <CameraSelect
+                                        cameras={cameras}
+                                        loading={camerasLoading}
+                                        error={camerasError}
+                                        onRefresh={() => void refreshCameras()}
+                                        value={
+                                            typeof args.camera_index === 'number'
+                                                ? args.camera_index
+                                                : cameras[0].index
+                                        }
+                                        onChange={(index) => {
+                                            writeStoredCameraIndex(index);
+                                            setArgs((prev) => ({ ...prev, camera_index: index }));
+                                        }}
+                                        id="tools-camera-index"
+                                        label="camera_index"
+                                    />
+                                )}
+                                {hasCameraParam && !camerasLoading && cameras.length === 0 && (
+                                    <div className="space-y-2 rounded-md border border-slate-800 bg-slate-950/80 p-3">
+                                        <Label className="text-slate-300">camera_index</Label>
+                                        <Input
+                                            type="number"
+                                            className="bg-slate-950 border-slate-800"
+                                            placeholder="0"
+                                            value={args.camera_index ?? 0}
+                                            onChange={(e) =>
+                                                setArgs((prev) => ({
+                                                    ...prev,
+                                                    camera_index: Number(e.target.value) || 0,
+                                                }))
+                                            }
+                                        />
+                                        <p className="text-xs text-slate-500">
+                                            No cameras auto-detected — enter OpenCV index manually or refresh after
+                                            plugging in a USB webcam.
+                                        </p>
+                                    </div>
+                                )}
+
                                 <div className="grid grid-cols-1 gap-4">
-                                    {selectedTool.parameters.map((param) => (
+                                    {selectedTool.parameters
+                                        .filter((param) => param.name !== 'camera_index')
+                                        .map((param) => (
                                         <div key={param.name} className="space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <Label htmlFor={param.name} className="font-semibold text-slate-300">
