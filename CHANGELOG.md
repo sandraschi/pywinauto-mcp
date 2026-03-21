@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-03-21
+
+### Changed
+- **Discovery (Glama / PyPI):** `glama.json` and `pyproject.toml` package description lead with **safety** and **`virtualization-mcp`** for Sandbox/VM isolation; metadata aligned (version **0.3.2**, **FastMCP 3.1+**, `safety_and_isolation` feature block, keywords).
+- **README:** Added **Discovery** subsection — stars reflect distribution, not safety; link to fleet isolation server.
+
 ## [0.3.1] - 2026-01-25
 
 ### Fixed

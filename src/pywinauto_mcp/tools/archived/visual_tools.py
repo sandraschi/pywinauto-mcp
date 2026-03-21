@@ -105,9 +105,7 @@ def _nms_matches(matches: list, overlap_threshold: float = 0.5) -> list:
 # Only register tools if app is available
 if app is not None:
 
-    @app.tool(
-        name="take_screenshot", description="Take a screenshot of the screen or a specific region."
-    )
+    @app.tool()
     def take_screenshot(region: dict[str, int] | None = None, save_path: str | None = None) -> dict:
         """Take a screenshot of the screen or a specific region.
 
@@ -212,7 +210,7 @@ if app is not None:
             matches = []
             h, w = template.shape[:2]
 
-            for pt in zip(*locations[::-1]):
+            for pt in zip(*locations[::-1], strict=False):
                 matches.append([pt[0], pt[1], w, h])
 
             # Apply non-maximum suppression to remove overlapping matches
@@ -310,7 +308,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="get_ui_tree", description="Get a hierarchical representation of the UI tree.")
+    @app.tool()
     def get_ui_tree(max_depth: int = 3, app_param: Application | None = None) -> dict:
         """Get a hierarchical representation of the UI tree.
 

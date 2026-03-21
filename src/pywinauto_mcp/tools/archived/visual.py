@@ -161,9 +161,7 @@ if app is not None:
             logger.error(f"Error in take_screenshot: {e}")
             return {"status": "error", "error": str(e)}
 
-    @app.tool(
-        name="extract_text", description="Extract text from an image or screen region using OCR."
-    )
+    @app.tool()
     def extract_text(
         image_path: str | None = None,
         window_handle: int | None = None,
@@ -242,7 +240,7 @@ if app is not None:
             logger.error(f"Error in extract_text: {e}")
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="find_image", description="Find a template image within a screenshot or window.")
+    @app.tool()
     def find_image(
         template_path: str,
         window_handle: int | None = None,
@@ -340,9 +338,7 @@ if app is not None:
             logger.error(f"Error in find_image: {e}")
             return {"status": "error", "error": str(e)}
 
-    @app.tool(
-        name="highlight_element", description="Highlight a UI element with a colored rectangle."
-    )
+    @app.tool()
     def highlight_element(
         window_handle: int,
         control_id: str,

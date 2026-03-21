@@ -61,7 +61,7 @@ Examples:
         text: str | None = None,
         key: str | None = None,
         keys: list[str] | None = None,
-        interval: float = 0.0,
+        interval: float = 0.05,
         presses: int = 1,
         pause: float = 0.1,
     ) -> dict[str, Any]:
@@ -112,6 +112,65 @@ Examples:
                 "timestamp": timestamp,
                 "app": "unknown",  # Could be expanded with focus tracking logic
             }
+
+            # === HITL SECURITY CHECK ===
+            try:
+                from pywinauto_mcp.app import approval_state
+
+                if not approval_state.is_approved():
+                    # Format the details for user transparency
+                    action_detail = ""
+                    if operation == "type":
+                        action_detail = f"Type: '{text}'"
+                    elif operation == "press":
+                        action_detail = f"Press: {key}"
+                    elif operation == "hotkey":
+                        action_detail = f"Hotkey: {'+'.join(keys) if keys else 'None'}"
+                    elif operation == "hold":
+                        action_detail = f"Hold: {keys[0]} + {keys[-1] if keys else 'None'}"
+
+                    return {
+                        "status": "clarification_needed",
+                        "operation": operation,
+                        "message": "SECURITY: Human approval required for UI automation.",
+                        "hitl_prompt": f"Approve keyboard action? [{action_detail}]",
+                        "hitl_options": {
+                            "approve_current": "Retries this action one-time",
+                            "approve_window": "Approves all UI actions for 5 minutes",
+                        },
+                        "technical_details": {
+                            "operation": operation,
+                            "text": text,
+                            "key": key,
+                            "keys": keys,
+                        },
+                    }
+            except ImportError:
+                logger.error("Failed to import approval_state for HITL check")
+                # Fallback to safety if state cannot be checked
+                return {
+                    "status": "error",
+                    "error": "Security subsystem unavailable (import error)",
+                }
+
+            from pywinauto_mcp.safety import before_mutation
+
+            gate = before_mutation(read_only=False)
+            if not gate.get("allow"):
+                return {
+                    "status": "blocked",
+                    "code": gate.get("code"),
+                    "message": gate.get("message", "Mutation blocked"),
+                    "operation": operation,
+                    "focus_metadata": focus_metadata,
+                }
+            if gate.get("dry_run"):
+                return {
+                    "status": "dry_run",
+                    "message": gate.get("message"),
+                    "operation": operation,
+                    "focus_metadata": focus_metadata,
+                }
 
             # === TYPE OPERATION ===
             if operation == "type":

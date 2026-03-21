@@ -25,7 +25,7 @@ except ImportError as e:
 if app is not None:
     logger.info("Registering window tools with FastMCP")
 
-    @app.tool(name="maximize_window", description="Maximizes the specified window.")
+    @app.tool()
     def maximize_window(handle: int) -> dict[str, Any]:
         """Maximize a window.
 
@@ -57,7 +57,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="minimize_window", description="Minimizes the specified window.")
+    @app.tool()
     def minimize_window(handle: int) -> dict[str, Any]:
         """Minimize a window.
 
@@ -89,7 +89,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="restore_window", description="Restores a minimized or maximized window.")
+    @app.tool()
     def restore_window(handle: int) -> dict[str, Any]:
         """Restore a window to its normal state.
 
@@ -121,7 +121,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="set_window_position", description="Sets the position and size of a window.")
+    @app.tool()
     def set_window_position(handle: int, x: int, y: int, width: int, height: int) -> dict[str, Any]:
         """Set the position and size of a window.
 
@@ -161,7 +161,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_active_window", description="Gets the currently active window.")
+    @app.tool()
     def get_active_window() -> dict[str, Any]:
         """Get the currently active window.
 
@@ -203,7 +203,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="close_window", description="Closes the specified window.")
+    @app.tool()
     def close_window(handle: int) -> dict[str, Any]:
         """Close a window.
 
@@ -235,7 +235,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_window_rect", description="Gets the rectangle of a window.")
+    @app.tool()
     def get_window_rect(handle: int) -> dict[str, Any]:
         """Get the rectangle of a window.
 
@@ -272,7 +272,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_window_title", description="Gets the title of a window.")
+    @app.tool()
     def get_window_title(handle: int) -> dict[str, Any]:
         """Get the title of a window.
 
@@ -372,7 +372,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_all_windows", description="Gets information about all visible windows.")
+    @app.tool()
     def get_all_windows() -> dict[str, Any]:
         """Get information about all visible windows.
 

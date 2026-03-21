@@ -148,6 +148,70 @@ Examples:
                 "timestamp": timestamp,
             }
 
+            # === HITL SECURITY CHECK ===
+            if operation != "position":
+                try:
+                    from pywinauto_mcp.app import approval_state
+
+                    if not approval_state.is_approved():
+                        # Format the details for user transparency
+                        action_detail = f"Mouse: {operation}"
+                        if x is not None and y is not None:
+                            action_detail += f" at ({x}, {y})"
+                        elif operation == "scroll":
+                            action_detail += f" amount {amount}"
+
+                        return {
+                            "status": "clarification_needed",
+                            "operation": operation,
+                            "message": "SECURITY: Human approval required for UI automation.",
+                            "hitl_prompt": f"Approve mouse action? [{action_detail}]",
+                            "hitl_options": {
+                                "approve_current": "Retries this action one-time",
+                                "approve_window": "Approves all UI actions for 5 minutes",
+                            },
+                            "technical_details": {
+                                "operation": operation,
+                                "x": x,
+                                "y": y,
+                                "button": button,
+                                "amount": amount,
+                                "target_x": target_x,
+                                "target_y": target_y,
+                            },
+                            "sensor_metadata": sensor_metadata,
+                        }
+                except ImportError:
+                    logger.error("Failed to import approval_state for HITL check")
+                    # Fallback to safety if state cannot be checked
+                    return {
+                        "status": "error",
+                        "error": "Security subsystem unavailable (import error)",
+                    }
+
+            # === RATE / KILL SWITCH / DRY-RUN (see pywinauto_mcp.safety) ===
+            from pywinauto_mcp.safety import before_mutation
+
+            read_only = operation == "position"
+            gate = before_mutation(read_only=read_only)
+            if not gate.get("allow"):
+                return {
+                    "status": "blocked",
+                    "code": gate.get("code"),
+                    "message": gate.get("message", "Mutation blocked"),
+                    "operation": operation,
+                    "sensor_metadata": sensor_metadata,
+                }
+            if gate.get("dry_run"):
+                return {
+                    "status": "dry_run",
+                    "message": gate.get("message"),
+                    "operation": operation,
+                    "x": x,
+                    "y": y,
+                    "sensor_metadata": sensor_metadata,
+                }
+
             # === POSITION OPERATION ===
             if operation == "position":
                 pos_x, pos_y = pyautogui.position()

@@ -38,7 +38,7 @@ pyautogui.FAILSAFE = True
 if app is not None:
     logger.info("Registering mouse tools with FastMCP")
 
-    @app.tool(name="mouse_move_relative", description="Move mouse relative to current position.")
+    @app.tool()
     def mouse_move_relative(x: int, y: int) -> dict[str, Any]:
         """Move mouse relative to current position.
 
@@ -64,7 +64,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="mouse_move_to_element", description="Move mouse to a UI element.")
+    @app.tool()
     def mouse_move_to_element(
         element: ElementInfo, x: int | None = None, y: int | None = None
     ) -> dict[str, Any]:
@@ -107,7 +107,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="mouse_hover", description="Hover over an element.")
+    @app.tool()
     def mouse_hover(element: ElementInfo, duration: float = 0.5) -> dict[str, Any]:
         """Hover over an element.
 
@@ -139,7 +139,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="drag_and_drop", description="Drag from source to target element.")
+    @app.tool()
     def drag_and_drop(
         source: ElementInfo, target: ElementInfo, duration: float = 0.5
     ) -> dict[str, Any]:
@@ -204,9 +204,7 @@ if app is not None:
 
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(
-        name="right_click", description="Right-click on an element or at specific coordinates."
-    )
+    @app.tool()
     def right_click(
         element: ElementInfo | None = None, x: int | None = None, y: int | None = None
     ) -> dict[str, Any]:
@@ -248,9 +246,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(
-        name="double_click", description="Double-click on an element or at specific coordinates."
-    )
+    @app.tool()
     def double_click(
         element: ElementInfo | None = None, x: int | None = None, y: int | None = None
     ) -> dict[str, Any]:
@@ -292,7 +288,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="mouse_scroll", description="Scroll the mouse wheel.")
+    @app.tool()
     def mouse_scroll(amount: int, x: int | None = None, y: int | None = None) -> dict[str, Any]:
         """Scroll the mouse wheel.
 
@@ -318,7 +314,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_cursor_position", description="Get current cursor position.")
+    @app.tool()
     def get_cursor_position() -> dict[str, Any]:
         """Get current cursor position.
 

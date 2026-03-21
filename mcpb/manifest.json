@@ -1,0 +1,30 @@
+{
+  "manifest_version": "0.2",
+  "name": "pywinauto-mcp",
+  "version": "0.3.2",
+  "description": "Windows desktop UI automation (PyWinAuto): read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. HITL, kill switch, rate limits. Face recognition, OCR, 8 portmanteau tools.",
+  "author": {
+    "name": "Sandra Schi",
+    "email": "sandra@example.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sandraschi/pywinauto-mcp"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "src/pywinauto_mcp/main.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["src/pywinauto_mcp/main.py"],
+      "env": {
+        "PYTHONPATH": "${__dirname}/src",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}
+
+
+

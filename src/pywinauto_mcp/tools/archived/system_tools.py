@@ -139,7 +139,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_process_list", description="Get a list of running processes.")
+    @app.tool()
     def get_process_list() -> dict[str, Any]:
         """Get a list of running processes.
 
@@ -172,7 +172,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="wait", description="Wait for the specified number of seconds.")
+    @app.tool()
     def wait(seconds: float) -> dict[str, Any]:
         """Wait for the specified number of seconds.
 
@@ -189,9 +189,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(
-        name="get_system_clipboard", description="Get the current content of the system clipboard."
-    )
+    @app.tool()
     def get_system_clipboard() -> dict[str, Any]:
         """Get the current content of the system clipboard.
 
@@ -212,7 +210,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="set_system_clipboard", description="Set the content of the system clipboard.")
+    @app.tool()
     def set_system_clipboard(text: str) -> dict[str, Any]:
         """Set the content of the system clipboard.
 

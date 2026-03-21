@@ -1,30 +1,26 @@
-"""
-Desktop State Capture - Main orchestrator for desktop state capture
-"""
+"""Desktop State Capture - Main orchestrator for desktop state capture."""
 
-from typing import Dict, Optional
 from PIL import ImageGrab
-from .walker import UIElementWalker
+
 from .annotator import ScreenshotAnnotator
-from .ocr import OCRExtractor
 from .formatter import DesktopStateFormatter
+from .ocr import OCRExtractor
+from .walker import UIElementWalker
 
 
 class DesktopStateCapture:
-    """Main desktop state capture orchestrator"""
+    """Main desktop state capture orchestrator."""
 
-    def __init__(self,
-                 max_depth: int = 10,
-                 element_timeout: float = 0.5,
-                 tesseract_cmd: Optional[str] = None):
+    def __init__(
+        self, max_depth: int = 10, element_timeout: float = 0.5, tesseract_cmd: str | None = None
+    ):
         self.walker = UIElementWalker(max_depth, element_timeout)
         self.annotator = ScreenshotAnnotator()
         self.ocr = OCRExtractor(tesseract_cmd)
         self.formatter = DesktopStateFormatter()
 
-    def capture(self, use_vision: bool = False, use_ocr: bool = False) -> Dict:
-        """
-        Capture desktop state
+    def capture(self, use_vision: bool = False, use_ocr: bool = False) -> dict:
+        """Capture desktop state.
 
         Args:
             use_vision: Include annotated screenshot
@@ -32,6 +28,7 @@ class DesktopStateCapture:
 
         Returns:
             Dictionary with text report, element data, and optional screenshot
+
         """
         # Walk UI tree
         elements = self.walker.walk()

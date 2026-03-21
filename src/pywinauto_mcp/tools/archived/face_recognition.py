@@ -7,6 +7,7 @@ import base64
 import logging
 import os
 import pickle
+import tempfile
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -355,7 +356,7 @@ if app is not None and FACE_RECOGNITION_AVAILABLE:
     # Create a global instance
     face_recognizer = FaceRecognition()
 
-    @app.tool(name="add_face", description="Add a new face to the recognition system.")
+    @app.tool()
     def add_face(name: str, image_path: str) -> dict[str, Any]:
         """Add a new face to the recognition system.
 
@@ -378,7 +379,7 @@ if app is not None and FACE_RECOGNITION_AVAILABLE:
 
         return face_recognizer.add_face_from_image(name, image_path)
 
-    @app.tool(name="recognize_face", description="Recognize faces in an image.")
+    @app.tool()
     def recognize_face(image_path: str) -> dict[str, Any]:
         """Recognize faces in an image.
 
@@ -400,7 +401,7 @@ if app is not None and FACE_RECOGNITION_AVAILABLE:
 
         return face_recognizer.recognize_face(image_path)
 
-    @app.tool(name="list_known_faces", description="List all known faces in the system.")
+    @app.tool()
     def list_known_faces() -> dict[str, Any]:
         """List all known faces in the system.
 
@@ -416,7 +417,7 @@ if app is not None and FACE_RECOGNITION_AVAILABLE:
 
         return face_recognizer.list_known_faces()
 
-    @app.tool(name="delete_face", description="Delete a known face from the system.")
+    @app.tool()
     def delete_face(name: str) -> dict[str, Any]:
         """Delete a known face from the system.
 

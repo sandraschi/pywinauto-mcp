@@ -1,4 +1,4 @@
-"""PyWinAuto MCP Tools Package - Portmanteau Edition
+"""PyWinAuto MCP Tools Package - Portmanteau Edition.
 
 This package contains 8 comprehensive portmanteau tools for Windows UI automation,
 following FastMCP 2.13+ best practices for tool consolidation.

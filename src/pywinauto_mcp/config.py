@@ -1,15 +1,13 @@
 """Configuration settings for PyWinAuto MCP."""
 
-import os
 from pathlib import Path
-from typing import Optional
 
 try:
     from pydantic_settings import BaseSettings
 except ImportError:
     from pydantic import BaseSettings
 
-from pydantic import Field, validator
+from pydantic import validator
 
 
 class Settings(BaseSettings):
@@ -22,34 +20,37 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     RELOAD: bool = False
     WORKERS: int = 1
-    
+
     # PyWinAuto Settings
     TIMEOUT: float = 10.0  # Default timeout in seconds for operations
     RETRY_ATTEMPTS: int = 3
     RETRY_DELAY: float = 1.0
-    
+
     # Screenshot Settings
     SCREENSHOT_DIR: Path = Path("./screenshots")
     SCREENSHOT_FORMAT: str = "png"
-    
+
     # OCR Settings
-    TESSERACT_CMD: Optional[str] = None  # Path to tesseract executable if not in PATH
+    TESSERACT_CMD: str | None = None  # Path to tesseract executable if not in PATH
     TESSERACT_LANG: str = "eng"  # Default language for OCR
     TESSERACT_CONFIG: str = "--psm 6 --oem 3"  # Default Tesseract config
-    
+
     # MCP Settings
     MCP_NAME: str = "pywinauto-mcp"
     MCP_VERSION: str = "0.1.0"
-    MCP_DESCRIPTION: str = "MCP server for Windows UI automation using PyWinAuto with OCR capabilities"
-    
+    MCP_DESCRIPTION: str = (
+        "MCP server for Windows UI automation using PyWinAuto with OCR capabilities"
+    )
+
     class Config:
         """Pydantic config."""
+
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
-    
+
     @validator("SCREENSHOT_DIR", pre=True)
-    def create_screenshot_dir(cls, v):
+    def create_screenshot_dir(self, v):
         """Create screenshot directory if it doesn't exist."""
         path = Path(v)
         path.mkdir(parents=True, exist_ok=True)

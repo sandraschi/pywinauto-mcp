@@ -85,7 +85,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="press_key", description="Press a key or combination of keys.")
+    @app.tool()
     def press_key(
         keys: str | list[str], presses: int = 1, interval: float = 0.1, pause: float = 0.1
     ) -> dict[str, Any]:
@@ -122,7 +122,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="press_hotkey", description="Press a combination of keys (hotkey/shortcut).")
+    @app.tool()
     def press_hotkey(
         keys: list[str], presses: int = 1, interval: float = 0.1, pause: float = 0.1
     ) -> dict[str, Any]:
@@ -157,7 +157,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="move_mouse", description="Move the mouse cursor to the specified coordinates.")
+    @app.tool()
     def move_mouse(
         x: int, y: int, relative: bool = False, duration: float = 0.0, tween: str | None = None
     ) -> dict[str, Any]:
@@ -194,7 +194,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="drag_mouse", description="Drag the mouse from one point to another.")
+    @app.tool()
     def drag_mouse(
         x1: int,
         y1: int,
@@ -252,7 +252,7 @@ if app is not None:
 
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="scroll_mouse", description="Scroll the mouse wheel.")
+    @app.tool()
     def scroll_mouse(
         clicks: int, x: int | None = None, y: int | None = None, horizontal: bool = False
     ) -> dict[str, Any]:
@@ -291,7 +291,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_mouse_position", description="Get the current mouse cursor position.")
+    @app.tool()
     def get_mouse_position() -> dict[str, Any]:
         """Get the current mouse cursor position.
 

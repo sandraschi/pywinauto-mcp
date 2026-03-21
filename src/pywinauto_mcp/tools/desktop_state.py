@@ -6,7 +6,6 @@ visual annotations, and OCR capabilities.
 
 import logging
 
-
 # Import the FastMCP app instance
 try:
     from pywinauto_mcp.app import app

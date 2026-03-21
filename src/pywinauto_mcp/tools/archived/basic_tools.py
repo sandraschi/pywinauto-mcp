@@ -176,7 +176,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "server": "PyWinAuto MCP v0.2.0"}
 
-    @app.tool(name="get_cursor_position", description="Get current mouse cursor position.")
+    @app.tool()
     def get_cursor_position() -> dict[str, Any]:
         """Get current mouse cursor position."""
         try:
@@ -191,7 +191,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="click_at_position", description="Click at specific screen coordinates.")
+    @app.tool()
     def click_at_position(x: int, y: int, button: str = "left") -> dict[str, Any]:
         """Click at specific screen coordinates.
 
@@ -213,7 +213,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="move_mouse", description="Move mouse to specific coordinates.")
+    @app.tool()
     def move_mouse(x: int, y: int) -> dict[str, Any]:
         """Move mouse to specific coordinates.
 
@@ -233,9 +233,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(
-        name="scroll_mouse", description="Scroll mouse wheel at current or specified position."
-    )
+    @app.tool()
     def scroll_mouse(amount: int, x: int | None = None, y: int | None = None) -> dict[str, Any]:
         """Scroll mouse wheel at current or specified position.
 
@@ -261,7 +259,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="list_windows", description="List all visible windows on the desktop.")
+    @app.tool()
     def list_windows() -> dict[str, Any]:
         """List all visible windows on the desktop."""
         try:
@@ -300,7 +298,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="find_window_by_title", description="Find window by title text.")
+    @app.tool()
     def find_window_by_title(title: str, partial: bool = True) -> dict[str, Any]:
         """Find window by title text.
 
@@ -356,7 +354,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="type_text", description="Type text at current cursor position.")
+    @app.tool()
     def type_text(text: str) -> dict[str, Any]:
         """Type text at current cursor position.
 
@@ -376,7 +374,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="send_keys", description="Send special key combinations.")
+    @app.tool()
     def send_keys(keys: str) -> dict[str, Any]:
         """Send special key combinations.
 
@@ -395,7 +393,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="hover_mouse", description="Move mouse to coordinates and hover.")
+    @app.tool()
     def hover_mouse(x: int, y: int, duration: float = 0.5) -> dict[str, Any]:
         """Move mouse to coordinates and hover for specified duration.
 
@@ -420,7 +418,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="wait", description="Pause execution for specified seconds.")
+    @app.tool()
     def wait(seconds: float) -> dict[str, Any]:
         """Pause execution for specified seconds.
 
@@ -441,7 +439,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="get_system_clipboard", description="Get current clipboard content.")
+    @app.tool()
     def get_system_clipboard() -> dict[str, Any]:
         """Get current clipboard content."""
         try:
@@ -457,7 +455,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    @app.tool(name="set_system_clipboard", description="Set clipboard content.")
+    @app.tool()
     def set_system_clipboard(content: str) -> dict[str, Any]:
         """Set clipboard content.
 
@@ -485,7 +483,7 @@ else:
 
     # Define fallback functions for when app is not available
     def get_help(category=None, tool_name=None):
-        """Fallback help function when MCP app is not available"""
+        """Fallback help function when MCP app is not available."""
         return {
             "status": "error",
             "error": "MCP app not available",

@@ -138,6 +138,9 @@ cython_debug/
 # IDEs
 .vscode/
 .idea/
+.cursor/
+ruff_stats*.txt
+*.bak
 *.swp
 *.swo
 *~

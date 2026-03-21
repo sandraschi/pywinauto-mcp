@@ -1,0 +1,28 @@
+{
+  "manifest_version": "0.2",
+  "name": "pywinauto-mcp",
+  "version": "0.2.0",
+  "description": "Comprehensive Windows UI Automation MCP server with face recognition, OCR, and advanced automation capabilities",
+  "author": {
+    "name": "Sandra Schi",
+    "email": "sandra@example.com"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "src/pywinauto_mcp/main.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["-m", "pywinauto_mcp.main"],
+      "env": {
+        "PYTHONPATH": "${PWD}",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  },
+  "user_config": {},
+  "compatibility": {
+    "platforms": ["win32"],
+    "python_version": ">=3.10"
+  }
+}
+

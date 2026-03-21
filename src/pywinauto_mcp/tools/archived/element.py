@@ -8,6 +8,7 @@ import logging
 import time
 from typing import Any
 
+import pyautogui
 from pywinauto.base_wrapper import ElementNotVisible
 from pywinauto.controls.uia_controls import ButtonWrapper, ComboBoxWrapper, EditWrapper
 from pywinauto.findwindows import ElementNotFoundError
@@ -56,7 +57,7 @@ if app is not None:
             logger.error(f"Error getting element: {e}")
             raise
 
-    @app.tool(name="click_element", description="Click on a UI element.")
+    @app.tool()
     def click_element(
         window_handle: int,
         control_id: str | None = None,
@@ -166,7 +167,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="double_click_element", description="Double-click on a UI element.")
+    @app.tool()
     def double_click_element(
         window_handle: int,
         control_id: str | None = None,
@@ -191,7 +192,7 @@ if app is not None:
             window_handle=window_handle, control_id=control_id, x=x, y=y, button=button, double=True
         )
 
-    @app.tool(name="right_click_element", description="Right-click on a UI element.")
+    @app.tool()
     def right_click_element(
         window_handle: int,
         control_id: str | None = None,
@@ -214,7 +215,7 @@ if app is not None:
             window_handle=window_handle, control_id=control_id, x=x, y=y, button="right"
         )
 
-    @app.tool(name="hover_element", description="Hover the mouse over a UI element.")
+    @app.tool()
     def hover_element(
         window_handle: int,
         control_id: str | None = None,
@@ -299,7 +300,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_element_info", description="Get detailed information about a UI element.")
+    @app.tool()
     def get_element_info(window_handle: int, control_id: str) -> dict[str, Any]:
         """Get detailed information about a UI element.
 
@@ -370,7 +371,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_element_text", description="Get the text of a UI element.")
+    @app.tool()
     def get_element_text(window_handle: int, control_id: str) -> dict[str, Any]:
         """Get the text of a UI element.
 
@@ -413,7 +414,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="set_element_text", description="Set the text of a UI element.")
+    @app.tool()
     def set_element_text(window_handle: int, control_id: str, text: str) -> dict[str, Any]:
         """Set the text of a UI element.
 
@@ -493,7 +494,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_element_rect", description="Get the rectangle of a UI element.")
+    @app.tool()
     def get_element_rect(window_handle: int, control_id: str) -> dict[str, Any]:
         """Get the rectangle of a UI element.
 
@@ -540,7 +541,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="is_element_visible", description="Check if a UI element is visible.")
+    @app.tool()
     def is_element_visible(window_handle: int, control_id: str) -> dict[str, Any]:
         """Check if a UI element is visible.
 
@@ -582,7 +583,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="is_element_enabled", description="Check if a UI element is enabled.")
+    @app.tool()
     def is_element_enabled(window_handle: int, control_id: str) -> dict[str, Any]:
         """Check if a UI element is enabled.
 
@@ -624,7 +625,7 @@ if app is not None:
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
-    @app.tool(name="get_all_elements", description="Get all UI elements in a window.")
+    @app.tool()
     def get_all_elements(window_handle: int, max_depth: int = 3) -> dict[str, Any]:
         """Get all UI elements in a window.
 

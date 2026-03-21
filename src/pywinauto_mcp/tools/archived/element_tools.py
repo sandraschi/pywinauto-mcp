@@ -87,7 +87,7 @@ def _get_element_info(element) -> ElementInfo:
 # Only register tools if app is available
 if app is not None:
 
-    @app.tool(name="element_exists", description="Check if a UI element exists.")
+    @app.tool()
     def element_exists(
         selector: str | ElementInfo, timeout: float = 5.0, app_param: Application | None = None
     ) -> dict[str, Any]:
@@ -143,7 +143,7 @@ if app is not None:
             "message": last_error or f"Element not found within {timeout} seconds",
         }
 
-    @app.tool(name="wait_for_element", description="Wait for a UI element to appear.")
+    @app.tool()
     def wait_for_element(
         selector: str | ElementInfo, timeout: float = 10.0, app_param: Application | None = None
     ) -> dict[str, Any]:
@@ -164,7 +164,7 @@ if app is not None:
         else:
             return {"status": "error", "message": f"Element not found within {timeout} seconds"}
 
-    @app.tool(name="verify_text", description="Verify that an element contains the expected text.")
+    @app.tool()
     def verify_text(
         selector: str | ElementInfo,
         expected_text: str,
@@ -205,7 +205,7 @@ if app is not None:
             "match_found": text_matches,
         }
 
-    @app.tool(name="get_element_rect", description="Get the position and size of a UI element.")
+    @app.tool()
     def get_element_rect(
         selector: str | ElementInfo, timeout: float = 5.0, app_param: Application | None = None
     ) -> dict[str, Any]:
