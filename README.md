@@ -1,10 +1,10 @@
-# PyWinAuto MCP (portmanteau tools)
+# PyWinAuto MCP
 
-**Version 0.3.2** · **FastMCP 3.1+** · **Python 3.12+**
+**Let an AI assistant control real Windows apps** — through a single MCP server that wraps window, UI, mouse, keyboard, screenshots, OCR, and optional face checks behind a small set of **portmanteau** tools (many operations, few entry points so models stay focused).
 
-> **Isolation:** This server drives **your Windows desktop** (high privilege). For **Windows Sandbox / disposable VMs** and mapped assets, install **`virtualization-mcp`** as well. Checklist: [`docs/SAFETY.md`](docs/SAFETY.md) · fleet: `mcp-central-docs/patterns/PYWINAUTO_MCP_SAFETY.md`.
+**Stack:** v0.3.2 · FastMCP 3.1+ · Python 3.12+ · Windows 10/11  
 
-Windows UI automation over MCP using PyWinAuto. Read **[docs/SAFETY.md](docs/SAFETY.md)** before enabling in an IDE. **`automation_face`** is **opt-in** (`PYWINAUTO_MCP_ENABLE_FACE=1` + `face` extra) — **SAFETY §5**.
+**Important:** This is **not** a browser sandbox. It runs in **your** desktop session and can move the real cursor, type into real windows, and drive the same UI you see. Read **[docs/SAFETY.md](docs/SAFETY.md)** before you wire it into an IDE. For throwaway desktops (Windows Sandbox, VMs, mapped folders), use **[virtualization-mcp](https://github.com/sandraschi/virtualization-mcp)** alongside this project. Fleet notes: `mcp-central-docs/patterns/PYWINAUTO_MCP_SAFETY.md`. Optional **face** features are off until you opt in — see **SAFETY §5** and `PYWINAUTO_MCP_ENABLE_FACE`.
 
 ### Discovery (GitHub, Glama, MCP catalogs)
 
