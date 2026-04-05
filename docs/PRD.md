@@ -13,7 +13,7 @@
 | **Tool efficiency** | Consolidate many operations into **8 portmanteau tools** + `get_desktop_state` to limit tool explosion and token load. |
 | **Framework** | **FastMCP 3.1+** — stdio/SSE and HTTP MCP surface; async tools; docstring-first descriptions. |
 | **Safety** | HITL (`approve_automation`), kill switch, rate limits, dry-run, optional face **opt-in** only. |
-| **Operator UX** | Optional **`web_sota`** dashboard: REST bridge, tools hub, help, local LLM chat, camera selection, **[MOCK]** labels on demo UI. |
+| **Operator UX** | Optional **`web_sota`** dashboard: REST bridge, tools hub, help, local LLM chat, live host metrics, biometrics (browser preview + safety snapshot). |
 | **Testability** | **Environment-aware pytest** (CI vs local hardware) per **mcp-central-docs** `standards/testing-environment-aware.md` — see [`TESTING.md`](TESTING.md). |
 | **Maintainability** | Ruff, type hints, docs match **implemented** behavior. |
 
@@ -27,7 +27,7 @@
 
 ### 3.2 HTTP / ASGI
 
-- **FastAPI** routes under **`/api/v1/*`** (health, tools list/call, windows, **LLM proxy**, **cameras**).
+- **FastAPI** routes under **`/api/v1/*`** (health, tools list/call, windows, **LLM proxy**, **cameras**, **system/info**, **safety/status**).
 - FastMCP **`http_app()`** mounted so **`/mcp`** remains the streamable MCP endpoint.
 - **CORS** for local `web_sota` dev ports.
 
@@ -35,10 +35,11 @@
 
 - **Vite** dev server; **`start.ps1`** — backend **10789**, frontend **10788** (fleet **10700+** range; see **mcp-central-docs** `standards/WEBAPP_STANDARDS.md`).
 - **Proxy:** `/api` → backend (same-origin API calls).
-- **Routes:** Overview, Windows, Elements, Tools Hub, **Local LLM** (`/chat`), Help, Biometrics, Settings.
+- **Routes:** Overview, Windows, Elements, Tools Hub, **Local LLM** (`/chat`), Help, Biometrics, Settings. (No in-repo robotics teleop or 3D “digital twin” — use fleet **robotics-mcp**.)
 - **Local LLM:** OpenAI-compatible proxy to **Ollama** / **LM Studio** (`PYWINAUTO_LLM_BASE_URL`); personas, prompt refiner, repo context (`llm_repo_context.py`).
 - **Cameras:** `GET /api/v1/cameras/`; UI selection when multiple devices; syncs `camera_index` with Tools / face capture.
-- **Transparency:** Demo metrics labeled **[MOCK]** where not live telemetry.
+- **Biometrics:** browser preview + **`GET /api/v1/safety/status`** + optional **`automation_face`** via **`POST /api/v1/tools/call`** when face tool is registered.
+- **Transparency:** Dashboard host metrics and biometrics safety line are **live**; browser webcam preview is **local MediaDevices** (not OpenCV — indices may differ).
 
 ## 4. Technical standards
 

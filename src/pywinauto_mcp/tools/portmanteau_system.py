@@ -15,7 +15,6 @@ import logging
 import os
 import shutil
 import time
-from datetime import datetime
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any, Literal
 
@@ -24,6 +23,7 @@ import pygetwindow as gw
 import pywinauto
 from pywinauto import Application
 
+from pywinauto_mcp.host_metrics import collect_host_metrics
 from pywinauto_mcp.safety import (
     ENV_DRY_RUN,
     ENV_ENABLE_FACE,
@@ -273,28 +273,9 @@ Examples:
                     "diagnostics": system_metadata,
                 }
 
-            # === INFO OPERATION (new) ===
+            # === INFO OPERATION (shared with GET /api/v1/system/info) ===
             elif operation == "info":
-                # Collect system information
-                cpu_percent = psutil.cpu_percent(interval=1)
-                virtual_memory = psutil.virtual_memory()
-                disk_usage = psutil.disk_usage("/")
-                net_io = psutil.net_io_counters()
-
-                stats = {
-                    "cpu_percent": cpu_percent,
-                    "memory_total_gb": round(virtual_memory.total / (1024**3), 2),
-                    "memory_available_gb": round(virtual_memory.available / (1024**3), 2),
-                    "memory_percent": virtual_memory.percent,
-                    "disk_total_gb": round(disk_usage.total / (1024**3), 2),
-                    "disk_used_gb": round(disk_usage.used / (1024**3), 2),
-                    "disk_percent": disk_usage.percent,
-                    "network_bytes_sent_mb": round(net_io.bytes_sent / (1024**2), 2),
-                    "network_bytes_recv_mb": round(net_io.bytes_recv / (1024**2), 2),
-                    "boot_time": datetime.fromtimestamp(psutil.boot_time()).isoformat(),
-                    "os_name": os.name,
-                    "os_platform": os.sys.platform,
-                }
+                stats = collect_host_metrics()
                 return {
                     "status": "success",
                     "operation": "info",

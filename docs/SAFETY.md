@@ -36,7 +36,7 @@ Clone **mcp-central-docs** (sibling repo) and read:
 
 ## 4. Do not
 
-- Put **pywinauto-mcp** in the **default IDE chain** for **web-only** work — use **browser MCP** for Vite/webapps.
+- Put **pywinauto-mcp** in the **default IDE chain** for **web-only** work — use a **browser MCP** (typically **Playwright**-based) for Vite/webapps and **HTML DOM** / network / console analysis. **pywinauto** targets **native Windows UI**, not the browser’s DOM; keep the split explicit.
 - Rely on **host** pywinauto to “click inside” the Windows Sandbox window — automate **inside** the guest session instead.
 - Treat **OpenManus** + **openmanus-mcp** + **pywinauto** + **OpenClaw / Manus-class** autonomy as **low-friction** — that combination **multiplies** tool loops and sampling against **OS-wide** input. See **mcp-central-docs** `patterns/PYWINAUTO_MCP_SAFETY.md` § *OpenManus, openmanus-mcp, OpenClaw, Manus-class* and **integrations/openmanus.md** (Caution block).
 

@@ -1,14 +1,4 @@
-import {
-    Github,
-    Bot,
-    Brain,
-    LayoutGrid,
-    Scan,
-    MonitorPlay,
-    Box,
-    Activity,
-    Archive
-} from 'lucide-react';
+import { Bot, Brain, LayoutGrid, Scan, MonitorPlay, Activity, Archive } from "lucide-react";
 
 export interface AppEntry {
     id: string;
@@ -41,13 +31,13 @@ export const APPS_CATALOG: AppEntry[] = [
         tags: ['ai', 'memory']
     },
     {
-        id: 'robotics',
-        label: 'Robotics Control',
-        description: 'Physical and virtual robot orchestration',
+        id: "robotics-mcp",
+        label: "Robotics MCP (fleet)",
+        description: "Arms / mobile robots — not pywinauto-mcp; separate server",
         icon: Bot,
-        url: 'http://localhost:10706',
+        url: "http://localhost:10706",
         port: 10706,
-        tags: ['hardware', 'simulation']
+        tags: ["hardware", "fleet"],
     },
     {
         id: 'osc-mcp',

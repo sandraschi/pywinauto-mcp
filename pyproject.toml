@@ -148,40 +148,6 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 
-[tool.ruff]
-line-length = 100
-target-version = "py310"
-exclude = [
-    ".git",
-    ".pytest_cache",
-    ".ruff_cache",
-    "build",
-    "dist",
-    "tests/legacy",
-    "tests/visual_tests",
-    "docs",
-    "__pycache__",
-]
-
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "D", "UP", "B", "C4"]
-ignore = [
-    "D100",
-    "D104",
-    "D107",
-    "D203",
-    "D213",
-    "D102",
-    "D103",
-    "D205",
-    "D401",
-    "E501",
-    "E402",
-    "E722",
-    "B904",
-]
-
-# MCPB Configuration
 [tool.mcpb]
 name = "pywinauto-mcp"
 display_name = "PyWinAuto MCP - Portmanteau Edition"
@@ -234,3 +200,32 @@ category = "desktop"
 log_level = "INFO"
 max_workers = 4
 request_timeout = 30.0
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# Hardened v13.1 Rule Set
+select = [
+    "E", "F", "I", "UP", "B", "S", "A", "ANN", "COM", "C4", "DTZ", "PIE", "T20", "PYI", "Q", "RSE", "RET", "SLF", "SIM", "TID", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "PERF", "FURB", "LOG", "RUF"
+]
+ignore = [
+    "ANN101", # Missing type annotation for self
+    "ANN102", # Missing type annotation for cls
+    "COM812", # Trailing comma missing (handled by formatter)
+    "ISC001", # Single line implicit string concatenation (handled by formatter)
+    "PLR0913", # Too many arguments
+    "S101",   # Use of assert (standard for pytest)
+    "TRY003", # Avoid specifying long messages in exceptions
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "ANN", "PLR", "TRY", "S105", "S106", "SLF001", "ARG002", "PLC0415"]
+"server.py" = ["T20", "ARG001", "ARG002"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

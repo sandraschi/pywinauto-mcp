@@ -7,9 +7,7 @@ import { Biometrics } from '@/pages/biometrics';
 import { Settings } from '@/pages/settings';
 import { Help } from '@/pages/help';
 import { Tools } from '@/pages/tools';
-import { Control } from '@/pages/control'; // Fallback
-import { Visualizer } from '@/pages/visualizer'; // Fallback
-import { Chat } from '@/pages/chat'; // Fallback
+import { Chat } from '@/pages/chat';
 
 function App() {
   return (
@@ -20,8 +18,6 @@ function App() {
           <Route path="/windows" element={<Windows />} />
           <Route path="/elements" element={<Elements />} />
           <Route path="/biometrics" element={<Biometrics />} />
-          <Route path="/control" element={<Control />} />
-          <Route path="/visualizer" element={<Visualizer />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/help" element={<Help />} />

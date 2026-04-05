@@ -35,6 +35,16 @@ async def status() -> dict[str, Any]:
         "endpoints": [
             {"path": "/api/v1/health", "method": "GET", "description": "Health check"},
             {"path": "/api/v1/status", "method": "GET", "description": "Service status"},
+            {
+                "path": "/api/v1/system/info",
+                "method": "GET",
+                "description": "Live host CPU, memory, disk, network (same as automation_system info)",
+            },
+            {
+                "path": "/api/v1/safety/status",
+                "method": "GET",
+                "description": "Safety counters and env (same as automation_safety status)",
+            },
             {"path": "/api/v1/windows", "method": "GET", "description": "List windows"},
             {
                 "path": "/api/v1/windows/find",

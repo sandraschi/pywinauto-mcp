@@ -3,7 +3,7 @@ trigger: always_on
 version: 2.1.0
 last_updated: 2025-07-30
 changelog:
-  - 2.1.0: Added FastMCP 2.10 repository and DXT packaging rules
+  - 2.1.0: Added FastMCP 3.1 repository and DXT packaging rules
   - 2.0.0: Restructured rules and added versioning
   - 1.0.0: Initial version
 ---
@@ -13,7 +13,7 @@ changelog:
 ## Table of Contents
 - [Change Management](#change-management)
 - [Development Workflow](#development-workflow)
-- [FastMCP 2.10 Repository Standards](#fastmcp-210-repository-standards)
+- [FastMCP 3.1 Repository Standards](#fastmcp-210-repository-standards)
 - [DXT Packaging Standards](#dxt-packaging-standards)
 - [Bug & Research Handling](#bug--research-handling)
 
@@ -250,7 +250,7 @@ $absolutePath = Resolve-Path -Path "./relative/path"
 # [2025-07-30 14:30] Project Meeting Notes
 
 ## Key Decisions
-- Decision to migrate to FastMCP 2.10 by Q4 2025
+- Decision to migrate to FastMCP 3.1 by Q4 2025
 - All new MCP servers must follow DXT packaging standards
 
 ## Action Items
@@ -260,7 +260,7 @@ $absolutePath = Resolve-Path -Path "./relative/path"
 ## Technical Notes
 ```
 
-## FastMCP 2.10 Compliance Standards
+## FastMCP 3.1 Compliance Standards
 
 **IMPORTANT**: All MCP servers MUST comply with these standards. Legacy/non-compliant servers must be updated to match these specifications.
 
@@ -529,9 +529,9 @@ mcp-project/
 - Archive inactive repositories
 - Keep documentation current
 
-## 5. DXT Packaging Standards (FastMCP 2.10+)
+## 5. DXT Packaging Standards (FastMCP 3.1+)
 
-**Note**: These standards apply to all FastMCP 2.10+ servers. All new MCP servers must implement these packaging standards.
+**Note**: These standards apply to all FastMCP 3.1+ servers. All new MCP servers must implement these packaging standards.
 
 ### 2.1 Package Structure
 ```

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Biometrics → `automation_face`:** Web UI calls **`POST /api/v1/tools/call`** for **list / capture & match / delete** when the tool is registered (`web_sota` helper `lib/mcpTools.ts`).
+- **REST `GET /api/v1/safety/status`:** Same payload as MCP **`automation_safety("status")`** (webapp biometrics).
 - **ASGI composite server:** FastAPI **`/api/v1/*`** (REST) + FastMCP HTTP **`/mcp`** — `pywinauto_mcp.server:app` for uvicorn; CORS for `web_sota`.
 - **web_sota `/chat` — local LLM:** OpenAI-compatible proxy (`/api/v1/llm/*`) to **Ollama** / **LM Studio** on localhost only (SSRF-safe localhost); model list, **personas**, **prompt refiner**, optional **repo knowledge** from `llm_repo_context.py`. Env: **`PYWINAUTO_LLM_BASE_URL`**.
 - **Camera enumeration:** `GET /api/v1/cameras/` probes OpenCV indices; **Biometrics** + **Tools** (`camera_index` for `automation_face`) show a **dropdown when multiple cameras** exist; `localStorage` sync. Env: **`PYWINAUTO_MCP_CAMERA_MAX_INDEX`** (default 10).
@@ -15,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Docs:** **`docs/PRD.md`** refreshed (web stack, REST, LLM, testing); **`docs/README.md`** index; **`docs/TESTING.md`**; **`docs/LLM_REPO_CONTEXT.md`** pointer; camera notes in **`docs/SAFETY.md`** §5.
 
 ### Changed
+- **`web_sota`:** Removed legacy **robotics teleop** (`/control`) and **Unity/3D placeholder** (`/visualizer`). **Biometrics** now has a **live browser webcam preview** (2D pan/zoom/rotate) plus **live safety** from **`/api/v1/safety/status`**. Fleet catalog entry **robotics-mcp** clarified (not this server).
 - **`automation_face` is opt-in at runtime:** set **`PYWINAUTO_MCP_ENABLE_FACE=1`** and install the **`face`** extra; otherwise the tool is not registered. **`automation_safety(status)`** reports **`face_tool_opt_in`**. Docs: **`docs/SAFETY.md` §5** (wording tightened; no “creepware” framing).
 - **README / help:** Marketing tone reduced; **`automation_system("help")`** returns structured docs (version, safety env, prompts, tool list). **`web_sota`** adds **`/help`** page; dashboard badges no longer show fake telemetry.
 
