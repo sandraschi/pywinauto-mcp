@@ -381,4 +381,4 @@ if app is not None:
 
 
 # Add all tools to __all__
-__all__ = ["take_screenshot", "find_image_on_screen", "get_text_under_cursor", "get_ui_tree"]
+__all__ = ["find_image_on_screen", "get_text_under_cursor", "get_ui_tree", "take_screenshot"]

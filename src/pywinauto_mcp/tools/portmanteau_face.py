@@ -148,6 +148,49 @@ class FaceRecognitionManager:
             logger.error(f"Error saving face {name}: {e}")
             return False
 
+    def recognize_faces(self, image_path: str, tolerance: float = 0.6) -> list[dict[str, Any]]:
+        """Recognize faces in an image and return matches."""
+        if not FACE_RECOGNITION_AVAILABLE:
+            return []
+
+        try:
+            image = face_recognition.load_image_file(image_path)
+            face_locations = face_recognition.face_locations(image, model=self.model)
+            face_encodings = face_recognition.face_encodings(image, face_locations)
+
+            results = []
+            for face_encoding, (top, right, bottom, left) in zip(face_encodings, face_locations, strict=False):
+                name = "Unknown"
+                confidence = 0.0
+
+                if self.known_faces:
+                    known_names = list(self.known_faces.keys())
+                    known_encodings = [np.frombuffer(self.known_faces[n].encoding, dtype=np.float64) for n in known_names]
+
+                    face_distances = face_recognition.face_distance(known_encodings, face_encoding)
+                    best_match_index = np.argmin(face_distances)
+
+                    if face_distances[best_match_index] <= tolerance:
+                        name = known_names[best_match_index]
+                        confidence = 1.0 - float(face_distances[best_match_index])
+                        
+                        # Update metadata
+                        self.known_faces[name].last_used = time.strftime("%Y-%m-%dT%H:%M:%S")
+                        self.known_faces[name].usage_count += 1
+
+                results.append({
+                    "name": name,
+                    "confidence": confidence,
+                    "box": {"top": top, "right": right, "bottom": bottom, "left": left}
+                })
+
+            return results
+        except Exception as e:
+            logger.error(f"Error in recognize_faces: {e}")
+            return []
+
+
+from pywinauto_mcp.tools.models import FaceOperationRequest, ToolResult
 
 # Create global instance if available
 face_manager = None
@@ -163,61 +206,48 @@ if app is not None:
 
     @app.tool(
         name="automation_face",
-        description="""Optional face enrollment and matching (local). Requires PYWINAUTO_MCP_ENABLE_FACE=1 and the face extra.
+        description="""Industrialized local face recognition and biometric enrollment tool.
 
-Capture uses OpenCV VideoCapture: built-in laptop camera or USB UVC webcam (camera_index 0, 1, …). Not Tapo/IP/RTSP.
+WHAT IT DOES:
+This tool provides local-only biometric capabilities for registering and recognizing individuals via facial encodings. It can enroll new faces from static images, match unknown faces against a local encrypted database, and capture live frames from primary or secondary UVC webcams.
 
-SUPPORTED OPERATIONS:
-- add: Register a face from an image file.
-- recognize: Match faces in an image.
-- list: List registered names.
-- delete: Remove a profile.
-- capture: Webcam capture then recognize.
+WHEN TO USE:
+- Use 'add' to enroll a person into the system (e.g., for personalized automation triggers).
+- Use 'recognize' to identify individuals present in a provided image file.
+- Use 'capture' to engage a local camera (laptop built-in or USB webcam) for real-time identification.
+- Use 'list' or 'delete' for managing the local biometric database.
 
-Examples:
-    automation_face("add", name="John Doe", image_path="john.jpg")
-    automation_face("recognize", image_path="unknown.jpg")
+SAFETY AND PRIVACY:
+This tool operates entirely locally and requires explicit opt-in via 'PYWINAUTO_MCP_ENABLE_FACE=1'. It does not transmit biometric data to remote servers. If recognition fails, ensure adequate lighting and centered positioning of the target face.
 
+RECOVERY:
+If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually the default) and ensure no other application is currently locking the device.
 """,
     )
-    def automation_face(
-        operation: Literal["add", "recognize", "list", "delete", "capture"],
-        name: str | None = None,
-        image_path: str | None = None,
-        camera_index: int = 0,
-        save_capture_path: str | None = None,
-        tolerance: float = 0.6,
-    ) -> dict[str, Any]:
-        """Face recognition operations.
-
-        Args:
-            operation: The operation to perform
-            name: Person's name for add/delete operations
-            image_path: Path to image file for add/recognize operations
-            camera_index: OpenCV device index (0, 1, …) for built-in or USB UVC webcam — not Tapo/RTSP
-            save_capture_path: Path to save captured image
-            tolerance: Face matching tolerance (lower = stricter)
-
-        Returns:
-            Operation-specific result with face recognition data
-
-        """
+    def automation_face(request: FaceOperationRequest) -> ToolResult:
+        """Face recognition operations tracking SOTA 2026 biometric standards."""
         try:
             timestamp = time.time()
+            operation = request.operation
+            name = request.name
+            image_path = request.image_path
+            camera_index = request.camera_index
+            save_capture_path = request.save_capture_path
+            tolerance = request.tolerance
 
             if not FACE_RECOGNITION_AVAILABLE:
-                return {
-                    "status": "error",
-                    "operation": operation,
-                    "error": "face_recognition library not installed. Install with: pip install face_recognition",
-                }
+                return ToolResult(
+                    status="error",
+                    message="face_recognition library is not installed.",
+                    recovery_tip="Run 'pip install face_recognition' on a system with dlib support."
+                )
 
             if face_manager is None:
-                return {
-                    "status": "error",
-                    "operation": operation,
-                    "error": "Face recognition manager not initialized",
-                }
+                return ToolResult(
+                    status="error",
+                    message="Face recognition manager failed to initialize.",
+                    recovery_tip="Check if the known_faces directory is writable and dependencies are met."
+                )
 
             biometric_metadata = {
                 "timestamp": timestamp,
@@ -228,47 +258,38 @@ Examples:
 
             # === ADD OPERATION ===
             if operation == "add":
-                if not name:
-                    return {
-                        "status": "error",
-                        "operation": "add",
-                        "error": "name parameter is required",
-                    }
-                if not image_path:
-                    return {
-                        "status": "error",
-                        "operation": "add",
-                        "error": "image_path parameter is required",
-                    }
+                if not name or not image_path:
+                    return ToolResult(
+                        status="error",
+                        message="'name' and 'image_path' are required for 'add' operation.",
+                        recovery_tip="Ensure you provide both the individual's name and a path to a clear facial image."
+                    )
                 if not os.path.exists(image_path):
-                    return {
-                        "status": "error",
-                        "operation": "add",
-                        "error": f"Image file not found: {image_path}",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message=f"Image file not found: {image_path}",
+                        recovery_tip="Verify the file path is correct and accessible."
+                    )
 
-                # Load image and find face
                 image = face_recognition.load_image_file(image_path)
                 encodings = face_recognition.face_encodings(image)
 
                 if not encodings:
-                    return {
-                        "status": "error",
-                        "operation": "add",
-                        "error": "No faces found in the image",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="No faces found in the image",
+                        recovery_tip="Ensure the image contains a clear, unobstructed face."
+                    )
 
                 if len(encodings) > 1:
-                    return {
-                        "status": "error",
-                        "operation": "add",
-                        "error": "Multiple faces found. Please provide image with single face.",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="Multiple faces found. Please provide image with single face.",
+                        recovery_tip="Crop the image to include only the target individual."
+                    )
 
                 from datetime import datetime
-
                 now = datetime.now().isoformat()
-
                 face_data = FaceData(
                     name=name,
                     encoding=encodings[0].tobytes(),
@@ -276,235 +297,157 @@ Examples:
                     last_used=now,
                     usage_count=1,
                 )
-
                 face_manager.known_faces[name] = face_data
 
                 if face_manager.save_face(name):
-                    return {
-                        "status": "success",
-                        "operation": "add",
-                        "name": name,
-                        "message": "Face added successfully",
-                        "timestamp": timestamp,
-                        "biometric_metadata": biometric_metadata,
-                    }
+                    return ToolResult(
+                        status="success",
+                        message=f"Face '{name}' added successfully.",
+                        data={"name": name, "biometric_metadata": biometric_metadata}
+                    )
                 else:
-                    return {
-                        "status": "error",
-                        "operation": "add",
-                        "error": "Failed to save face data",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="Failed to save face data",
+                        recovery_tip="Check disk permissions for the known_faces directory."
+                    )
 
             # === RECOGNIZE OPERATION ===
             elif operation == "recognize":
                 if not image_path:
-                    return {
-                        "status": "error",
-                        "operation": "recognize",
-                        "error": "image_path parameter is required",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="'image_path' is required for 'recognize' operation.",
+                        recovery_tip="Provide a path to the image containing faces you wish to identify."
+                    )
                 if not os.path.exists(image_path):
-                    return {
-                        "status": "error",
-                        "operation": "recognize",
-                        "error": f"Image file not found: {image_path}",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message=f"Image file not found: {image_path}",
+                        recovery_tip="Verify the file path is correct."
+                    )
 
-                image = face_recognition.load_image_file(image_path)
-                face_locations = face_recognition.face_locations(image, model=face_manager.model)
-                face_encodings = face_recognition.face_encodings(image, face_locations)
-
-                if not face_encodings:
-                    return {
-                        "status": "success",
-                        "operation": "recognize",
-                        "faces_found": 0,
-                        "matches": [],
-                        "timestamp": timestamp,
+                results = face_manager.recognize_faces(image_path, tolerance=tolerance)
+                return ToolResult(
+                    status="success",
+                    message=f"Recognition completed. Identified {len([r for r in results if r['name'] != 'Unknown'])} known faces.",
+                    data={
+                        "matches": results,
+                        "count": len(results),
                         "biometric_metadata": biometric_metadata,
                     }
-
-                matches = []
-                for encoding in face_encodings:
-                    match_found = False
-
-                    for known_name, known_face in face_manager.known_faces.items():
-                        known_encoding = np.frombuffer(known_face.encoding, dtype=np.float64)
-
-                        match = face_recognition.compare_faces(
-                            [known_encoding], encoding, tolerance=tolerance
-                        )
-
-                        if match[0]:
-                            distance = float(
-                                face_recognition.face_distance([known_encoding], encoding)[0]
-                            )
-
-                            matches.append(
-                                {
-                                    "name": known_name,
-                                    "confidence": 1.0 - distance,
-                                    "face_distance": distance,
-                                }
-                            )
-                            match_found = True
-                            break
-
-                    if not match_found:
-                        matches.append({"name": "unknown", "confidence": 0.0, "face_distance": 1.0})
-
-                return {
-                    "status": "success",
-                    "operation": "recognize",
-                    "faces_found": len(face_encodings),
-                    "matches": matches,
-                    "timestamp": timestamp,
-                    "biometric_metadata": biometric_metadata,
-                }
+                )
 
             # === LIST OPERATION ===
             elif operation == "list":
                 faces = []
                 for name, face_data in face_manager.known_faces.items():
-                    faces.append(
-                        {
-                            "name": name,
-                            "created_at": face_data.created_at,
-                            "last_used": face_data.last_used,
-                            "usage_count": face_data.usage_count,
-                        }
-                    )
+                    faces.append({
+                        "name": name,
+                        "created_at": face_data.created_at,
+                        "last_used": face_data.last_used,
+                        "usage_count": face_data.usage_count,
+                    })
 
-                return {
-                    "status": "success",
-                    "operation": "list",
-                    "count": len(faces),
-                    "faces": faces,
-                    "timestamp": timestamp,
-                    "biometric_metadata": biometric_metadata,
-                }
+                return ToolResult(
+                    status="success",
+                    message=f"Retrieved {len(faces)} biometric profiles.",
+                    data={
+                        "names": faces,
+                        "count": len(faces),
+                        "biometric_metadata": biometric_metadata,
+                    }
+                )
 
             # === DELETE OPERATION ===
             elif operation == "delete":
                 if not name:
-                    return {
-                        "status": "error",
-                        "operation": "delete",
-                        "error": "name parameter is required",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="'name' is required for 'delete' operation.",
+                        recovery_tip="Specify the name of the profile you wish to remove."
+                    )
 
                 if name not in face_manager.known_faces:
-                    return {
-                        "status": "error",
-                        "operation": "delete",
-                        "error": f"No face found for '{name}'",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message=f"No face found for '{name}'",
+                        recovery_tip="Check the list of existing profiles using the 'list' operation."
+                    )
 
                 del face_manager.known_faces[name]
-
                 file_path = face_manager.known_faces_dir / f"{name.lower().replace(' ', '_')}.pkl"
                 if file_path.exists():
                     file_path.unlink()
 
-                return {
-                    "status": "success",
-                    "operation": "delete",
-                    "name": name,
-                    "message": "Face deleted successfully",
-                    "timestamp": timestamp,
-                    "biometric_metadata": biometric_metadata,
-                }
+                return ToolResult(
+                    status="success",
+                    message=f"Successfully deleted profile '{name}'.",
+                    data={
+                        "name": name,
+                        "biometric_metadata": biometric_metadata,
+                    }
+                )
 
             # === CAPTURE OPERATION ===
             elif operation == "capture":
                 cap = cv2.VideoCapture(camera_index)
-
                 if not cap.isOpened():
-                    return {
-                        "status": "error",
-                        "operation": "capture",
-                        "error": f"Could not open camera at index {camera_index}",
-                    }
-
+                    return ToolResult(
+                        status="error",
+                        message=f"Could not open camera at index {camera_index}.",
+                        recovery_tip="Check camera connections and ensure 'camera_index' is correct."
+                    )
+                
                 ret, frame = cap.read()
                 cap.release()
 
                 if not ret:
-                    return {
-                        "status": "error",
-                        "operation": "capture",
-                        "error": "Failed to capture image from camera",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="Failed to capture frame from camera.",
+                        recovery_tip="Ensure the camera is not being used by another application."
+                    )
 
-                # Save captured image
                 if save_capture_path:
                     cv2.imwrite(save_capture_path, frame)
-                    captured_path = save_capture_path
+                    image_input = save_capture_path
                 else:
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f:
+                    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
                         cv2.imwrite(f.name, frame)
-                        captured_path = f.name
+                        image_input = f.name
 
-                # Recognize faces in captured image
-                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                face_locations = face_recognition.face_locations(
-                    rgb_frame, model=face_manager.model
+                results = face_manager.recognize_faces(image_input, tolerance=tolerance)
+                
+                if not save_capture_path:
+                    try: os.unlink(image_input)
+                    except: pass
+
+                return ToolResult(
+                    status="success",
+                    message="Camera capture and recognition completed.",
+                    data={
+                        "matches": results,
+                        "count": len(results),
+                        "camera_index": camera_index,
+                        "save_path": save_capture_path,
+                        "biometric_metadata": biometric_metadata,
+                    }
                 )
-                face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
-
-                matches = []
-                for encoding in face_encodings:
-                    match_found = False
-
-                    for known_name, known_face in face_manager.known_faces.items():
-                        known_encoding = np.frombuffer(known_face.encoding, dtype=np.float64)
-
-                        match = face_recognition.compare_faces(
-                            [known_encoding], encoding, tolerance=tolerance
-                        )
-
-                        if match[0]:
-                            distance = float(
-                                face_recognition.face_distance([known_encoding], encoding)[0]
-                            )
-
-                            matches.append(
-                                {
-                                    "name": known_name,
-                                    "confidence": 1.0 - distance,
-                                    "face_distance": distance,
-                                }
-                            )
-                            match_found = True
-                            break
-
-                    if not match_found:
-                        matches.append({"name": "unknown", "confidence": 0.0, "face_distance": 1.0})
-
-                return {
-                    "status": "success",
-                    "operation": "capture",
-                    "image_path": captured_path,
-                    "faces_found": len(face_encodings),
-                    "matches": matches,
-                    "timestamp": timestamp,
-                    "biometric_metadata": biometric_metadata,
-                }
 
             else:
-                return {
-                    "status": "error",
-                    "error": f"Unknown operation: {operation}",
-                    "valid_operations": ["add", "recognize", "list", "delete", "capture"],
-                }
+                return ToolResult(
+                    status="error",
+                    message=f"Unknown face operation: {operation}",
+                    recovery_tip="Supported operations are: add, recognize, list, delete, capture."
+                )
 
         except Exception as e:
-            return {
-                "status": "error",
-                "operation": operation,
-                "error": str(e),
-                "error_type": type(e).__name__,
-            }
+            return ToolResult(
+                status="error",
+                message=f"Face recognition operation failed: {e}",
+                recovery_tip="Check if 'face_recognition' and 'dlib' are correctly configured and permissions are granted."
+            )
 
 
 __all__ = ["automation_face"]

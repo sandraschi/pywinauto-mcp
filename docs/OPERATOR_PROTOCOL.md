@@ -10,10 +10,10 @@ When you ask to **start an application** and **test or drive it via pywinauto**,
 
 ## Rules (share with the user before the first click)
 
-1. **Step back from the terminal / IDE** once the run has started — do not type in the terminal or bring the agent UI to the foreground unless you are answering **HITL approval** or **stopping** the run.
+1. **Step back from the terminal / IDE** once the run has started — do not type in the terminal or bring the agent UI to the foreground unless you are answering **HITL (human-in-the-loop) approval** or **stopping** the run.
 2. **Do not surface another app on purpose** (browser, mail, second IDE) while the workflow is driving the target app — let the **target app hold focus** unless the plan explicitly needs a different window.
 3. **If you must read output**, prefer **side-by-side** or a **second monitor**, or wait for a **natural pause** between tool calls — avoid stealing focus from the app under test.
-4. **HITL (approve_automation)** may appear for mouse/keyboard — when it does, **complete only that approval**, then **return focus** to the target app (or leave the desktop clear) as the workflow expects.
+4. **HITL (human-in-the-loop; `approve_automation`)** may appear for mouse/keyboard — when it does, **complete only that approval**, then **return focus** to the target app (or leave the desktop clear) as the workflow expects.
 5. **Kill switch / dry-run** — see [`SAFETY.md`](SAFETY.md); automation is not a substitute for Sandbox/VM isolation when you need a disposable desktop.
 
 ## For agents (wording you can surface verbatim)
@@ -22,4 +22,4 @@ When you ask to **start an application** and **test or drive it via pywinauto**,
 
 ## Related
 
-- [`SAFETY.md`](SAFETY.md) — HITL, env limits, two-server model with `virtualization-mcp`.
+- [`SAFETY.md`](SAFETY.md) — HITL (human-in-the-loop), env limits, two-server model with `virtualization-mcp`.

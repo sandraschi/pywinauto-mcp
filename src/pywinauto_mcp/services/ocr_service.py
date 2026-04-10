@@ -98,9 +98,7 @@ class OCRService:
 
         try:
             # Use Tesseract to extract text and data
-            data = pytesseract.image_to_data(
-                pil_img, output_type=pytesseract.Output.DICT, lang=lang, config=config
-            )
+            data = pytesseract.image_to_data(pil_img, output_type=pytesseract.Output.DICT, lang=lang, config=config)
 
             # Calculate average confidence (excluding -1 values which indicate no text)
             confidences = [float(x) for x in data["conf"] if float(x) > 0]

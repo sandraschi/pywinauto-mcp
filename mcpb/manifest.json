@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "pywinauto-mcp",
-  "version": "0.3.2",
+  "version": "0.4.2",
   "description": "Windows desktop UI automation (PyWinAuto): read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. HITL, kill switch, rate limits. Face recognition, OCR, 8 portmanteau tools.",
   "author": {
     "name": "Sandra Schi",

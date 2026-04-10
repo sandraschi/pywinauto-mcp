@@ -5,6 +5,8 @@ visual annotations, and OCR capabilities.
 """
 
 import logging
+import time
+from typing import Optional
 
 # Import the FastMCP app instance
 try:
@@ -17,52 +19,46 @@ except ImportError as e:
     logger.error(f"Failed to import FastMCP app in desktop state tools: {e}")
     app = None
 
-# Import desktop state capture functionality
+# Import desktop state capture functionality and models
 try:
     from pywinauto_mcp.desktop_state import DesktopStateCapture
+    from pywinauto_mcp.tools.models import DesktopStateRequest, ToolResult
 
-    logger.info("Successfully imported desktop state capture functionality")
+    logger.info("Successfully imported desktop state capture functionality and models")
 except ImportError as e:
-    logger = logging.getLogger(__name__)
-    logger.error(f"Failed to import desktop state capture: {e}")
+    logger.error(f"Import error in desktop_state tools: {e}")
     DesktopStateCapture = None
+    DesktopStateRequest = None
+    ToolResult = None
 
-# Only proceed with tool registration if app and functionality are available
+
 if app is not None and DesktopStateCapture is not None:
-    logger.info("Registering desktop state tools with FastMCP")
+    @app.tool(
+        name="get_desktop_state",
+        description="""Captures the complete hierarchical state of the Windows desktop UI.
 
-    @app.tool()
-    def get_desktop_state(
-        use_vision: bool = False,
-        use_ocr: bool = False,
-        max_depth: int = 10,
-        element_timeout: float = 0.5,
-    ) -> dict:
-        """Capture comprehensive desktop state with UI element discovery.
+WHAT IT DOES:
+This tool traverses the UI tree of all active windows to produce a structured JSON representation of every discoverable element (buttons, panes, edit boxes, etc.). It optionally integrates computer vision (capturing element screenshots) and OCR (reading text from purely graphical controls) to enrich the metadata.
 
-        SOTA 2026 CAPTURE PROTOCOL:
-        This tool provides a pixel-perfect, element-aware snapshot of the current
-        UI state. It utilizes recursive tree traversal with depth control and
-        optional multimodal (Vision + OCR) enhancement features.
+WHEN TO USE:
+- Use this as your 'Primary Discovery' tool when starting a new automation task.
+- Use it to find stable selectors (Control IDs, Class Names, Names) for 'automation_elements' calls.
+- Use 'use_vision=True' to get visual snapshots of the elements for multi-modal analysis.
 
-        Args:
-            use_vision (bool): Include annotated screenshot with element boundaries.
-            use_ocr (bool): Use OCR to extract text from visual components.
-            max_depth (int): Maximum UI tree traversal depth (SOTA default: 10).
-            element_timeout (float): Per-element processing threshold.
-
-        Returns:
-            dict: Comprehensive desktop state dictionary.
-
-        Example:
-            get_desktop_state(use_vision=True, use_ocr=True)
-            get_desktop_state(max_depth=15, element_timeout=0.2)
-
-        """
+RECOVERY:
+If the UI tree is exceptionally deep, increase 'max_depth' or target a specific window first using 'automation_windows'. If capture is slow, decrease 'max_depth' or disable 'use_ocr'.
+""",
+    )
+    def get_desktop_state(request: DesktopStateRequest) -> ToolResult:
+        """Captures the current desktop state including UI elements and visual metadata."""
         try:
-            logger.info(f"Starting SOTA desktop state capture (vision={use_vision}, ocr={use_ocr})")
-            import time
+            use_vision = request.use_vision
+            use_ocr = request.use_ocr
+            max_depth = request.max_depth
+            element_timeout = request.element_timeout
 
+            logger.info(f"Starting SOTA desktop state capture (vision={use_vision}, ocr={use_ocr})")
+            
             timestamp = time.time()
             visual_metadata = {
                 "timestamp": timestamp,
@@ -75,24 +71,22 @@ if app is not None and DesktopStateCapture is not None:
 
             # Inject SOTA metadata
             result["visual_metadata"] = visual_metadata
-            result["status"] = "success"
-
-            logger.info(
-                f"Desktop state capture completed: {result['element_count']} elements found"
+            
+            return ToolResult(
+                status="success",
+                message=f"Desktop state capture completed: {result.get('element_count', 0)} elements found",
+                data=result
             )
-            return result
 
         except Exception as e:
             logger.error(f"Desktop state capture failed: {e}")
-            # Return a basic error response
-            return {
-                "error": str(e),
-                "text": f"Failed to capture desktop state: {e}",
-                "interactive_elements": [],
-                "informative_elements": [],
-                "element_count": 0,
-            }
-
+            return ToolResult(
+                status="error",
+                message=f"Desktop state capture failed: {str(e)}",
+                recovery_tip="Ensure the desktop session is active and not locked. Try disabling vision/ocr to isolate issues."
+            )
 else:
-    logger = logging.getLogger(__name__)
     logger.warning("Desktop state tools not available - missing dependencies or app instance")
+
+
+__all__ = ["get_desktop_state"]

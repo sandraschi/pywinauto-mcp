@@ -2,17 +2,18 @@
 
 **Let an AI assistant control real Windows apps**  through a single MCP server that wraps window, UI, mouse, keyboard, screenshots, OCR, and optional face checks behind a small set of **portmanteau** tools (many operations, few entry points so models stay focused).
 
-**Stack:** v0.3.2  FastMCP 3.1+  Python 3.12+  Windows 10/11  
+**Stack:** v0.4.2  FastMCP 3.2+  Python 3.12+  Windows 10/11  
 
-**Web dashboard (optional):** This repo ships **`web_sota`**  a local browser UI (Vite; default **http://localhost:10788**) that talks to the same backend as the REST API (**http://127.0.0.1:10789**). Use it for a **tools hub**, safety/help pages, **local LLM chat** (Ollama or LM Studio), **camera** selection, biometrics, and overview  run **`web_sota/start.ps1`**. You do **not** need the webapp for normal MCP **stdio** use in an IDE; it is an extra operator surface.
+**Web dashboard (optional):** This repo ships **`web_sota`** — a local browser UI (Vite; default **http://localhost:10788**) that talks to the same backend as the REST API (**http://127.0.0.1:10789**). Use it for a **tools hub**, safety/help pages, **local LLM chat** (Ollama or LM Studio), **camera** selection, biometrics, and overview — run **`web_sota/start.ps1`**. You do **not** need the webapp for normal MCP **stdio** use in an IDE; it is an extra operator surface.
 
-**Important:** This is **not** a browser sandbox. It runs in **your** desktop session and can move the real cursor, type into real windows, and drive the same UI you see. Read **[docs/SAFETY.md](docs/SAFETY.md)** before you wire it into an IDE. For throwaway desktops (Windows Sandbox, VMs, mapped folders), use **[virtualization-mcp](https://github.com/sandraschi/virtualization-mcp)** alongside this project. Fleet notes: `mcp-central-docs/patterns/PYWINAUTO_MCP_SAFETY.md`. Optional **face** features are off until you opt in  see **SAFETY 5** and `PYWINAUTO_MCP_ENABLE_FACE`.
+**Important:** This is **not** a browser sandbox. It runs in **your** desktop session and can move the real cursor, type into real windows, and drive the same UI you see. Read **[docs/SAFETY.md](docs/SAFETY.md)** before you wire it into an IDE. For **why hooks and full desktop control look “malware-adjacent”** and how this repo gates them (research, forensics, legitimate automation), see **[Dual-use tooling](docs/SAFETY.md#dual-use-tooling-research-forensics-and-guardrails)** in that doc. For throwaway desktops (Windows Sandbox, VMs, mapped folders), use **[virtualization-mcp](https://github.com/sandraschi/virtualization-mcp)** alongside this project. Fleet notes: `mcp-central-docs/patterns/PYWINAUTO_MCP_SAFETY.md`. Optional **face** features are off until you opt in  see **SAFETY 5** and `PYWINAUTO_MCP_ENABLE_FACE`. Optional **global keylogger** is off until you opt in  see **SAFETY 6** and `PYWINAUTO_MCP_ENABLE_KEYLOGGER`.
 
 **Native Windows vs websites (HTML DOM):** **pywinauto-mcp** drives **desktop UI** (Win32 / UI Automation  windows, dialogs, many native controls). It does **not** expose the **HTML DOM** inside a browser tab. For **website** automation and analysis (selectors, accessibility tree, network, console), use a **browser MCP**; those servers are usually built on **Playwright** (or Chromium-only stacks). The two are **orthogonal**  combine them in your IDE when a workflow needs **both** a real browser page and a **native** app on the same machine.
 
 ### Discovery (GitHub, Glama, MCP catalogs)
 
-- **Safety:** [`docs/SAFETY.md`](docs/SAFETY.md)  kill switch, rate limits, HITL, dry-run.
+- **Safety:** [`docs/SAFETY.md`](docs/SAFETY.md)  kill switch, rate limits, HITL (human-in-the-loop), dry-run.
+- **Dual-use / research:** [Dual-use tooling](docs/SAFETY.md#dual-use-tooling-research-forensics-and-guardrails) — capability vs. intent, guardrails, vendor refusal context.
 - **Isolation:** **Windows Sandbox** / VM via [`virtualization-mcp`](https://github.com/sandraschi/virtualization-mcp). Repo stars are **not** a safety guarantee.
 
 ### Product & docs
@@ -29,26 +30,29 @@
 
 ### Planned / todo
 
-- **Optional voice (STT / keyword / speaker-adjacent):** Not implemented. Would mirror face: **env + optional extra**, local-first, same HITL/safety docs  not authentication.
+- **Optional voice (STT / keyword / speaker-adjacent):** Not implemented. Would mirror face: **env + optional extra**, local-first, same HITL (human-in-the-loop) / safety docs  not authentication.
 
 ## Examples
 
-- [examples/notepad_basic.py](examples/notepad_basic.py)  simple window flow.
-- [examples/calculator_advanced.py](examples/calculator_advanced.py)  element tree.
-- [examples/system_monitoring.py](examples/system_monitoring.py)  processes / tray.
+- **[examples/README.md](examples/README.md)** — **demos:** mouse dance, 9-Notepad grid, typewriter Notepad, plus older samples. Run all three in order: **`just demo`** (requires [just](https://github.com/casey/just)).
+- **just paint-demo** — Industrialized MS Paint drawing (justfile/PowerShell orchestrated).
+- [examples/notepad_basic.py](examples/notepad_basic.py) — simple window flow.
+- [examples/calculator_advanced.py](examples/calculator_advanced.py) — element tree.
+- [examples/system_monitoring.py](examples/system_monitoring.py) — processes / tray.
 
 Latency depends on the host, target app, and backends (OCR, etc.); treat any old benchmark tables as obsolete.
 
 ## Tools (portmanteau)
 
-Seven core interfaces plus **`get_desktop_state`**, and **optional** `automation_face` when enabled:
+Seven core interfaces plus **`get_desktop_state`**, **optional** `automation_face` when enabled, and **optional** `global_keylogger` when enabled (see **SAFETY**):
 
 | Tool | Operations | Description |
 |------|------------|-------------|
 | `automation_windows` | 11 | Window management (list, find, maximize, etc.) |
 | `automation_elements` | 14 | UI element interaction (click, hover, text, etc.) |
-| `automation_mouse` | 9 | Mouse (HITL may apply) |
-| `automation_keyboard` | 4 | Keyboard (HITL may apply) |
+| `automation_mouse` | 9 | Mouse — HITL (human-in-the-loop) may apply |
+| `automation_keyboard` | 4 | Keyboard — HITL (human-in-the-loop) may apply |
+| `global_keylogger` | 5 | Session keyboard capture (opt-in: `PYWINAUTO_MCP_ENABLE_KEYLOGGER`; see SAFETY §6) |
 | `automation_visual` | 4 | Screenshot, OCR, find image |
 | `automation_face` | 5 | Face (opt-in: env + `face` extra) |
 | `automation_system` |  | status, **help**, wait, info, clipboard, processes, start_app |
@@ -118,23 +122,51 @@ mcpb install pywinauto-mcp
 
 ## Safety
 
-**Canonical:** [`docs/SAFETY.md`](docs/SAFETY.md)  two-server model with **`virtualization-mcp`**, HITL, env vars, fleet docs.
+**Canonical:** [`docs/SAFETY.md`](docs/SAFETY.md)  two-server model with **`virtualization-mcp`**, HITL (human-in-the-loop), env vars, fleet docs.
+
+**Dual-use / research framing:** [Dual-use tooling (research, forensics, guardrails)](docs/SAFETY.md#dual-use-tooling-research-forensics-and-guardrails) — why full desktop automation and hooks overlap offensive tooling in **capability**, how **intent and authorization** differ, and what this repo does to limit abuse.
 
 Desktop automation is **not** browser-sandboxed. **Sampling** and long agent loops can multiply tool calls.
 
-### Human-in-the-loop
+### Human-in-the-loop (HITL)
+
+**HITL** (human-in-the-loop) means an operator must **approve** before mutating **mouse** / **keyboard** when the server is configured that way.
 
 - **`approve_automation(duration_minutes=...)`** before mutating **mouse** / **keyboard**, or tools return `clarification_needed`.
-- **`automation_mouse("position")`** is read-only and skips approval.
+- **`automation_mouse("position")`** and **`automation_mouse("telemetry")`** are read-only and skip approval.
+
+---
+
+## Operations Overview
+
+### 🖱️ Mouse Control (`automation_mouse`)
+Consolidates all mouse interactions: position tracking, clicking, dragging, and hovering.
+
+**Pointer injection** uses the in-repo **`win32_mouse`** backend (**`SetCursorPos`** / **`mouse_event`**, DPI-aware) for **`automation_mouse`** and for coordinate-based clicks in **`automation_elements`** — not PyAutoGUI alone, so moves and clicks stay reliable on scaled displays. Responses may include **`input_backend: "win32_mouse"`**. **Failsafe** matches PyAutoGUI: moving the cursor to the **upper-left screen corner** aborts injected pointer ops unless **`PYWINAUTO_MCP_BYPASS_HITL=1`** (also disables that corner check for **`win32_mouse`**).
+
+**Operations**: `position`, `click`, `double_click`, `right_click`, `move`, `move_relative`, `scroll`, `drag`, `hover`, `telemetry`
+
+**Key Tool: Visual Telemetry HUD**
+Launches a high-visibility, "Always-on-Top" overlay for real-time calibration:
+- **Coordinate Tracking**: Live X/Y position updates.
+- **Scrolling Input Buffer**: Displays the last 20 keyboard characters and click events (visual verification only, no persistence).
+- **Industrial Safety**: High visibility ensures monitoring is transparent and operator-auditable.
+
+```powershell
+# Example: Launch telemetry HUD for 30 seconds
+mcp-invoke automation_mouse --operation "telemetry" --telemetry_duration 30
+```
 
 ### Environment variables
 
 | Env | Purpose |
 |-----|---------|
-| `PYWINAUTO_MCP_KILL_SWITCH=1` | Blocks mutating mouse/keyboard (after HITL path). |
+| `PYWINAUTO_MCP_BYPASS_HITL=1` | Bypasses approval prompts and disables pointer failsafe (`pyautogui.FAILSAFE` and **`win32_mouse`** corner escape) for trust-controlled demos/CI. |
+| `PYWINAUTO_MCP_KILL_SWITCH=1` | Blocks mutating mouse/keyboard (after HITL (human-in-the-loop) path). |
 | `PYWINAUTO_MCP_MAX_ACTIONS_PER_MINUTE` | Default `120`  rolling 60s cap for mutating actions. |
 | `PYWINAUTO_MCP_DRY_RUN=1` | Count actions without sending input (`dry_run` in results). |
 | `PYWINAUTO_MCP_ENABLE_FACE=1` | Allows registering **`automation_face`** (needs `face` extra). |
+| `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1` | Allows registering **`global_keylogger`** (session keyboard capture; see SAFETY §6). |
 | `PYWINAUTO_LLM_BASE_URL` | Default OpenAI-compatible root for the **web_sota** local-LLM proxy (e.g. Ollama `http://127.0.0.1:11434/v1`, LM Studio `http://127.0.0.1:1234/v1`). The UI can override per session. |
 | `PYWINAUTO_MCP_CAMERA_MAX_INDEX` | Max OpenCV index to probe for **`GET /api/v1/cameras/`** (default `10`, capped at 32). |
 

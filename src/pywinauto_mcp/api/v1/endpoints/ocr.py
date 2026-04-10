@@ -42,9 +42,7 @@ class OCRTextResult(BaseModel):
     text: str = Field(..., description="Extracted text from the image")
     confidence: float = Field(..., description="Confidence score of the OCR result (0-100)")
     language: str = Field(..., description="Language code used for OCR")
-    raw_data: dict[str, Any] | None = Field(
-        None, description="Raw OCR data including bounding boxes and confidences"
-    )
+    raw_data: dict[str, Any] | None = Field(None, description="Raw OCR data including bounding boxes and confidences")
 
     class Config:
         """Pydantic config."""
@@ -62,9 +60,7 @@ class OCRTextResult(BaseModel):
 class OCRRegionResult(OCRTextResult):
     """Result of text extraction from a specific region of an image."""
 
-    region: dict[str, int] = Field(
-        ..., description="Region of interest where text was extracted from"
-    )
+    region: dict[str, int] = Field(..., description="Region of interest where text was extracted from")
 
     class Config:
         """Pydantic config."""
@@ -86,9 +82,7 @@ class TextPositionResult(BaseModel):
     success: bool = Field(..., description="Whether the operation was successful")
     found: bool = Field(..., description="Whether the text was found in the image")
     search_text: str = Field(..., description="The text that was searched for")
-    position: dict[str, int] | None = Field(
-        None, description="Position of the found text (x, y, width, height)"
-    )
+    position: dict[str, int] | None = Field(None, description="Position of the found text (x, y, width, height)")
     confidence: float | None = Field(None, description="Confidence score of the match (0-100)")
 
     class Config:
@@ -114,7 +108,7 @@ class TextPositionResult(BaseModel):
     response_description="Extracted text and confidence score",
 )
 async def extract_text_from_image(
-    file: UploadFile = File(..., description="Image file to process"),  # noqa: B008
+    file: UploadFile = File(..., description="Image file to process"),
     preprocess: bool = Query(True, description="Apply image preprocessing for better OCR results"),
     lang: str = Query("eng", description="Language code for OCR (e.g., 'eng', 'deu', 'fra')"),
 ) -> dict[str, Any]:
@@ -144,14 +138,10 @@ async def extract_text_from_image(
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if image is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Could not decode the image file"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not decode the image file")
 
         # Extract text
-        result = ocr_service.extract_text(
-            image=image, preprocess=preprocess, lang=lang, config=config.TESSERACT_CONFIG
-        )
+        result = ocr_service.extract_text(image=image, preprocess=preprocess, lang=lang, config=config.TESSERACT_CONFIG)
 
         return {
             "success": True,
@@ -164,10 +154,10 @@ async def extract_text_from_image(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error processing image: {str(e)}", exc_info=True)
+        logger.error(f"Error processing image: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing image: {str(e)}",
+            detail=f"Error processing image: {e!s}",
         ) from e
 
 
@@ -180,7 +170,7 @@ async def extract_text_from_image(
     response_description="Extracted text and region information",
 )
 async def extract_text_from_region(
-    file: UploadFile = File(..., description="Image file to process"),  # noqa: B008
+    file: UploadFile = File(..., description="Image file to process"),
     x: int = Query(..., ge=0, description="X coordinate of the top-left corner"),
     y: int = Query(..., ge=0, description="Y coordinate of the top-left corner"),
     width: int = Query(..., gt=0, description="Width of the region"),
@@ -210,9 +200,7 @@ async def extract_text_from_region(
 
     """
     try:
-        logger.info(
-            f"Processing image region (x={x}, y={y}, w={width}, h={height}) for text extraction"
-        )
+        logger.info(f"Processing image region (x={x}, y={y}, w={width}, h={height}) for text extraction")
 
         # Read the uploaded file
         contents = await file.read()
@@ -220,9 +208,7 @@ async def extract_text_from_region(
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if image is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Could not decode the image file"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not decode the image file")
 
         # Validate region coordinates
         img_height, img_width = image.shape[:2]
@@ -257,10 +243,10 @@ async def extract_text_from_region(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error processing image region: {str(e)}", exc_info=True)
+        logger.error(f"Error processing image region: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing image region: {str(e)}",
+            detail=f"Error processing image region: {e!s}",
         ) from e
 
 
@@ -273,7 +259,7 @@ async def extract_text_from_region(
     response_description="Position of the found text or not found status",
 )
 async def find_text_in_image(
-    file: UploadFile = File(..., description="Image file to search in"),  # noqa: B008
+    file: UploadFile = File(..., description="Image file to search in"),
     search_text: str = Query(..., description="Text to search for in the image"),
     lang: str = Query("eng", description="Language code for OCR"),
     case_sensitive: bool = Query(False, description="Whether the search should be case-sensitive"),
@@ -297,9 +283,7 @@ async def find_text_in_image(
 
     """
     if not search_text.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="search_text parameter cannot be empty"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="search_text parameter cannot be empty")
 
     try:
         logger.info(f"Searching for text: '{search_text}' (case_sensitive={case_sensitive})")
@@ -310,9 +294,7 @@ async def find_text_in_image(
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if image is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Could not decode the image file"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not decode the image file")
 
         # Find the text position
         position = ocr_service.find_text_position(
@@ -344,8 +326,8 @@ async def find_text_in_image(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error searching for text in image: {str(e)}", exc_info=True)
+        logger.error(f"Error searching for text in image: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error searching for text in image: {str(e)}",
+            detail=f"Error searching for text in image: {e!s}",
         ) from e

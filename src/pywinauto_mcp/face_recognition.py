@@ -91,9 +91,7 @@ class FaceRecognition:
             except Exception as e:
                 logger.error(f"Error saving face data for {name}: {e}")
 
-    def add_known_face(
-        self, name: str, image_path: str | None = None, image_data: bytes | None = None
-    ) -> bool:
+    def add_known_face(self, name: str, image_path: str | None = None, image_data: bytes | None = None) -> bool:
         """Add a new known face.
 
         Args:
@@ -186,23 +184,17 @@ class FaceRecognition:
             face_encodings = face_recognition.face_encodings(rgb_image, face_locations)
 
             # Compare with known faces
-            for face_encoding, (_top, _right, _bottom, _left) in zip(
-                face_encodings, face_locations, strict=False
-            ):
+            for face_encoding, (_top, _right, _bottom, _left) in zip(face_encodings, face_locations, strict=False):
                 # Check if the face matches any known faces
                 for name, face_data in self.known_faces.items():
                     known_encoding = self.decrypt_encoding(face_data.encoding)
 
                     # Compare faces
-                    matches = face_recognition.compare_faces(
-                        [known_encoding], face_encoding, tolerance=self.tolerance
-                    )
+                    matches = face_recognition.compare_faces([known_encoding], face_encoding, tolerance=self.tolerance)
 
                     if True in matches:
                         # Calculate face distance (lower is more similar)
-                        face_distances = face_recognition.face_distance(
-                            [known_encoding], face_encoding
-                        )
+                        face_distances = face_recognition.face_distance([known_encoding], face_encoding)
                         confidence = 1.0 - face_distances[0]  # Convert to confidence score (0-1)
 
                         # Update last used timestamp and usage count
@@ -269,9 +261,7 @@ class FaceRecognition:
                     face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
 
                     # Loop through each face in this frame of video
-                    for (top, right, bottom, left), face_encoding in zip(
-                        face_locations, face_encodings, strict=False
-                    ):
+                    for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings, strict=False):
                         # Check if the face matches any known faces
                         for name, face_data in self.known_faces.items():
                             known_encoding = self.decrypt_encoding(face_data.encoding)
@@ -283,12 +273,8 @@ class FaceRecognition:
 
                             if True in matches:
                                 # Calculate face distance (lower is more similar)
-                                face_distances = face_recognition.face_distance(
-                                    [known_encoding], face_encoding
-                                )
-                                confidence = (
-                                    1.0 - face_distances[0]
-                                )  # Convert to confidence score (0-1)
+                                face_distances = face_recognition.face_distance([known_encoding], face_encoding)
+                                confidence = 1.0 - face_distances[0]  # Convert to confidence score (0-1)
 
                                 if confidence >= confidence_threshold:
                                     # Update last used timestamp and usage count
@@ -297,9 +283,7 @@ class FaceRecognition:
                                     self.save_known_faces()
 
                                     # Draw a box around the face
-                                    cv2.rectangle(
-                                        frame, (left, top), (right, bottom), (0, 255, 0), 2
-                                    )
+                                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
 
                                     # Draw a label with the name and confidence
                                     label = f"{name} ({confidence:.2f})"

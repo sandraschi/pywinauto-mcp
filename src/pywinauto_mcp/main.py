@@ -60,6 +60,12 @@ try:
         def on_shutdown() -> None:
             """Called when the MCP server shuts down."""
             logger.info("PyWinAuto MCP server shutting down...")
+            try:
+                from pywinauto_mcp.keylogger_service import GlobalKeyloggerService
+
+                GlobalKeyloggerService.get().stop()
+            except Exception as e:
+                logger.debug("Keylogger shutdown: %s", e)
 
     logger.info("MCP server initialized successfully")
 
@@ -91,7 +97,7 @@ def main() -> None:
     """Run the PyWinAuto MCP server."""
     try:
         logger.info("=" * 60)
-        logger.info("PyWinAuto MCP - Portmanteau Edition v0.3.2")
+        logger.info("PyWinAuto MCP - Portmanteau Edition v0.4.2")
         logger.info("=" * 60)
         logger.info("FastMCP version: 2.13.1")
         logger.info(f"OCR available: {OCR_AVAILABLE}")
@@ -110,6 +116,7 @@ def main() -> None:
             "automation_elements",
             "automation_mouse",
             "automation_keyboard",
+            "global_keylogger",
             "automation_visual",
             "automation_face",
             "automation_system",

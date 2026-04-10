@@ -1,419 +1,231 @@
 """Mouse interaction portmanteau tool for PyWinAuto MCP.
 
-PORTMANTEAU PATTERN RATIONALE:
-Instead of creating 10+ separate tools (one per mouse operation), this tool consolidates related
-mouse interaction operations into a single interface. This design:
-- Prevents tool explosion (10+ tools → 1 tool) while maintaining full functionality
-- Improves discoverability by grouping related operations together
-- Reduces cognitive load when working with mouse automation tasks
-- Follows FastMCP 2.13+ best practices for feature-rich MCP servers
-
-SUPPORTED OPERATIONS:
-- position: Get current cursor position
-- move: Move mouse to absolute coordinates
-- move_relative: Move mouse relative to current position
-- click: Click at position or current location
-- double_click: Double-click at position
-- right_click: Right-click at position
-- scroll: Scroll mouse wheel (vertical or horizontal)
-- drag: Drag from one point to another
-- hover: Move to position and hover for duration
+Pointer injection uses :mod:`pywinauto_mcp.win32_mouse` (``SetCursorPos`` +
+``mouse_event``) with per-monitor DPI awareness — not raw PyAutoGUI — so move,
+click, and drag match screen coordinates reliably on scaled displays.
 """
 
 import logging
+import subprocess
+import sys
 import time
-from typing import Any, Literal
+from typing import cast
 
-import pyautogui
+from pywinauto_mcp.app import app
+from pywinauto_mcp.tools.models import MouseOperationRequest, ToolResult
+from pywinauto_mcp.win32_mouse import (
+    ButtonName,
+    MouseFailSafeError,
+    click,
+    double_click,
+    drag,
+    get_cursor_pos,
+    move_rel,
+    move_to,
+    right_click,
+    screen_size,
+    scroll,
+    scroll_at,
+)
 
-# Import the FastMCP app instance
-try:
-    from pywinauto_mcp.app import app
-
-    logger = logging.getLogger(__name__)
-    logger.info("Successfully imported FastMCP app instance in portmanteau_mouse")
-except ImportError as e:
-    logger = logging.getLogger(__name__)
-    logger.error(f"Failed to import FastMCP app in portmanteau_mouse: {e}")
-    app = None
-
-# Configure pyautogui
-pyautogui.PAUSE = 0.1
-pyautogui.FAILSAFE = True
+logger = logging.getLogger(__name__)
 
 
 if app is not None:
-    logger.info("Registering portmanteau_mouse tool with FastMCP")
-
     @app.tool(
         name="automation_mouse",
-        description="""Comprehensive mouse control tool for Windows automation tracking SOTA 2026.
+        description="""Comprehensive mouse control and cursor simulation system.
 
-SUPPORTED OPERATIONS:
-- position: Returns current cursor coordinates.
-- click: Executes relative or absolute button clicks.
-- double_click: Performs two rapid clicks at the target location.
-- right_click: Triggers contextual clicks.
-- move: Relocates the cursor using absolute or relative coordinates.
-- scroll: Manipulates the mouse wheel vertically or horizontally.
-- drag: Smoothly moves objects between coordinates.
-- hover: Pauses at location to trigger UI tooltips.
+WHAT IT DOES:
+Moves, clicks, drags, and scrolls using **Win32** ``SetCursorPos`` / ``mouse_event``
+(DPI-aware), not PyAutoGUI alone — reliable move/click/drag on scaled monitors.
 
-DIALOGIC RETURN PATTERN:
-If coordinates are off-screen or target high-risk system areas, returns clarification_needed.
+WHEN TO USE:
+- Use 'position' to get current screen coordinates before planning a movement.
+- Use 'click' or 'double_click' for rapid UI interaction.
+- Use 'move_relative' to nudge the cursor from its current spot.
+- Use 'scroll' to browse lists or web pages.
+- Use 'telemetry' to visually debug coordinates on the user's screen.
 
-Examples:
-    automation_mouse("position")
-    automation_mouse("move", x=500, y=300)
-    automation_mouse("click", button="right")
+RECOVERY AND TROUBLESHOOTING:
+- FailSafe: Moving the cursor to the **upper-left** corner aborts (same idea as PyAutoGUI).
+  Disabled when PYWINAUTO_MCP_BYPASS_HITL=1.
+- If coordinates seem 'off', confirm single-monitor expectations or use 'position' first.
 
+RETURNS:
+A ToolResult object containing standardized outcome, message, and movement data.
 """,
     )
-    def automation_mouse(
-        operation: Literal[
-            "position",  # Added "position" to Literal type hint
-            "click",
-            "double_click",
-            "right_click",
-            "move",
-            "move_relative",
-            "scroll",
-            "drag",
-            "hover",
-        ],
-        x: int | None = None,
-        y: int | None = None,
-        target_x: int | None = None,
-        target_y: int | None = None,
-        button: str = "left",
-        amount: int = 0,
-        horizontal: bool = False,
-        duration: float = 0.0,
-        hover_duration: float = 0.5,
-    ) -> dict[str, Any]:
-        """Comprehensive mouse control operations for Windows automation.
-
-        PORTMANTEAU PATTERN RATIONALE:
-        Consolidates cursor movement and clicking operations into a single tool to reduce
-        API surface area while maintaining precise physical input control. Follows FastMCP
-        2.14.3 patterns for stateful input tracking.
-
-        SUPPORTED OPERATIONS:
-        - click: Executes a single mouse button click at specified or current coordinates.
-        - double_click: Performs two rapid clicks at the target location.
-        - right_click: Triggers a contextual click at the target location.
-        - move: Relocates the cursor to absolute screen coordinates.
-        - move_relative: Shifts the cursor by a specified pixel offset from current position.
-        - scroll: Manipulates the mouse wheel vertically or horizontally.
-        - drag: Moves the cursor from start to end coordinates while holding a button.
-        - hover: Places the cursor at a location for a specific duration to trigger tooltips.
-        - position: Retrieves the current coordinates of the mouse cursor.
-
-        DIALOGIC RETURN PATTERN:
-        This tool implements the SOTA 2026 Dialogic Return Pattern for safety-critical UI
-        interactions. If a mouse operation targets coordinates that are outside of specific
-        security boundaries or are identified as ambiguous screen regions, the tool
-        returns a clarification_needed status. In this state, the payload includes
-        visual_context metadata and coordinate_options to allow the agent to verify
-        the intended target before final execution.
-
-        USAGE AND RECOVERY:
-        Specify the operation and coordinates or relative offsets. In cases where the
-        cursor fails to move or the target element is blocked, the tool returns
-        diagnostic_info indicating the current cursor position and any potential OS
-        interrupts. Agents should use the provided recovery_options to re-synchronize
-        the input stream.
-
-        Args:
-            operation (str, required): The mouse action to perform.
-            x (int | None): Absolute horizontal coordinate.
-            y (int | None): Absolute vertical coordinate.
-            target_x (int | None): Destination horizontal coordinate for drag operations.
-            target_y (int | None): Destination vertical coordinate for drag operations.
-            button (str): The specific mouse button to utilize (left, right, middle).
-            amount (int): Scrolling distance or click frequency depending on context.
-            horizontal (bool): Directional toggle for scrolling operations.
-            duration (float): Time in seconds to complete a movement or drag.
-            hover_duration (float): Time to stay at coordinates for hover operations.
-
-        Returns:
-            dict[str, Any]: Operation-specific result dictionary with sensor metadata and status.
-
-        """
+    def automation_mouse(request: MouseOperationRequest) -> ToolResult:
+        """Unified mouse control handler."""
         try:
+            operation = request.operation
             timestamp = time.time()
-            screen_width, screen_height = pyautogui.size()
-            sensor_metadata = {
-                "screen_resolution": (screen_width, screen_height),
+
+            sw, sh = screen_size()
+            metadata = {
+                "screen_resolution": f"{sw}x{sh}",
                 "timestamp": timestamp,
+                "input_backend": "win32_mouse",
             }
 
-            # === HITL SECURITY CHECK ===
-            if operation != "position":
+            x = request.x
+            y = request.y
+            target_x = request.target_x or request.x2
+            target_y = request.target_y or request.y2
+            amount = request.amount if request.amount != 1 else (
+                request.clicks if request.clicks != 1 else request.amount
+            )
+
+            btn = cast(ButtonName, request.button)
+
+            read_only_ops = ["position", "telemetry"]
+            if operation not in read_only_ops:
                 try:
                     from pywinauto_mcp.app import approval_state
 
                     if not approval_state.is_approved():
-                        # Format the details for user transparency
                         action_detail = f"Mouse: {operation}"
                         if x is not None and y is not None:
                             action_detail += f" at ({x}, {y})"
-                        elif operation == "scroll":
-                            action_detail += f" amount {amount}"
 
-                        return {
-                            "status": "clarification_needed",
-                            "operation": operation,
-                            "message": "SECURITY: Human approval required for UI automation.",
-                            "hitl_prompt": f"Approve mouse action? [{action_detail}]",
-                            "hitl_options": {
-                                "approve_current": "Retries this action one-time",
-                                "approve_window": "Approves all UI actions for 5 minutes",
+                        return ToolResult(
+                            status="clarification_needed",
+                            message="Human approval required for UI automation.",
+                            data={
+                                "hitl_prompt": f"Approve mouse action? [{action_detail}]",
+                                "technical_details": request.model_dump(exclude_none=True),
+                                "metadata": metadata,
                             },
-                            "technical_details": {
-                                "operation": operation,
-                                "x": x,
-                                "y": y,
-                                "button": button,
-                                "amount": amount,
-                                "target_x": target_x,
-                                "target_y": target_y,
-                            },
-                            "sensor_metadata": sensor_metadata,
-                        }
+                        )
                 except ImportError:
-                    logger.error("Failed to import approval_state for HITL check")
-                    # Fallback to safety if state cannot be checked
-                    return {
-                        "status": "error",
-                        "error": "Security subsystem unavailable (import error)",
-                    }
+                    pass
 
-            # === RATE / KILL SWITCH / DRY-RUN (see pywinauto_mcp.safety) ===
-            from pywinauto_mcp.safety import before_mutation
+            try:
+                from pywinauto_mcp.safety import before_mutation
 
-            read_only = operation == "position"
-            gate = before_mutation(read_only=read_only)
-            if not gate.get("allow"):
-                return {
-                    "status": "blocked",
-                    "code": gate.get("code"),
-                    "message": gate.get("message", "Mutation blocked"),
-                    "operation": operation,
-                    "sensor_metadata": sensor_metadata,
-                }
-            if gate.get("dry_run"):
-                return {
-                    "status": "dry_run",
-                    "message": gate.get("message"),
-                    "operation": operation,
-                    "x": x,
-                    "y": y,
-                    "sensor_metadata": sensor_metadata,
-                }
+                gate = before_mutation(read_only=(operation in read_only_ops))
+                if not gate.get("allow"):
+                    return ToolResult(status="blocked", message=gate.get("message", "Action blocked."))
+                if gate.get("dry_run"):
+                    return ToolResult(status="success", message=f"[DRY RUN] Would execute {operation}")
+            except ImportError:
+                pass
 
-            # === POSITION OPERATION ===
             if operation == "position":
-                pos_x, pos_y = pyautogui.position()
-                return {
-                    "status": "success",
-                    "operation": "position",
-                    "x": pos_x,
-                    "y": pos_y,
-                    "position": (pos_x, pos_y),
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
+                pos_x, pos_y = get_cursor_pos()
+                return ToolResult(
+                    status="success",
+                    message=f"Cursor at ({pos_x}, {pos_y})",
+                    data={"x": pos_x, "y": pos_y, "metadata": metadata},
+                )
 
-            # === MOVE OPERATION ===
             elif operation == "move":
                 if x is None or y is None:
-                    return {
-                        "status": "error",
-                        "operation": "move",
-                        "error": "x and y parameters are required",
-                        "timestamp": timestamp,  # Added timestamp
-                    }
-                pyautogui.moveTo(x, y, duration=duration)
-                return {
-                    "status": "success",
-                    "operation": "move",
-                    "x": x,
-                    "y": y,
-                    "duration": duration,
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
+                    return ToolResult(status="error", message="Coordinates x, y are required for 'move'.")
+                move_to(int(x), int(y), duration=request.duration)
+                return ToolResult(status="success", message=f"Moved to ({x}, {y})", data={"x": x, "y": y})
 
-            # === MOVE_RELATIVE OPERATION ===
             elif operation == "move_relative":
                 if x is None or y is None:
-                    return {
-                        "status": "error",
-                        "operation": "move_relative",
-                        "error": "x and y parameters are required (as offsets)",
-                    }
-                current_x, current_y = pyautogui.position()
-                new_x = current_x + x
-                new_y = current_y + y
-                pyautogui.moveTo(new_x, new_y, duration=duration)
-                return {
-                    "status": "success",
-                    "operation": "move_relative",
-                    "offset": (x, y),
-                    "from_position": (current_x, current_y),
-                    "to_position": (new_x, new_y),
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
+                    return ToolResult(status="error", message="Offsets x, y are required for 'move_relative'.")
+                move_rel(int(x), int(y), duration=request.duration)
+                nx, ny = get_cursor_pos()
+                return ToolResult(status="success", message=f"Nudged to ({nx}, {ny})", data={"x": nx, "y": ny})
 
-            # === CLICK OPERATION ===
-            elif operation == "click":
+            elif operation in ["click", "double_click", "right_click"]:
                 if x is not None and y is not None:
-                    pyautogui.click(x, y, button=button)
-                    position = (x, y)
-                else:
-                    pyautogui.click(button=button)
-                    position = pyautogui.position()
+                    move_to(int(x), int(y), duration=request.duration)
 
-                return {
-                    "status": "success",
-                    "operation": "click",
-                    "position": position,
-                    "button": button,
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
+                if operation == "click":
+                    click(
+                        None,
+                        None,
+                        button=btn,
+                        clicks=max(1, int(amount)),
+                        interval=0.05,
+                    )
+                elif operation == "double_click":
+                    double_click(None, None, button=btn)
+                elif operation == "right_click":
+                    right_click()
 
-            # === DOUBLE_CLICK OPERATION ===
-            elif operation == "double_click":
-                if x is not None and y is not None:
-                    pyautogui.doubleClick(x, y, button=button)
-                    position = (x, y)
-                else:
-                    pyautogui.doubleClick(button=button)
-                    position = pyautogui.position()
+                nx, ny = get_cursor_pos()
+                return ToolResult(status="success", message=f"Executed {operation} at ({nx}, {ny})")
 
-                return {
-                    "status": "success",
-                    "operation": "double_click",
-                    "position": position,
-                    "button": button,
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
-
-            # === RIGHT_CLICK OPERATION ===
-            elif operation == "right_click":
-                if x is not None and y is not None:
-                    pyautogui.rightClick(x, y)
-                    position = (x, y)
-                else:
-                    pyautogui.rightClick()
-                    position = pyautogui.position()
-
-                return {
-                    "status": "success",
-                    "operation": "right_click",
-                    "position": position,
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
-
-            # === SCROLL OPERATION ===
             elif operation == "scroll":
                 if x is not None and y is not None:
-                    pyautogui.moveTo(x, y)
-
-                if horizontal:
-                    pyautogui.hscroll(amount)
+                    scroll_at(int(x), int(y), int(amount), horizontal=request.horizontal)
                 else:
-                    pyautogui.scroll(amount)
+                    scroll(int(amount), horizontal=request.horizontal)
 
-                return {
-                    "status": "success",
-                    "operation": "scroll",
-                    "amount": amount,
-                    "direction": "horizontal" if horizontal else "vertical",
-                    "position": (x, y) if x and y else pyautogui.position(),
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
+                return ToolResult(status="success", message=f"Scrolled {amount} units.")
 
-            # === DRAG OPERATION ===
             elif operation == "drag":
-                if x is None or y is None:
-                    return {
-                        "status": "error",
-                        "operation": "drag",
-                        "error": "x and y (start coordinates) are required",
-                    }
-                if target_x is None or target_y is None:
-                    return {
-                        "status": "error",
-                        "operation": "drag",
-                        "error": "target_x and target_y are required",
-                    }
+                if x is None or y is None or target_x is None or target_y is None:
+                    return ToolResult(
+                        status="error",
+                        message="Start and target coordinates are required for 'drag'.",
+                    )
+                drag(
+                    int(x),
+                    int(y),
+                    int(target_x),
+                    int(target_y),
+                    duration=request.duration,
+                    button=btn,
+                )
+                return ToolResult(
+                    status="success",
+                    message=f"Dragged from ({x}, {y}) to ({target_x}, {target_y})",
+                )
 
-                pyautogui.moveTo(x, y)
-                pyautogui.drag(target_x - x, target_y - y, duration=duration, button=button)
-
-                return {
-                    "status": "success",
-                    "operation": "drag",
-                    "from_position": (x, y),
-                    "to_position": (target_x, target_y),
-                    "button": button,
-                    "duration": duration,
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
-
-            # === HOVER OPERATION ===
             elif operation == "hover":
                 if x is None or y is None:
-                    return {
-                        "status": "error",
-                        "operation": "hover",
-                        "error": "x and y parameters are required",
-                    }
+                    return ToolResult(status="error", message="Coordinates x, y are required for 'hover'.")
+                move_to(int(x), int(y), duration=request.duration)
+                time.sleep(request.hover_duration)
+                return ToolResult(
+                    status="success",
+                    message=f"Hovered at ({x}, {y}) for {request.hover_duration}s.",
+                )
 
-                pyautogui.moveTo(x, y, duration=duration)
-                time.sleep(hover_duration)
+            elif operation == "telemetry":
+                try:
+                    cmd = [
+                        sys.executable,
+                        "-m",
+                        "pywinauto_mcp.telemetry_hud",
+                        "--duration",
+                        str(request.telemetry_duration),
+                    ]
+                    if request.capture_keys:
+                        cmd.append("--capture-keys")
 
-                return {
-                    "status": "success",
-                    "operation": "hover",
-                    "position": (x, y),
-                    "hover_duration": hover_duration,
-                    "timestamp": timestamp,
-                    "sensor_metadata": sensor_metadata,
-                }
+                    subprocess.Popen(  # noqa: S603
+                        cmd,
+                        creationflags=subprocess.CREATE_NEW_CONSOLE if sys.platform == "win32" else 0,
+                        start_new_session=True,
+                    )
+                    return ToolResult(status="success", message=f"HUD launched for {request.telemetry_duration}s.")
+                except Exception as e:
+                    return ToolResult(status="error", message=f"Failed to launch HUD: {e}")
 
-            else:
-                return {
-                    "status": "error",
-                    "error": f"Unknown operation: {operation}",
-                    "valid_operations": [
-                        "position",
-                        "move",
-                        "move_relative",
-                        "click",
-                        "double_click",
-                        "right_click",
-                        "scroll",
-                        "drag",
-                        "hover",
-                    ],
-                }
+            return ToolResult(status="error", message=f"Unknown operation: {operation}")
 
+        except MouseFailSafeError as e:
+            return ToolResult(
+                status="blocked",
+                message=str(e),
+                recovery_tip="Automation aborted by failsafe (cursor in upper-left corner). "
+                "Set PYWINAUTO_MCP_BYPASS_HITL=1 to disable for trusted runs.",
+            )
         except Exception as e:
-            return {
-                "status": "error",
-                "operation": operation,
-                "error": str(e),
-                "error_type": type(e).__name__,
-            }
+            logger.error(f"Automation mouse tool error: {e}")
+            return ToolResult(status="error", message=str(e))
+
+else:
+    logger.warning("Mouse tool not available - missing app instance")
 
 
 __all__ = ["automation_mouse"]

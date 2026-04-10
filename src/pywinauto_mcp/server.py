@@ -14,7 +14,7 @@ from pywinauto_mcp.app import app as mcp_app
 # FastMCP HTTP app only registers ``/mcp``; mount it after REST routes so ``/api/v1/*`` resolves.
 _mcp_http = mcp_app.http_app()
 
-app = FastAPI(title="pywinauto-mcp", version="0.3.2")
+app = FastAPI(title="pywinauto-mcp", version="0.4.2")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[

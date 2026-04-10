@@ -23,9 +23,7 @@ UNKNOWN_FACE_IMAGE = TEST_IMAGE_DIR / "unknown_face.jpg"
 def client():
     """Test client for the FastAPI application."""
     # Skip API tests - FastMCP app is not a FastAPI app
-    pytest.skip(
-        "Face recognition API tests require FastAPI, but FastMCP uses different architecture"
-    )
+    pytest.skip("Face recognition API tests require FastAPI, but FastMCP uses different architecture")
 
 
 @pytest.fixture
@@ -87,9 +85,7 @@ def test_verify_face(client, mock_face_recognizer):
     image_base64 = base64.b64encode(fake_image_data).decode("utf-8")
 
     # Make the request
-    response = client.post(
-        "/face-recognition/verify", json={"image_data": image_base64, "confidence_threshold": 0.7}
-    )
+    response = client.post("/face-recognition/verify", json={"image_data": image_base64, "confidence_threshold": 0.7})
 
     # Check the response
     assert response.status_code == 200
@@ -110,9 +106,7 @@ def test_verify_face_webcam(mock_video_capture, client, mock_face_recognizer):
     mock_video_capture.return_value = mock_camera
 
     # Make the request
-    response = client.post(
-        "/face-recognition/verify/webcam", params={"confidence_threshold": 0.7, "timeout": 1}
-    )
+    response = client.post("/face-recognition/verify/webcam", params={"confidence_threshold": 0.7, "timeout": 1})
 
     # Check the response
     assert response.status_code == 200

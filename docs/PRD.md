@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**PyWinAuto MCP** is a [Model Context Protocol](https://modelcontextprotocol.io/) server for **Windows UI automation**. It exposes **portmanteau tools** (PyWinAuto, PyAutoGUI, OCR, optional face) so agentic clients can drive **real desktop sessions** with HITL and safety limits.
+**PyWinAuto MCP** is a [Model Context Protocol](https://modelcontextprotocol.io/) server for **Windows UI automation**. It exposes **portmanteau tools** (PyWinAuto, PyAutoGUI, OCR, optional face) so agentic clients can drive **real desktop sessions** with HITL (human-in-the-loop) and safety limits.
 
 **Non-goals:** This server does **not** replace **Windows Sandbox** or disposable VMs — pair with **`virtualization-mcp`** when isolation is required. See [`SAFETY.md`](SAFETY.md).
 
@@ -12,7 +12,7 @@
 |------|--------|
 | **Tool efficiency** | Consolidate many operations into **8 portmanteau tools** + `get_desktop_state` to limit tool explosion and token load. |
 | **Framework** | **FastMCP 3.1+** — stdio/SSE and HTTP MCP surface; async tools; docstring-first descriptions. |
-| **Safety** | HITL (`approve_automation`), kill switch, rate limits, dry-run, optional face **opt-in** only. |
+| **Safety** | HITL (human-in-the-loop) via `approve_automation`, kill switch, rate limits, dry-run, optional face **opt-in** only. |
 | **Operator UX** | Optional **`web_sota`** dashboard: REST bridge, tools hub, help, local LLM chat, live host metrics, biometrics (browser preview + safety snapshot). |
 | **Testability** | **Environment-aware pytest** (CI vs local hardware) per **mcp-central-docs** `standards/testing-environment-aware.md` — see [`TESTING.md`](TESTING.md). |
 | **Maintainability** | Ruff, type hints, docs match **implemented** behavior. |
@@ -23,7 +23,7 @@
 
 - `automation_windows`, `automation_elements`, `automation_mouse`, `automation_keyboard`, `automation_visual`, `automation_system`, `get_desktop_state`
 - **`automation_face`** — registered only when **`PYWINAUTO_MCP_ENABLE_FACE=1`** and **`face`** extra installed ([`SAFETY.md`](SAFETY.md) §5).
-- **`approve_automation`**, **`automation_safety`** — HITL and counters.
+- **`approve_automation`**, **`automation_safety`** — HITL (human-in-the-loop) and counters.
 
 ### 3.2 HTTP / ASGI
 

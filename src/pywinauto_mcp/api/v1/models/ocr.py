@@ -30,13 +30,9 @@ class OCRRequest(BaseModel):
     image_url: HttpUrl | None = Field(
         None, description="URL of the image to process (mutually exclusive with image_data)"
     )
-    image_data: str | None = Field(
-        None, description="Base64-encoded image data (mutually exclusive with image_url)"
-    )
+    image_data: str | None = Field(None, description="Base64-encoded image data (mutually exclusive with image_url)")
     language: str = Field("eng", description="Language code for OCR (e.g., 'eng', 'deu', 'fra')")
-    preprocess: bool = Field(
-        True, description="Whether to preprocess the image for better OCR results"
-    )
+    preprocess: bool = Field(True, description="Whether to preprocess the image for better OCR results")
     config: str = Field("--psm 6 --oem 3", description="Tesseract configuration parameters")
 
     class Config:

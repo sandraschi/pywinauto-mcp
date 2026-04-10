@@ -28,9 +28,7 @@ except ImportError as e:
 if app is not None:
     logger.info("Registering element tools with FastMCP")
 
-    def _get_element(
-        window, control_id: str | None = None, x: int | None = None, y: int | None = None
-    ):
+    def _get_element(window, control_id: str | None = None, x: int | None = None, y: int | None = None):
         """Get an element by control ID or coordinates.
 
         Args:
@@ -155,13 +153,13 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except ElementNotVisible as e:
             return {
                 "status": "error",
-                "error": f"Element not visible: {str(e)}",
+                "error": f"Element not visible: {e!s}",
                 "error_type": "ElementNotVisible",
             }
         except Exception as e:
@@ -188,9 +186,7 @@ if app is not None:
             Dict containing the result of the operation
 
         """
-        return click_element(
-            window_handle=window_handle, control_id=control_id, x=x, y=y, button=button, double=True
-        )
+        return click_element(window_handle=window_handle, control_id=control_id, x=x, y=y, button=button, double=True)
 
     @app.tool()
     def right_click_element(
@@ -211,9 +207,7 @@ if app is not None:
             Dict containing the result of the operation
 
         """
-        return click_element(
-            window_handle=window_handle, control_id=control_id, x=x, y=y, button="right"
-        )
+        return click_element(window_handle=window_handle, control_id=control_id, x=x, y=y, button="right")
 
     @app.tool()
     def hover_element(
@@ -294,7 +288,7 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except Exception as e:
@@ -365,7 +359,7 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except Exception as e:
@@ -408,7 +402,7 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except Exception as e:
@@ -481,14 +475,14 @@ if app is not None:
                 except Exception as e:
                     return {
                         "status": "error",
-                        "error": f"Failed to set text: {str(e)}",
+                        "error": f"Failed to set text: {e!s}",
                         "error_type": type(e).__name__,
                     }
 
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except Exception as e:
@@ -535,7 +529,7 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except Exception as e:
@@ -577,7 +571,7 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except Exception as e:
@@ -619,7 +613,7 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except Exception as e:
@@ -751,13 +745,13 @@ def get_desktop():
 __all__ = [
     "click_element",
     "double_click_element",
-    "right_click_element",
-    "hover_element",
-    "get_element_info",
-    "get_element_text",
-    "set_element_text",
-    "get_element_rect",
-    "is_element_visible",
-    "is_element_enabled",
     "get_all_elements",
+    "get_element_info",
+    "get_element_rect",
+    "get_element_text",
+    "hover_element",
+    "is_element_enabled",
+    "is_element_visible",
+    "right_click_element",
+    "set_element_text",
 ]

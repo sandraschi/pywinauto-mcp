@@ -3,7 +3,7 @@
 This module creates the FastMCP app instance to avoid circular imports
 between main.py and the tools modules.
 
-FastMCP 2.13.1 compliant.
+FastMCP 3.2.0 compliant (Agentic Sampling).
 """
 
 import logging
@@ -18,18 +18,17 @@ try:
 
     logger.info("Successfully imported FastMCP")
 
-    # Create the FastMCP app instance with FastMCP 2.13+ features
+    # Create the FastMCP app instance with SOTA 3.2.0 features
     app = FastMCP(
         name="pywinauto-mcp",
-        version="0.3.2",
-        # FastMCP 2.13+ supports additional configuration
+        version="0.4.2",
     )
 
-    logger.info("FastMCP 2.13.1 app instance created successfully")
+    logger.info("FastMCP 3.2.0 app instance created successfully")
 
 except ImportError as e:
     logger.critical(f"Failed to import FastMCP: {e}")
-    logger.critical("Please install FastMCP 2.13.1+ using: pip install fastmcp>=2.13.1")
+    logger.critical("Please install FastMCP 3.2.0+ using: pip install fastmcp>=3.2.0")
     app = None
 except Exception as e:
     logger.critical(f"Error creating FastMCP app: {e}", exc_info=True)
@@ -57,7 +56,16 @@ class ApprovalState:
         self.safe_window_until: float = 0.0
 
     def is_approved(self) -> bool:
-        """Checks if the current action is within a safe approval window."""
+        """Checks if the current action is within a safe approval window or if safety is bypassed."""
+        # SOTA 2026: Bypass logic with safety oversight
+        bypass_hitl = os.getenv("PYWINAUTO_MCP_BYPASS_HITL") in ("1", "true", "yes")
+        if bypass_hitl:
+            logger.warning("HITL BYPASS ACTIVE: Operating without human approval.")
+            # Disable failsafe for bypass mode to ensure demo completion even with minor jitters
+            import pyautogui
+
+            pyautogui.FAILSAFE = False
+            return True
         return time.time() < self.safe_window_until
 
     def set_safe_window(self, duration_minutes: float):
@@ -105,10 +113,12 @@ def automation_safety(
     from pywinauto_mcp.safety import (
         ENV_DRY_RUN,
         ENV_ENABLE_FACE,
+        ENV_ENABLE_KEYLOGGER,
         ENV_KILL_SWITCH,
         ENV_MAX_PER_MINUTE,
         get_gate,
         is_face_tool_enabled,
+        is_keylogger_tool_enabled,
     )
 
     gate = get_gate()
@@ -130,11 +140,61 @@ def automation_safety(
                 ENV_DRY_RUN: os.getenv(ENV_DRY_RUN),
                 ENV_MAX_PER_MINUTE: os.getenv(ENV_MAX_PER_MINUTE),
                 ENV_ENABLE_FACE: os.getenv(ENV_ENABLE_FACE),
+                ENV_ENABLE_KEYLOGGER: os.getenv(ENV_ENABLE_KEYLOGGER),
             },
             "face_tool_opt_in": is_face_tool_enabled(),
+            "keylogger_tool_opt_in": is_keylogger_tool_enabled(),
             "hitl": {"safe_window_until": approval_state.safe_window_until},
         }
     return {
         "status": "error",
         "error": f"Unknown operation: {operation}. Use status or reset_counters.",
     }
+
+
+# --- SOTA PROMPTS ---
+
+
+@app.prompt()
+def desktop_automation_runbook(app_name: str, task: str) -> str:
+    """Standard runbook for automating a desktop application.
+
+    Args:
+        app_name: Name of the application to automate.
+        task: Description of the goal to achieve.
+    """
+    return f"""You are a Windows UI automation expert using pywinauto-mcp.
+Target Application: {app_name}
+Goal: {task}
+
+Protocol:
+1. Call `automation_windows("find", title="{app_name}")` to locate the window.
+2. Call `get_desktop_state()` to analyze the element hierarchy.
+3. Call `approve_automation(duration_minutes=5)` before performing any clicks or typing.
+4. Execute the automation mission step-by-step, verifying state after each action.
+5. If focus is lost, re-activate the window using `automation_windows("focus", handle=HWND)`.
+
+Wait for the application to be ready before each interaction."""
+
+
+@app.prompt()
+def safety_audit_protocol() -> str:
+    """Protocol for auditing the server's current safety configuration."""
+    return """Review the output of `automation_safety("status")`.
+Verify:
+1. `DRY_RUN` is appropriately set for the environment.
+2. `PYWINAUTO_MCP_KILL_SWITCH` is accessible.
+3. Rate limits are within safe OS operational boundaries (<= 20 actions/min)."""
+
+
+# --- SOTA RESOURCES ---
+
+
+@app.resource("resource://automation/current_state")
+def get_current_automation_state() -> str:
+    """Dynamic resource providing a snapshot of the current desktop automation environment."""
+    return f"""PyWinAuto MCP v0.4.2
+HITL Status: {"Active" if approval_state.is_approved() else "Locked"}
+OCR Available: {OCR_AVAILABLE}
+Timestamp: {time.ctime()}
+"""

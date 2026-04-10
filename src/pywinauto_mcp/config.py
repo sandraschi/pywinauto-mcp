@@ -38,9 +38,7 @@ class Settings(BaseSettings):
     # MCP Settings
     MCP_NAME: str = "pywinauto-mcp"
     MCP_VERSION: str = "0.1.0"
-    MCP_DESCRIPTION: str = (
-        "MCP server for Windows UI automation using PyWinAuto with OCR capabilities"
-    )
+    MCP_DESCRIPTION: str = "MCP server for Windows UI automation using PyWinAuto with OCR capabilities"
 
     class Config:
         """Pydantic config."""

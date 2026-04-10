@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any, TypeVar
 
 from pydantic import BaseModel, Field
+from pywinauto import Desktop
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -114,7 +115,7 @@ def log_execution(func: F) -> Callable[..., Any]:
         except Exception as e:
             duration = time.time() - start_time
             logger.error(
-                f"Error in {func.__name__} after {duration:.2f} seconds: {str(e)}",
+                f"Error in {func.__name__} after {duration:.2f} seconds: {e!s}",
                 exc_info=True,
                 extra={
                     "function": func.__name__,
@@ -205,7 +206,7 @@ def validate_window_handle(handle: int) -> bool:
         bool: True if the handle is valid, False otherwise
 
     """
-    from pywinauto import Desktop
+    # Desktop imported at top-level
 
     try:
         window = Desktop(backend="uia").window(handle=handle)
@@ -216,7 +217,7 @@ def validate_window_handle(handle: int) -> bool:
 
 def get_desktop():
     """Get a Desktop instance with proper error handling."""
-    from pywinauto import Desktop
+    # Desktop imported at top-level
 
     try:
         return Desktop(backend="uia")

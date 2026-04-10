@@ -3,5 +3,5 @@
 from .main import app as mcp
 from .main import main
 
-__version__ = "0.3.2"
-__all__ = ["mcp", "main"]
+__version__ = "0.4.2"
+__all__ = ["main", "mcp"]

@@ -38,9 +38,7 @@ class TestPortmanteauWindowsReal:
 
         try:
             # Start Notepad for real window testing
-            cls.test_process = subprocess.Popen(
-                ["notepad.exe"], creationflags=subprocess.CREATE_NEW_CONSOLE
-            )
+            cls.test_process = subprocess.Popen(["notepad.exe"], creationflags=subprocess.CREATE_NEW_CONSOLE)
             time.sleep(2)  # Give it time to start
 
             # Get the window handle
@@ -101,9 +99,7 @@ class TestPortmanteauWindowsReal:
 
         # Test activation
         result = automation_windows("activate", handle=handle)
-        assert result["status"] == "success", (
-            f"Activation failed: {result.get('error', 'Unknown error')}"
-        )
+        assert result["status"] == "success", f"Activation failed: {result.get('error', 'Unknown error')}"
         assert result["has_focus"] is True, "Window should have focus after activation"
 
         # Verify the window is actually active

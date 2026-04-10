@@ -1,6 +1,6 @@
 # 📚 Complete Documentation Index
 
-**Central hub for all pywinauto-mcp documentation - v0.3.1**
+**Central hub for all pywinauto-mcp documentation - v0.4.2**
 
 ---
 

@@ -7,13 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-04-10
+
 ### Added
+- **`win32_mouse` module** (`src/pywinauto_mcp/win32_mouse.py`): DPI-aware **`SetCursorPos`** + **`mouse_event`** for pointer injection. **`automation_mouse`** and coordinate-based paths in **`automation_elements`** use this backend instead of PyAutoGUI alone (reliable move / click / drag / scroll on scaled displays). Responses include `input_backend: "win32_mouse"` where applicable.
+- **`global_keylogger`** portmanteau tool (opt-in): set **`PYWINAUTO_MCP_ENABLE_KEYLOGGER=1`** to register; see **`docs/SAFETY.md` §6**. Shutdown stops the listener; **`gate_invasive_monitoring()`** applies kill-switch / dry-run without burning the mutation rate limiter.
+- **Documentation:** **`docs/SAFETY.md`** — dual-use tooling (research / forensics / guardrails) and global keylogger §6; root **README** links.
+- **Examples:** `examples/demo_mouse_dance.py`, `examples/demo_notepad_grid.py`, `examples/demo_notepad_typewriter.py`, `examples/demo_notepad_helpers.py`, **`examples/README.md`**. **`just demo`** recipe (justfile) runs the three Python demos in sequence (requires [just](https://github.com/casey/just) on `PATH`).
+
+### Fixed
+- **`demo_notepad_grid`:** tile windows with Win32 **`MoveWindow`** (and close via **`PostMessage` `WM_CLOSE`**) so **cmd.exe** consoles position correctly; UIA **`move_window`** was not wrapping those HWNDs.
+
+### Changed
+- **Failsafe** for injected pointer ops: upper-left corner only (aligned with PyAutoGUI); **`PYWINAUTO_MCP_BYPASS_HITL=1`** disables it for **`win32_mouse`** as for PyAutoGUI.
+
+## [0.4.1] - 2026-04-10
+
+### Added
+- **Justfile Demo Orchestration**: Replaced external `.py` scripts for the MS Paint demo with a native PowerShell/CLI orchestration in the `justfile` (`just paint-demo`).
+- **HITL Bypass Hardening**: Added `PYWINAUTO_MCP_BYPASS_HITL` support to disable `pyautogui.FAILSAFE` at runtime, ensuring reliable automated demos in non-interactive environments.
+- **API Alias**: Standardized `automation_windows` to accept `window_handle` as an alias for `handle`, ensuring 100% consistency across all portmanteau tools.
 - **Biometrics → `automation_face`:** Web UI calls **`POST /api/v1/tools/call`** for **list / capture & match / delete** when the tool is registered (`web_sota` helper `lib/mcpTools.ts`).
 - **REST `GET /api/v1/safety/status`:** Same payload as MCP **`automation_safety("status")`** (webapp biometrics).
 - **ASGI composite server:** FastAPI **`/api/v1/*`** (REST) + FastMCP HTTP **`/mcp`** — `pywinauto_mcp.server:app` for uvicorn; CORS for `web_sota`.
 - **web_sota `/chat` — local LLM:** OpenAI-compatible proxy (`/api/v1/llm/*`) to **Ollama** / **LM Studio** on localhost only (SSRF-safe localhost); model list, **personas**, **prompt refiner**, optional **repo knowledge** from `llm_repo_context.py`. Env: **`PYWINAUTO_LLM_BASE_URL`**.
 - **Camera enumeration:** `GET /api/v1/cameras/` probes OpenCV indices; **Biometrics** + **Tools** (`camera_index` for `automation_face`) show a **dropdown when multiple cameras** exist; `localStorage` sync. Env: **`PYWINAUTO_MCP_CAMERA_MAX_INDEX`** (default 10).
 - **Environment-aware pytest** (aligned with **mcp-central-docs** `testing-environment-aware.md`): `tests/conftest_env.py`, markers (`requires_hardware`, `destructive`, …), **`docs/TESTING.md`** (fleet context), **`[tool.pytest.ini_options]`**; **`tests/test_cameras_api.py`**; real-window class marked for CI skip.
+- **Visual Telemetry HUD**: Implemented a high-visibility, "Always-on-Top" overlay for real-time coordinate tracking and input verification, replacing covert logging with a transparent, non-persistent diagnostic tool.
 - **Docs:** **`docs/PRD.md`** refreshed (web stack, REST, LLM, testing); **`docs/README.md`** index; **`docs/TESTING.md`**; **`docs/LLM_REPO_CONTEXT.md`** pointer; camera notes in **`docs/SAFETY.md`** §5.
 
 ### Changed
@@ -85,7 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 📊 Version Information
 
-- **Current Version**: 0.2.0
+- **Current Version**: 0.4.2
 - **Python Support**: 3.10, 3.11, 3.12
 - **Platform**: Windows 10/11
 - **License**: MIT

@@ -20,11 +20,12 @@ import logging
 import os
 import tempfile
 import time
-from typing import Any, Literal
+from typing import Any
 
 import cv2
 import numpy as np
 from PIL import Image, ImageGrab
+from pywinauto import Desktop
 
 # Import the FastMCP app instance
 try:
@@ -36,6 +37,7 @@ except ImportError as e:
     logger = logging.getLogger(__name__)
     logger.error(f"Failed to import FastMCP app in portmanteau_visual: {e}")
     app = None
+from pywinauto_mcp.tools.models import ToolResult, VisualOperationRequest
 
 # Try to import OCR
 try:
@@ -52,101 +54,44 @@ if app is not None:
 
     @app.tool(
         name="automation_visual",
-        description="""Comprehensive visual automation tool tracking SOTA 2026 standards.
+        description="""Comprehensive computer vision and OCR tool for Windows UI automation.
 
-SUPPORTED OPERATIONS:
-- screenshot: Captures a pixel-perfect image of the desktop, window, or region.
-- extract_text: Employs Tesseract OCR to interpret text content from visual inputs.
-- find_image: Performs template matching to locate graphical assets with confidence scoring.
-- highlight: Renders a temporary visual indicator (rectangle) on the desktop for feedback.
+WHAT IT DOES:
+This tool provides multimodal capabilities for interacting with the desktop when traditional UI element selectors (UIA/MSAA) are insufficient or unavailable (e.g., in remote desktops, games, or legacy apps). It supports pixel-perfect screenshots, Tesseract-based OCR text extraction, OpenCV template matching to find graphical assets, and temporary visual highlighting.
 
-DIALOGIC RETURN PATTERN:
-If visual ambiguity or low OCR confidence occurs, returns clarification_needed.
+WHEN TO USE:
+- Use 'screenshot' to capture current UI states for verification or documentation.
+- Use 'extract_text' (OCR) to read text from custom-drawn controls, icons, or web-in-app views.
+- Use 'find_image' when you have a template image (e.g., a specific button icon) and need to click its center coordinates.
+- Use 'highlight' to visually confirm the identified target during complex automation sequences.
 
-Examples:
-    automation_visual("screenshot")
-    automation_visual("extract_text", window_handle=12345)
-    automation_visual("find_image", template_path="button.png")
-
+RECOVERY AND AMBIGUITY:
+If 'find_image' fails to meet the confidence threshold (default 0.8), consider decreasing the 'threshold' parameter or verifying that the template image is not resolution-dependent. If OCR results are noisy, ensure the target region coordinates are precisely bounded or use 'ocr_config' to specify page segmentation modes.
 """,
     )
-    def automation_visual(
-        operation: Literal["screenshot", "extract_text", "find_image", "highlight"],
-        window_handle: int | None = None,
-        region_left: int | None = None,
-        region_top: int | None = None,
-        region_right: int | None = None,
-        region_bottom: int | None = None,
-        image_path: str | None = None,
-        template_path: str | None = None,
-        output_path: str | None = None,
-        format: str = "png",
-        return_base64: bool = False,
-        language: str = "eng",
-        ocr_config: str = "--psm 6",
-        threshold: float = 0.8,
-        control_id: str | None = None,
-        color: str = "red",
-        thickness: int = 2,
-        highlight_duration: float = 3.0,
-    ) -> dict[str, Any]:
-        """Comprehensive visual automation tool for screenshots, OCR, and image recognition.
-
-        PORTMANTEAU PATTERN RATIONALE:
-        Consolidates complex computer vision and image processing operations into a single
-        unified interface. This approach enables seamless transitions between capturing
-        UI states (screenshots) and interpreting them (OCR/Template Matching) without
-        inter-tool data transfer overhead. Follows FastMCP 2.14.3 standards for
-        multimodal UI automation.
-
-        SUPPORTED OPERATIONS:
-        - screenshot: Captures a pixel-perfect image of the full desktop, a specific
-          window, or a defined screen rectangle.
-        - extract_text: Utilizes Tesseract OCR to interpret text content from image files
-          or live screen regions. Ideal for non-textual controls and web-in-desktop views.
-        - find_image: Employs template matching to locate specific graphical assets
-          on the screen, returning precise coordinates and confidence scores.
-        - highlight: Overlays a visual indicator (rectangle) on the screen to provide
-          visual feedback during automated workflows or debugging sessions.
-
-        DIALOGIC RETURN PATTERN:
-        This tool implements the SOTA 2026 Dialogic Return Pattern for handling visual
-        uncertainty. When template matching yields multiple matches or low confidence,
-        it returns a clarification_needed status with a match_candidates list,
-        allowing the AI agent to provide refined search criteria or secondary verification.
-
-        USAGE AND RECOVERY:
-        Standard screenshot operations default to full-screen capture if no window_handle
-        or region is specified. In the event of OCR failure or template mismatch, the
-        tool returns diagnostic_visual_data to assist in determining if the target
-        element was obscured or incorrectly rendered.
-
-        Args:
-            operation (str, required): The visual task to execute.
-            window_handle (int | None): The handle (HWND) of a specific window to capture.
-            region_left (int | None): X-coordinate of the capture region.
-            region_top (int | None): Y-coordinate of the capture region.
-            region_right (int | None): Boundary X of the capture region.
-            region_bottom (int | None): Boundary Y of the capture region.
-            image_path (str | None): Path to an existing image for OCR operations.
-            template_path (str | None): Path to the template image for finding.
-            output_path (str | None): Destination for saving captured images.
-            format (str): Image file format (e.g., png, jpg, bmp).
-            return_base64 (bool): If True, returns image data in base64 string format.
-            language (str): Tesseract language identifier (e.g., 'eng', 'deu').
-            ocr_config (str): Advanced configuration flags for Tesseract.
-            threshold (float): Minimum confidence (0-1) for image recognition.
-            control_id (str | None): Target element ID for visual highlighting.
-            color (str): Border color for highlights (red, green, blue, yellow).
-            thickness (int): Border pixel thickness for highlights.
-            highlight_duration (float): Display time for non-persistent highlights.
-
-        Returns:
-            dict[str, Any]: Operation-specific result dictionary with visual metadata and status.
-
-        """
+    def automation_visual(request: VisualOperationRequest) -> ToolResult:
+        """Comprehensive visual automation tool for screenshots, OCR, and image recognition."""
         try:
             timestamp = time.time()
+            operation = request.operation
+            window_handle = request.window_handle
+            region_left = request.region_left
+            region_top = request.region_top
+            region_right = request.region_right
+            region_bottom = request.region_bottom
+            image_path = request.image_path
+            template_path = request.template_path
+            output_path = request.output_path
+            format_ext = request.format
+            return_base64 = request.return_base64
+            language = request.language
+            ocr_config = request.ocr_config
+            threshold = request.threshold
+            control_id = request.control_id
+            color = request.color
+            thickness = request.thickness
+            # highlight_duration = request.highlight_duration # Currently unused in implementation
+
             visual_metadata = {
                 "timestamp": timestamp,
                 "engine": "opencv_tesseract_pillow",
@@ -178,14 +123,14 @@ Examples:
                             top += region[1]
                             right = min(left + (region[2] - region[0]), right)
                             bottom = min(top + (region[3] - region[1]), bottom)
-
+                        
                         screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
                     except Exception as e:
-                        return {
-                            "status": "error",
-                            "operation": "screenshot",
-                            "error": f"Failed to capture window: {e}",
-                        }
+                        return ToolResult(
+                            status="error",
+                            message=f"Failed to capture window: {e}",
+                            recovery_tip="Ensure the window handle is still valid and the window is not minimized or obscured."
+                        )
                 elif region:
                     screenshot = ImageGrab.grab(bbox=region)
                 else:
@@ -193,53 +138,54 @@ Examples:
 
                 # Convert to bytes
                 img_buffer = io.BytesIO()
-                screenshot.save(img_buffer, format=format.upper())
+                screenshot.save(img_buffer, format=format_ext.upper())
                 img_bytes = img_buffer.getvalue()
 
                 img_b64 = None
                 file_path = None
                 if return_base64:
                     img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-                else:
-                    # Save to file
+                
+                # Save to file if output_path is provided or if not returning base64
+                if not return_base64 or output_path:
                     if output_path:
                         with open(output_path, "wb") as f:
                             f.write(img_bytes)
                         file_path = output_path
                     else:
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{format}") as f:
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{format_ext}") as f:
                             f.write(img_bytes)
                             file_path = f.name
 
-                result = {
-                    "status": "success",
-                    "operation": "screenshot",
-                    "image_b64": img_b64,
-                    "size": len(img_bytes),
-                    "screenshot_path": file_path,
-                    "timestamp": timestamp,
-                    "visual_metadata": visual_metadata,
-                }
-
-                return result
+                return ToolResult(
+                    status="success",
+                    message="Screenshot captured successfully.",
+                    data={
+                        "image_b64": img_b64,
+                        "size": len(img_bytes),
+                        "screenshot_path": file_path,
+                        "timestamp": timestamp,
+                        "visual_metadata": visual_metadata,
+                    }
+                )
 
             # === EXTRACT_TEXT OPERATION ===
             elif operation == "extract_text":
                 if not OCR_AVAILABLE:
-                    return {
-                        "status": "error",
-                        "operation": "extract_text",
-                        "error": "OCR not available. Install pytesseract.",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="OCR functionality is unavailable because pytesseract is not installed.",
+                        recovery_tip="Install Tesseract OCR on the host and run 'pip install pytesseract'."
+                    )
 
                 # Get image
                 if image_path:
                     if not os.path.exists(image_path):
-                        return {
-                            "status": "error",
-                            "operation": "extract_text",
-                            "error": f"Image file not found: {image_path}",
-                        }
+                        return ToolResult(
+                            status="error",
+                            message=f"Image file not found: {image_path}",
+                            recovery_tip="Verify the image path or capture a new screenshot using 'screenshot' first."
+                        )
                     image = Image.open(image_path)
                 else:
                     # Take screenshot
@@ -247,7 +193,6 @@ Examples:
                         image = ImageGrab.grab(bbox=region)
                     elif window_handle:
                         import win32gui
-
                         rect = win32gui.GetWindowRect(window_handle)
                         image = ImageGrab.grab(bbox=rect)
                     else:
@@ -269,40 +214,42 @@ Examples:
                 except:
                     avg_confidence = -1
 
-                return {
-                    "status": "success",
-                    "operation": "extract_text",
-                    "text": text.strip(),
-                    "confidence": avg_confidence,
-                    "language": language,
-                    "timestamp": timestamp,
-                    "visual_metadata": visual_metadata,
-                }
+                return ToolResult(
+                    status="success",
+                    message=f"Text extracted successfully using language '{language}'.",
+                    data={
+                        "text": text.strip(),
+                        "confidence": avg_confidence,
+                        "language": language,
+                        "timestamp": timestamp,
+                        "visual_metadata": visual_metadata,
+                    }
+                )
 
             # === FIND_IMAGE OPERATION ===
             elif operation == "find_image":
                 if not template_path:
-                    return {
-                        "status": "error",
-                        "operation": "find_image",
-                        "error": "template_path parameter is required",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message="template_path parameter is required for 'find_image' operation.",
+                        recovery_tip="Provide a valid path to a template image file."
+                    )
 
                 if not os.path.exists(template_path):
-                    return {
-                        "status": "error",
-                        "operation": "find_image",
-                        "error": f"Template file not found: {template_path}",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message=f"Template file not found: {template_path}",
+                        recovery_tip="Ensure the template image exists at the specified location."
+                    )
 
                 # Load template
                 template = cv2.imread(template_path, cv2.IMREAD_COLOR)
                 if template is None:
-                    return {
-                        "status": "error",
-                        "operation": "find_image",
-                        "error": f"Failed to load template: {template_path}",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message=f"Failed to load template image: {template_path}",
+                        recovery_tip="Check if the file is a valid image format supported by OpenCV."
+                    )
 
                 template_h, template_w = template.shape[:2]
 
@@ -311,7 +258,6 @@ Examples:
                     screenshot = ImageGrab.grab(bbox=region)
                 elif window_handle:
                     import win32gui
-
                     rect = win32gui.GetWindowRect(window_handle)
                     screenshot = ImageGrab.grab(bbox=rect)
                 else:
@@ -344,44 +290,42 @@ Examples:
                         },
                     }
 
-                return {
-                    "status": "success",
-                    "operation": "find_image",
-                    "found": bool(best_match),
-                    "best_match": best_match,
-                    "threshold": threshold,
-                    "message": "Match found" if best_match else "No match found above threshold",
-                    "timestamp": timestamp,
-                    "visual_metadata": visual_metadata,
-                }
+                return ToolResult(
+                    status="success",
+                    message="Match found" if best_match else f"No match found above threshold {threshold}",
+                    data={
+                        "found": bool(best_match),
+                        "best_match": best_match,
+                        "threshold": threshold,
+                        "timestamp": timestamp,
+                        "visual_metadata": visual_metadata,
+                    },
+                    recovery_tip="If no match was found, try decreasing the 'threshold' or ensure the UI is currently visible." if not best_match else None
+                )
 
             # === HIGHLIGHT OPERATION ===
             elif operation == "highlight":
                 if window_handle is None or control_id is None:
-                    return {
-                        "status": "error",
-                        "operation": "highlight",
-                        "error": "window_handle and control_id are required",
-                    }
-
-                from pywinauto import Desktop
+                    return ToolResult(
+                        status="error",
+                        message="window_handle and control_id are required for 'highlight' operation.",
+                        recovery_tip="Specify both the parent window handle and the target element's control_id."
+                    )
 
                 desktop = Desktop(backend="uia")
                 window = desktop.window(handle=window_handle)
                 element = window.child_window(control_id=control_id)
 
                 if not element.exists():
-                    return {
-                        "status": "error",
-                        "operation": "highlight",
-                        "error": f"Element with control_id '{control_id}' not found",
-                    }
+                    return ToolResult(
+                        status="error",
+                        message=f"Element with control_id '{control_id}' not found in window {window_handle}.",
+                        recovery_tip="Verify the control_id using 'get_desktop_state' or 'automation_elements(operation=\"list\")'."
+                    )
 
                 rect = element.rectangle()
 
-                # Take screenshot
                 import win32gui
-
                 win_rect = win32gui.GetWindowRect(window_handle)
                 screenshot = ImageGrab.grab(bbox=win_rect)
                 img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
@@ -409,36 +353,37 @@ Examples:
                         cv2.imwrite(f.name, img)
                         file_path = f.name
 
-                return {
-                    "status": "success",
-                    "operation": "highlight",
-                    "file_path": file_path,
-                    "element": {
-                        "control_id": control_id,
-                        "left": rect.left,
-                        "top": rect.top,
-                        "right": rect.right,
-                        "bottom": rect.bottom,
-                        "width": rect.width(),
-                        "height": rect.height(),
-                    },
-                    "timestamp": timestamp,
-                }
+                return ToolResult(
+                    status="success",
+                    message=f"Element '{control_id}' highlighted successfully.",
+                    data={
+                        "file_path": file_path,
+                        "element": {
+                            "control_id": control_id,
+                            "left": rect.left,
+                            "top": rect.top,
+                            "right": rect.right,
+                            "bottom": rect.bottom,
+                            "width": rect.width(),
+                            "height": rect.height(),
+                        },
+                        "timestamp": timestamp,
+                    }
+                )
 
             else:
-                return {
-                    "status": "error",
-                    "error": f"Unknown operation: {operation}",
-                    "valid_operations": ["screenshot", "extract_text", "find_image", "highlight"],
-                }
+                return ToolResult(
+                    status="error",
+                    message=f"Unknown operation: {operation}",
+                    recovery_tip="Supported operations are: screenshot, extract_text, find_image, highlight."
+                )
 
         except Exception as e:
-            return {
-                "status": "error",
-                "operation": operation,
-                "error": str(e),
-                "error_type": type(e).__name__,
-            }
+            return ToolResult(
+                status="error",
+                message=f"Visual operation failed: {e}",
+                recovery_tip="Check if all vision dependencies (opencv-python, pytesseract, pillow) are correctly installed."
+            )
 
 
 __all__ = ["automation_visual"]

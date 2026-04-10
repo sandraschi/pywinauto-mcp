@@ -618,17 +618,13 @@ def _get_tool_details(tool_name: str) -> dict[str, Any] | None:
                     "description": "How long to hover in seconds",
                 },
             },
-            "examples": [
-                "hover_mouse(x=500, y=300, duration=1.0) - Hover at position for 1 second"
-            ],
+            "examples": ["hover_mouse(x=500, y=300, duration=1.0) - Hover at position for 1 second"],
         },
         "wait": {
             "name": "wait",
             "category": "system",
             "description": "Pause execution for specified seconds",
-            "parameters": {
-                "seconds": {"type": "number", "description": "Number of seconds to wait"}
-            },
+            "parameters": {"seconds": {"type": "number", "description": "Number of seconds to wait"}},
             "examples": ["wait(seconds=2.5) - Wait 2.5 seconds"],
         },
         "get_system_clipboard": {
@@ -642,9 +638,7 @@ def _get_tool_details(tool_name: str) -> dict[str, Any] | None:
             "name": "set_system_clipboard",
             "category": "system",
             "description": "Set clipboard content",
-            "parameters": {
-                "content": {"type": "string", "description": "Text content to copy to clipboard"}
-            },
+            "parameters": {"content": {"type": "string", "description": "Text content to copy to clipboard"}},
             "examples": ["set_system_clipboard(content='Hello World') - Copy text to clipboard"],
         },
     }
@@ -751,18 +745,18 @@ def _list_all_tools() -> list[str]:
 
 # Add all tools to __all__
 __all__ = [
-    "health_check",
-    "get_cursor_position",
     "click_at_position",
+    "find_window_by_title",
+    "get_cursor_position",
+    "get_help",
+    "get_system_clipboard",
+    "health_check",
+    "hover_mouse",
+    "list_windows",
     "move_mouse",
     "scroll_mouse",
-    "list_windows",
-    "find_window_by_title",
-    "type_text",
     "send_keys",
-    "hover_mouse",
-    "wait",
-    "get_system_clipboard",
     "set_system_clipboard",
-    "get_help",
+    "type_text",
+    "wait",
 ]

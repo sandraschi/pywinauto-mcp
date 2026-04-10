@@ -59,20 +59,14 @@ def _get_element_info(element) -> ElementInfo:
                 "is_enabled": element.is_enabled(),
                 "handle": element.handle,
                 "runtime_id": element.runtime_id() if hasattr(element, "runtime_id") else None,
-                "automation_id": element.automation_id()
-                if hasattr(element, "automation_id")
-                else None,
+                "automation_id": element.automation_id() if hasattr(element, "automation_id") else None,
                 "name": element.element_info.name if hasattr(element, "element_info") else None,
-                "control_type": str(element.element_info.control_type)
-                if hasattr(element, "element_info")
-                else None,
+                "control_type": str(element.element_info.control_type) if hasattr(element, "element_info") else None,
             }
 
             try:
                 rect = element.rectangle()
-                element_info.update(
-                    {"x": rect.left, "y": rect.top, "width": rect.width(), "height": rect.height()}
-                )
+                element_info.update({"x": rect.left, "y": rect.top, "width": rect.width(), "height": rect.height()})
             except Exception:
                 pass
         elif isinstance(element, dict):
@@ -239,4 +233,4 @@ if app is not None:
 
 
 # Add all tools to __all__
-__all__ = ["element_exists", "wait_for_element", "verify_text", "get_element_rect"]
+__all__ = ["element_exists", "get_element_rect", "verify_text", "wait_for_element"]

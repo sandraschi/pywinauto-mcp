@@ -6,6 +6,30 @@
 
 ---
 
+## Dual-use tooling: research, forensics, and guardrails
+
+### Why this looks “malware-adjacent”
+
+Anything that does **session-wide capture**, **low-level hooks**, or **unattended control of the desktop** shares **capabilities** with a lot of offensive tooling. That is an observation about **surface area**, not a moral verdict on this repository.
+
+### Why hosted assistants sometimes refuse to help
+
+A model vendor may decline to **generate** keyloggers or similar hooks because they optimize for **reducing harm from misuse**. That policy stance is about **mass-market generation**, not a technical claim that your use case is wrong.
+
+### Legitimate uses
+
+The same mechanisms support **bug reproduction**, **test harnesses**, **workflow instrumentation**, and **forensics or research on machines you own or are explicitly authorized to assess**. Capability overlaps with malware; **intent and authorization** do not.
+
+### What this repo does about it
+
+Optional, high-risk features (for example **`global_keylogger`** — see **§6**) are **off by default**, gated by **environment opt-in**, **human-in-the-loop** where applicable, **kill switch** / **dry-run**, and this document—because **failure modes** (misconfigured MCP server, lost laptop, accidental exposure) are serious, not because ethical security work is suspect.
+
+### Capability vs. intent
+
+**“Malware-adjacent” in capability** is fair; **“malware” in intent** is **not** implied. Use this project only under **law, policy, and consent** appropriate to your environment.
+
+---
+
 ## 1. Two-server model (recommended for new users)
 
 | Goal | Install |
@@ -19,9 +43,12 @@
 
 ## 2. Built into this server (host session)
 
-- **HITL:** `approve_automation` — required for mutating **mouse** / **keyboard** (except `automation_mouse("position")`).
+- **HITL (human-in-the-loop):** `approve_automation` — required for mutating **mouse** / **keyboard** (except `automation_mouse("position")` and `automation_mouse("telemetry")`).
 - **Env:** `PYWINAUTO_MCP_KILL_SWITCH`, `PYWINAUTO_MCP_MAX_ACTIONS_PER_MINUTE`, `PYWINAUTO_MCP_DRY_RUN`.
+- **HITL (human-in-the-loop) bypass:** `PYWINAUTO_MCP_BYPASS_HITL=1` allows zero-friction automation in trusted demo environments (disables security prompts).
+- **Pointer injection:** Mutating **mouse** paths use **`win32_mouse`** (`SetCursorPos` / `mouse_event`, DPI-aware), not PyAutoGUI alone. **Failsafe:** moving the cursor to the **upper-left screen corner** aborts injected pointer ops (same idea as PyAutoGUI). **`PYWINAUTO_MCP_BYPASS_HITL=1`** disables both **`pyautogui.FAILSAFE`** and that **`win32_mouse`** corner check for trusted demos/CI.
 - **Tool:** `automation_safety(status | reset_counters)`.
+- **Telemetry HUD:** The `automation_mouse("telemetry")` operation provides visible, on-screen verification of inputs. It is **non-persistent** and **localized** (volatile memory only), ensuring auditing without the security risks of background logging.
 
 ---
 
@@ -53,7 +80,7 @@ Without both, the server does **not** register **`automation_face`**; other port
 
 ### Why it exists
 
-It supports **explicit, local** workflows for **operator presence** at the machine: e.g. a coarse “is the intended person still at this PC?” signal to **reduce casual misuse** if someone else sits down at an unlocked session while **desktop automation** is in play. That is **not** strong authentication, not a compliance control, and not a substitute for locking the screen — but it can **raise the bar** together with **HITL**, **env limits**, and normal session hygiene.
+It supports **explicit, local** workflows for **operator presence** at the machine: e.g. a coarse “is the intended person still at this PC?” signal to **reduce casual misuse** if someone else sits down at an unlocked session while **desktop automation** is in play. That is **not** strong authentication, not a compliance control, and not a substitute for locking the screen — but it can **raise the bar** together with **HITL (human-in-the-loop)**, **env limits**, and normal session hygiene.
 
 ### Communication
 
@@ -78,3 +105,28 @@ Leave **`PYWINAUTO_MCP_ENABLE_FACE`** unset (default). Do not install the **`fac
 Use the **`camera_index`** argument (`0`, `1`, …) to pick the device. Order is **OS enumeration order**, not a fixed name: the built-in cam is often **`0`** when it is the default; an external USB cam may be **`0`** or **`1`** depending on what Windows assigns. There is **no** special product name “usbcam” in the API — that is just informal shorthand some people use for **USB UVC** webcams.
 
 **Out of scope (for now):** **TP-Link Tapo**, other **IP / RTSP / cloud** cameras, and stacks that need vendor apps or RTSP URLs. Those are unnecessarily complicated for local **`capture`**; use a **built-in or USB UVC** camera instead.
+
+---
+
+## 6. Global keyboard capture (`global_keylogger`) — opt-in, high-risk
+
+The **`global_keylogger`** tool is **off by default**. The server does **not** register it unless you set:
+
+- **`PYWINAUTO_MCP_ENABLE_KEYLOGGER=1`** (or `true` / `yes` / `on`) in the server environment.
+
+See **`automation_safety(status)`** — `keylogger_tool_opt_in` / `PYWINAUTO_MCP_ENABLE_KEYLOGGER`.
+
+### Why it exists
+
+Session-wide keyboard hooks support **authorized** debugging and analysis (for example reproducing focus/shortcut issues, or **instrumenting** a session under explicit policy). This is **dual-use**: the same API surface is sensitive if misused.
+
+### How it is gated
+
+- **Opt-in** at registration time (env above).
+- **`approve_automation`** / **HITL (human-in-the-loop)** applies to **`start`** the same way as other sensitive input tools (unless **`PYWINAUTO_MCP_BYPASS_HITL`** is set — see §2).
+- **`PYWINAUTO_MCP_KILL_SWITCH=1`** blocks starting capture; **`PYWINAUTO_MCP_DRY_RUN=1`** simulates **`start`** without installing the hook.
+- The MCP server attempts to **stop** the listener on shutdown.
+
+### If you do not need it
+
+Leave **`PYWINAUTO_MCP_ENABLE_KEYLOGGER`** unset. Window, element, mouse, and normal keyboard **simulation** do not require it.

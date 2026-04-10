@@ -27,9 +27,7 @@ class WindowInfo(BaseModel):
     class_name: str = Field(..., description="Window class name")
     is_visible: bool = Field(..., description="Whether the window is visible")
     is_enabled: bool = Field(..., description="Whether the window is enabled")
-    rectangle: dict[str, int] = Field(
-        ..., description="Window rectangle (left, top, right, bottom)"
-    )
+    rectangle: dict[str, int] = Field(..., description="Window rectangle (left, top, right, bottom)")
     process_id: int = Field(..., description="Process ID of the window")
 
 
@@ -41,9 +39,7 @@ class ElementInfo(BaseModel):
     automation_id: str = Field(..., description="Automation ID of the element")
     is_enabled: bool = Field(..., description="Whether the element is enabled")
     is_visible: bool = Field(..., description="Whether the element is visible")
-    rectangle: dict[str, int] = Field(
-        ..., description="Element rectangle (left, top, right, bottom)"
-    )
+    rectangle: dict[str, int] = Field(..., description="Element rectangle (left, top, right, bottom)")
 
 
 class ClickRequest(BaseModel):
@@ -124,10 +120,10 @@ async def find_windows(
     except ElementNotFoundError:
         return []
     except Exception as e:
-        logger.error(f"Error finding windows: {str(e)}", exc_info=True)
+        logger.error(f"Error finding windows: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error finding windows: {str(e)}",
+            detail=f"Error finding windows: {e!s}",
         )
 
 
@@ -147,10 +143,10 @@ async def get_window_info(window_handle: int) -> WindowInfo:
         window = app.window(handle=window_handle)
         return _get_window_info(window)
     except Exception as e:
-        logger.error(f"Error getting window info: {str(e)}", exc_info=True)
+        logger.error(f"Error getting window info: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Window not found or error accessing window: {str(e)}",
+            detail=f"Window not found or error accessing window: {e!s}",
         )
 
 
@@ -195,10 +191,10 @@ async def click_element(request: ClickRequest) -> dict[str, str]:
         }
 
     except Exception as e:
-        logger.error(f"Error clicking element: {str(e)}", exc_info=True)
+        logger.error(f"Error clicking element: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error clicking element: {str(e)}",
+            detail=f"Error clicking element: {e!s}",
         )
 
 
@@ -236,10 +232,8 @@ async def type_text(request: TypeRequest) -> dict[str, str]:
         }
 
     except Exception as e:
-        logger.error(f"Error typing text: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error typing text: {str(e)}"
-        )
+        logger.error(f"Error typing text: {e!s}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error typing text: {e!s}")
 
 
 @router.get("/{window_handle}/elements", response_model=list[ElementInfo])
@@ -272,16 +266,16 @@ async def get_window_elements(window_handle: int) -> list[ElementInfo]:
                     )
                 )
             except Exception as e:
-                logger.warning(f"Error processing child element: {str(e)}")
+                logger.warning(f"Error processing child element: {e!s}")
                 continue
 
         return elements
 
     except Exception as e:
-        logger.error(f"Error getting window elements: {str(e)}", exc_info=True)
+        logger.error(f"Error getting window elements: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting window elements: {str(e)}",
+            detail=f"Error getting window elements: {e!s}",
         )
 
 
@@ -298,8 +292,8 @@ async def close_window(window_handle: int) -> dict[str, str]:
         window.close()
         return {"status": "success", "message": f"Closed window with handle {window_handle}"}
     except Exception as e:
-        logger.error(f"Error closing window: {str(e)}", exc_info=True)
+        logger.error(f"Error closing window: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error closing window: {str(e)}",
+            detail=f"Error closing window: {e!s}",
         )

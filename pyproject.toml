@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pywinauto-mcp"
-version = "0.3.2"
-description = "Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. FastMCP 3.1+ portmanteau."
+version = "0.4.2"
+description = "Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. FastMCP 3.2.0 agentic sampling."
 readme = "README.md"
 authors = [
     {name = "Sandra Schilling", email = "sandra@example.com"},
@@ -27,8 +27,8 @@ classifiers = [
 ]
 
 dependencies = [
-    # Core MCP framework - FastMCP 2.13.1
-    "fastmcp>=3.1.0,<4",
+    # Core MCP framework - FastMCP 3.2.0 (Agentic Sampling)
+    "fastmcp>=3.2.0,<4",
     "fastapi>=0.95.0",
     "uvicorn[standard]>=0.22.0",
     "python-dotenv>=1.0.0",
@@ -41,6 +41,7 @@ dependencies = [
     "pygetwindow>=0.0.9,<1.0.0",
     "pyautogui>=0.9.54",
     "pyperclip>=1.8.2",
+    "pynput>=1.7.6",
     
     # Image processing and OCR
     "pillow>=10.0.0",
@@ -151,55 +152,9 @@ warn_unreachable = true
 [tool.mcpb]
 name = "pywinauto-mcp"
 display_name = "PyWinAuto MCP - Portmanteau Edition"
-version = "0.3.0"
+version = "0.4.2"
 description = "Windows UI automation with 8 comprehensive portmanteau tools"
 entry_point = "pywinauto_mcp.main:app"
-
-# Portmanteau Tools Definition
-[[tool.dxt.tools]]
-name = "automation_windows"
-description = "Window management: list, find, maximize, minimize, restore, close, activate, position, rect, title, state"
-category = "windows"
-
-[[tool.dxt.tools]]
-name = "automation_elements"
-description = "UI element interaction: click, double_click, right_click, hover, info, text, set_text, rect, visible, enabled, exists, wait, verify_text, list"
-category = "elements"
-
-[[tool.dxt.tools]]
-name = "automation_mouse"
-description = "Mouse control: position, move, move_relative, click, double_click, right_click, scroll, drag, hover"
-category = "mouse"
-
-[[tool.dxt.tools]]
-name = "automation_keyboard"
-description = "Keyboard input: type, press, hotkey, hold"
-category = "keyboard"
-
-[[tool.dxt.tools]]
-name = "automation_visual"
-description = "Visual operations: screenshot, extract_text (OCR), find_image, highlight"
-category = "visual"
-
-[[tool.dxt.tools]]
-name = "automation_face"
-description = "Face recognition: add, recognize, list, delete, capture"
-category = "face"
-
-[[tool.dxt.tools]]
-name = "automation_system"
-description = "System utilities: health, help, wait, wait_for_window, clipboard_get, clipboard_set, process_list"
-category = "system"
-
-[[tool.dxt.tools]]
-name = "get_desktop_state"
-description = "Comprehensive desktop UI element discovery with visual annotations and OCR"
-category = "desktop"
-
-[tool.dxt.config]
-log_level = "INFO"
-max_workers = 4
-request_timeout = 30.0
 
 [tool.ruff]
 line-length = 120
@@ -208,6 +163,11 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "S", "UP", "RUF"]
 ignore = ["S101", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Examples tweak sys.path before importing sibling helpers
+"examples/demo_notepad_grid.py" = ["E402"]
+"examples/demo_notepad_typewriter.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"

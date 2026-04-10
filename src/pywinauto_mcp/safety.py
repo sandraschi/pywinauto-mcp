@@ -17,6 +17,8 @@ ENV_MAX_PER_MINUTE = "PYWINAUTO_MCP_MAX_ACTIONS_PER_MINUTE"
 ENV_DRY_RUN = "PYWINAUTO_MCP_DRY_RUN"
 # When set (e.g. 1), server registers `automation_face` if face deps are installed.
 ENV_ENABLE_FACE = "PYWINAUTO_MCP_ENABLE_FACE"
+# When set (e.g. 1), server registers `global_keylogger` (session-wide keyboard capture).
+ENV_ENABLE_KEYLOGGER = "PYWINAUTO_MCP_ENABLE_KEYLOGGER"
 
 
 def _truthy(val: str | None) -> bool:
@@ -28,6 +30,11 @@ def _truthy(val: str | None) -> bool:
 def is_face_tool_enabled() -> bool:
     """Whether the operator opted in to exposing the face-recognition tool (see docs/SAFETY.md §5)."""
     return _truthy(os.getenv(ENV_ENABLE_FACE))
+
+
+def is_keylogger_tool_enabled() -> bool:
+    """Whether the operator opted in to exposing the global keylogger tool (high-risk; off by default)."""
+    return _truthy(os.getenv(ENV_ENABLE_KEYLOGGER))
 
 
 class MutationGate:
@@ -103,3 +110,22 @@ def get_gate() -> MutationGate:
 
 def before_mutation(*, read_only: bool) -> dict[str, Any]:
     return _gate.before_mutation(read_only=read_only)
+
+
+def gate_invasive_monitoring() -> dict[str, Any]:
+    """Kill switch and dry-run for surveillance-style tools (no rate-limit counter)."""
+    if _truthy(os.getenv(ENV_KILL_SWITCH)):
+        return {
+            "allow": False,
+            "dry_run": False,
+            "code": "kill_switch",
+            "message": f"{ENV_KILL_SWITCH}=1 blocks invasive monitoring tools.",
+        }
+    if _truthy(os.getenv(ENV_DRY_RUN)):
+        return {
+            "allow": True,
+            "dry_run": True,
+            "code": "dry_run",
+            "message": f"{ENV_DRY_RUN}=1: monitoring action not executed.",
+        }
+    return {"allow": True, "dry_run": False, "code": "ok"}

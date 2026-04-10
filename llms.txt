@@ -1,0 +1,30 @@
+# pywinauto-mcp
+
+Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. FastMCP 3.1+ portmanteau.
+
+## Portmanteau Tools
+- **automation_windows**: Window management: list, find, maximize, minimize, restore, close, activate, position, rect, title, state.
+- **automation_elements**: UI element interaction: click, double_click, right_click, hover, info, text, set_text, rect, visible, enabled, exists, wait, verify_text, list.
+- **automation_mouse**: Mouse control: position, move, move_relative, click, double_click, right_click, scroll, drag, hover.
+- **automation_keyboard**: Keyboard input: type, press, hotkey, hold.
+- **automation_visual**: Visual operations: screenshot, extract_text (OCR), find_image, highlight.
+- **automation_face**: Face recognition (optional): add, recognize, list, delete, capture.
+- **automation_system**: System utilities: health, help, wait, wait_for_window, clipboard_get, clipboard_set, process_list.
+- **get_desktop_state**: Comprehensive desktop UI element discovery with visual annotations and OCR.
+- **approve_automation**: Open HITL safety window (duration_minutes).
+- **automation_safety**: Inspect/reset server-side safety limits.
+
+## Infrastructure
+- **Web Interface**: http://localhost:10788
+- **API (FastAPI)**: http://localhost:10789
+- **MCP Endpoint**: http://localhost:10789/mcp
+
+## Metadata
+- **Version**: 0.3.2
+- **License**: MIT
+- **Dependencies**: pywinauto, fastmcp, fastapi, opencv-python-headless, pytesseract
+
+## Operational Rules
+See [AGENT_PROTOCOLS.md](file:///D:/Dev/repos/pywinauto-mcp/AGENT_PROTOCOLS.md).
+Mandatory HITL approval for all interaction tools via `approve_automation`.
+Use `get_desktop_state` for initial UI discovery.

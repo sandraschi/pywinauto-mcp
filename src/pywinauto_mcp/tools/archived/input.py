@@ -73,22 +73,20 @@ if app is not None:
         except ElementNotFoundError as e:
             return {
                 "status": "error",
-                "error": f"Element not found: {str(e)}",
+                "error": f"Element not found: {e!s}",
                 "error_type": "ElementNotFoundError",
             }
         except ElementNotVisible as e:
             return {
                 "status": "error",
-                "error": f"Element not visible: {str(e)}",
+                "error": f"Element not visible: {e!s}",
                 "error_type": "ElementNotVisible",
             }
         except Exception as e:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
     @app.tool()
-    def press_key(
-        keys: str | list[str], presses: int = 1, interval: float = 0.1, pause: float = 0.1
-    ) -> dict[str, Any]:
+    def press_key(keys: str | list[str], presses: int = 1, interval: float = 0.1, pause: float = 0.1) -> dict[str, Any]:
         """Press a key or combination of keys.
 
         Args:
@@ -123,9 +121,7 @@ if app is not None:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
     @app.tool()
-    def press_hotkey(
-        keys: list[str], presses: int = 1, interval: float = 0.1, pause: float = 0.1
-    ) -> dict[str, Any]:
+    def press_hotkey(keys: list[str], presses: int = 1, interval: float = 0.1, pause: float = 0.1) -> dict[str, Any]:
         """Press a combination of keys (hotkey/shortcut).
 
         Args:
@@ -327,11 +323,11 @@ if app is not None:
 
 # Add all tools to __all__
 __all__ = [
-    "type_text",
-    "press_key",
-    "press_hotkey",
-    "move_mouse",
     "drag_mouse",
-    "scroll_mouse",
     "get_mouse_position",
+    "move_mouse",
+    "press_hotkey",
+    "press_key",
+    "scroll_mouse",
+    "type_text",
 ]

@@ -69,9 +69,9 @@ def load_config_file(path: str) -> dict[str, Any]:
         with open(path, encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
     except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML in config file: {str(e)}") from e
+        raise ValueError(f"Invalid YAML in config file: {e!s}") from e
     except Exception as e:
-        raise ValueError(f"Failed to load config file: {str(e)}") from e
+        raise ValueError(f"Failed to load config file: {e!s}") from e
 
 
 def get_config(config_path: str | None = None) -> dict[str, Any]:
@@ -99,7 +99,7 @@ def get_config(config_path: str | None = None) -> dict[str, Any]:
             # Merge with defaults
             config.update(file_config)
         except Exception as e:
-            logging.warning(f"Failed to load config from {config_path}: {str(e)}")
+            logging.warning(f"Failed to load config from {config_path}: {e!s}")
 
     # Apply environment variable overrides
     for key, value in os.environ.items():

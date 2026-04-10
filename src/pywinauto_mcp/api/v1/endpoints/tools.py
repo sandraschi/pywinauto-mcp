@@ -36,18 +36,14 @@ class ToolInfo(BaseModel):
 
     name: str = Field(..., description="Unique tool name")
     description: str = Field(..., description="Human-readable description")
-    parameters: list[ToolParameter] = Field(
-        default_factory=list, description="List of tool parameters"
-    )
+    parameters: list[ToolParameter] = Field(default_factory=list, description="List of tool parameters")
 
 
 class ToolCallRequest(BaseModel):
     """Request model for calling an MCP tool."""
 
     name: str = Field(..., description="Name of the tool to call")
-    arguments: dict[str, Any] = Field(
-        default_factory=dict, description="Arguments to pass to the tool"
-    )
+    arguments: dict[str, Any] = Field(default_factory=dict, description="Arguments to pass to the tool")
 
 
 class ToolCallResponse(BaseModel):
@@ -108,10 +104,10 @@ async def list_tools() -> list[ToolInfo]:
         return tools
 
     except Exception as e:
-        logger.error(f"Error listing tools: {str(e)}", exc_info=True)
+        logger.error(f"Error listing tools: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listing tools: {str(e)}",
+            detail=f"Error listing tools: {e!s}",
         )
 
 
@@ -133,14 +129,12 @@ async def call_tool(request: ToolCallRequest) -> ToolCallResponse:
         # Execute the tool using app.call_tool (FastMCP standard)
         result = await app.call_tool(request.name, request.arguments)
 
-        return ToolCallResponse(
-            status="success", result=result, message=f"Tool {request.name} executed successfully"
-        )
+        return ToolCallResponse(status="success", result=result, message=f"Tool {request.name} executed successfully")
 
     except ValueError as e:
         # Usually tool not found or invalid arguments
-        logger.warning(f"Validation error calling tool {request.name}: {str(e)}")
+        logger.warning(f"Validation error calling tool {request.name}: {e!s}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error calling tool {request.name}: {str(e)}", exc_info=True)
+        logger.error(f"Error calling tool {request.name}: {e!s}", exc_info=True)
         return ToolCallResponse(status="error", message=str(e))

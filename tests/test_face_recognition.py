@@ -31,9 +31,7 @@ def face_rec():
     from cryptography.fernet import Fernet
 
     # Use a temporary directory for test data
-    with patch(
-        "pywinauto_mcp.face_recognition.KNOWN_FACES_DIR", Path("tests/test_data/known_faces")
-    ):
+    with patch("pywinauto_mcp.face_recognition.KNOWN_FACES_DIR", Path("tests/test_data/known_faces")):
         # Create the test directory if it doesn't exist
         os.makedirs("tests/test_data/known_faces", exist_ok=True)
 

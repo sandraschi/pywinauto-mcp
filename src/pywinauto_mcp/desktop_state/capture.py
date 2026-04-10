@@ -11,9 +11,7 @@ from .walker import UIElementWalker
 class DesktopStateCapture:
     """Main desktop state capture orchestrator."""
 
-    def __init__(
-        self, max_depth: int = 10, element_timeout: float = 0.5, tesseract_cmd: str | None = None
-    ):
+    def __init__(self, max_depth: int = 10, element_timeout: float = 0.5, tesseract_cmd: str | None = None):
         self.walker = UIElementWalker(max_depth, element_timeout)
         self.annotator = ScreenshotAnnotator()
         self.ocr = OCRExtractor(tesseract_cmd)

@@ -1,6 +1,7 @@
-"""Integration tests for the FastMCP app instance."""
-
 import pytest
+
+# Trigger tool registration
+from pywinauto_mcp.app import app
 
 
 class TestAppInitialization:
@@ -8,17 +9,14 @@ class TestAppInitialization:
 
     def test_app_instance_exists(self):
         """Test that app instance is created."""
-        from pywinauto_mcp.app import app
-
         assert app is not None
         assert hasattr(app, "name")
         assert app.name == "pywinauto-mcp"
 
     def test_app_version(self):
-        """Test that app has correct version."""
-        from pywinauto_mcp.app import app
-
-        assert app.version == "0.2.0"
+        """Test that app has correct version from pyproject.toml."""
+        # Note: In our current industrialized version, app.version is 0.4.2
+        assert app.version == "0.4.2"
 
     def test_ocr_availability_flag(self):
         """Test OCR availability flag."""
@@ -30,31 +28,36 @@ class TestAppInitialization:
 class TestToolRegistration:
     """Tests for tool registration."""
 
-    def test_tools_are_registered(self, app_instance):
-        """Test that tools are registered with the app."""
-        # Try to get tools list if available
-        if hasattr(app_instance, "list_tools"):
-            tools = app_instance.list_tools()
-            assert tools is not None
+    @pytest.mark.asyncio
+    async def test_tools_are_registered(self, app_instance):
+        """Test that all 9 industrialized portmanteau tools are registered."""
+        # FastMCP 3.2+ list_tools is async
+        tools = await app_instance.list_tools()
+        assert tools is not None
+        
+        tool_names = [t.name for t in tools]
+        expected_tools = [
+            "automation_windows",
+            "automation_elements",
+            "automation_mouse",
+            "automation_keyboard",
+            "automation_visual",
+            "automation_system",
+            "automation_mission",
+            "get_desktop_state",
+            # automation_face is optional, so we don't strictly assert it here
+            # without checking the environment first
+        ]
+        
+        for name in expected_tools:
+            assert name in tool_names, f"Tool '{name}' not found in registered tools: {tool_names}"
 
-    def test_health_check_tool_exists(self, app_instance):
-        """Test that health_check tool is registered."""
-        from pywinauto_mcp.tools import basic_tools
-
-        health_check = basic_tools.health_check
-
-        # FastMCP wraps in FunctionTool, check it exists
-        assert health_check is not None
-        assert hasattr(health_check, "name")
-        assert health_check.name == "health_check"
-
-        # Access underlying function via .fn
-        if hasattr(health_check, "fn"):
-            health_check_fn = health_check.fn
-            # Should return valid result
-            result = health_check_fn()
-            assert isinstance(result, dict)
-            assert "status" in result
+    @pytest.mark.asyncio
+    async def test_automation_system_tool_exists(self, app_instance):
+        """Test that automation_system tool is registered."""
+        tools = await app_instance.list_tools()
+        tool_names = [t.name for t in tools]
+        assert "automation_system" in tool_names
 
 
 class TestModuleImports:
@@ -63,14 +66,14 @@ class TestModuleImports:
     def test_all_tool_modules_importable(self):
         """Test that all tool modules can be imported."""
         modules = [
-            "pywinauto_mcp.tools.basic_tools",
-            "pywinauto_mcp.tools.window",
-            "pywinauto_mcp.tools.element",
-            "pywinauto_mcp.tools.mouse",
-            "pywinauto_mcp.tools.input",
-            "pywinauto_mcp.tools.system_tools",
-            "pywinauto_mcp.tools.visual",
-            "pywinauto_mcp.tools.face_recognition",
+            "pywinauto_mcp.tools.portmanteau_windows",
+            "pywinauto_mcp.tools.portmanteau_elements",
+            "pywinauto_mcp.tools.portmanteau_mouse",
+            "pywinauto_mcp.tools.portmanteau_keyboard",
+            "pywinauto_mcp.tools.portmanteau_visual",
+            "pywinauto_mcp.tools.portmanteau_system",
+            "pywinauto_mcp.tools.portmanteau_mission",
+            "pywinauto_mcp.tools.desktop_state",
         ]
 
         for module_name in modules:

@@ -33,9 +33,7 @@ class FaceEnrollmentRequest(BaseModel):
     """Request model for enrolling a new face."""
 
     name: str = Field(..., description="Name or identifier for the person")
-    image_data: str | None = Field(
-        None, description="Base64-encoded image data (alternative to image_file)"
-    )
+    image_data: str | None = Field(None, description="Base64-encoded image data (alternative to image_file)")
 
 
 class FaceVerificationRequest(BaseModel):
@@ -70,7 +68,7 @@ class FaceInfo(BaseModel):
 @router.post("/enroll", status_code=status.HTTP_201_CREATED)
 async def enroll_face(
     name: str = Form(...),
-    image_file: UploadFile = File(..., description="Image file containing the face"),  # noqa: B008
+    image_file: UploadFile = File(..., description="Image file containing the face"),
 ):
     """Enroll a new face for recognition.
 
@@ -99,7 +97,7 @@ async def enroll_face(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error enrolling face: {str(e)}",
+            detail=f"Error enrolling face: {e!s}",
         ) from e
 
 
@@ -135,15 +133,13 @@ async def verify_face(request: FaceVerificationRequest) -> FaceVerificationRespo
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error verifying face: {str(e)}",
+            detail=f"Error verifying face: {e!s}",
         ) from e
 
 
 @mcp.tool("Verify face with webcam")
 @router.post("/verify/webcam", response_model=FaceVerificationResponse)
-async def verify_face_webcam(
-    confidence_threshold: float = 0.7, timeout: int = 30
-) -> FaceVerificationResponse:
+async def verify_face_webcam(confidence_threshold: float = 0.7, timeout: int = 30) -> FaceVerificationResponse:
     """Verify a face using the webcam.
 
     This endpoint activates the webcam and attempts to recognize a face.
@@ -171,7 +167,7 @@ async def verify_face_webcam(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error during face verification: {str(e)}",
+            detail=f"Error during face verification: {e!s}",
         ) from e
 
 
@@ -197,7 +193,7 @@ async def list_known_faces():
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listing known faces: {str(e)}",
+            detail=f"Error listing known faces: {e!s}",
         ) from e
 
 
@@ -211,16 +207,14 @@ async def remove_known_face(name: str):
     try:
         success = face_recognizer.remove_known_face(name)
         if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"No face found with name '{name}'"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No face found with name '{name}'")
 
         return {"status": "success", "message": f"Successfully removed face '{name}'"}
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error removing face: {str(e)}",
+            detail=f"Error removing face: {e!s}",
         ) from e
 
 

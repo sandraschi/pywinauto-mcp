@@ -54,9 +54,7 @@ if app is not None:
         name="wait_for_window",
         description="Wait for a window with the specified title to become active.",
     )
-    def wait_for_window(
-        title: str, timeout: float = 10.0, exact_match: bool = True
-    ) -> dict[str, Any]:
+    def wait_for_window(title: str, timeout: float = 10.0, exact_match: bool = True) -> dict[str, Any]:
         """Wait for a window with the specified title to become active.
 
         Args:
@@ -232,10 +230,10 @@ if app is not None:
 
 # Add all tools to __all__
 __all__ = [
-    "wait_for_window",
     "bring_window_to_foreground",
     "get_process_list",
-    "wait",
     "get_system_clipboard",
     "set_system_clipboard",
+    "wait",
+    "wait_for_window",
 ]

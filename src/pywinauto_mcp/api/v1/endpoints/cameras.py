@@ -25,9 +25,7 @@ MAX_CAMERA_INDEX = min(
 class CameraDevice(BaseModel):
     """One OpenCV-openable capture device."""
 
-    index: int = Field(
-        ..., description="Pass to cv2.VideoCapture(index) / automation_face camera_index"
-    )
+    index: int = Field(..., description="Pass to cv2.VideoCapture(index) / automation_face camera_index")
     label: str = Field(..., description="Human-readable label (may include resolution)")
     width: int | None = None
     height: int | None = None

@@ -65,9 +65,7 @@ if app is not None:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
     @app.tool()
-    def mouse_move_to_element(
-        element: ElementInfo, x: int | None = None, y: int | None = None
-    ) -> dict[str, Any]:
+    def mouse_move_to_element(element: ElementInfo, x: int | None = None, y: int | None = None) -> dict[str, Any]:
         """Move mouse to a UI element.
 
         Args:
@@ -140,9 +138,7 @@ if app is not None:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
     @app.tool()
-    def drag_and_drop(
-        source: ElementInfo, target: ElementInfo, duration: float = 0.5
-    ) -> dict[str, Any]:
+    def drag_and_drop(source: ElementInfo, target: ElementInfo, duration: float = 0.5) -> dict[str, Any]:
         """Drag from source to target element.
 
         Args:
@@ -166,9 +162,7 @@ if app is not None:
                 src_x = source["x"] + (source["width"] // 2)
                 src_y = source["y"] + (source["height"] // 2)
             else:
-                raise ValueError(
-                    "Invalid source element format. Must contain 'rect' or x/y/width/height"
-                )
+                raise ValueError("Invalid source element format. Must contain 'rect' or x/y/width/height")
 
             # Get target center
             if "rect" in target and hasattr(target["rect"], "left"):
@@ -181,9 +175,7 @@ if app is not None:
                 tgt_x = target["x"] + (target["width"] // 2)
                 tgt_y = target["y"] + (target["height"] // 2)
             else:
-                raise ValueError(
-                    "Invalid target element format. Must contain 'rect' or x/y/width/height"
-                )
+                raise ValueError("Invalid target element format. Must contain 'rect' or x/y/width/height")
 
             # Perform drag and drop
             pyautogui.moveTo(src_x, src_y)
@@ -205,9 +197,7 @@ if app is not None:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
     @app.tool()
-    def right_click(
-        element: ElementInfo | None = None, x: int | None = None, y: int | None = None
-    ) -> dict[str, Any]:
+    def right_click(element: ElementInfo | None = None, x: int | None = None, y: int | None = None) -> dict[str, Any]:
         """Right-click on an element or at specific coordinates.
 
         Args:
@@ -231,9 +221,7 @@ if app is not None:
                     x = element["x"] + (element["width"] // 2)
                     y = element["y"] + (element["height"] // 2)
                 else:
-                    raise ValueError(
-                        "Invalid element format. Must contain 'rect' or x/y/width/height"
-                    )
+                    raise ValueError("Invalid element format. Must contain 'rect' or x/y/width/height")
             elif x is not None and y is not None:
                 pass  # Use provided coordinates
             else:
@@ -247,9 +235,7 @@ if app is not None:
             return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
     @app.tool()
-    def double_click(
-        element: ElementInfo | None = None, x: int | None = None, y: int | None = None
-    ) -> dict[str, Any]:
+    def double_click(element: ElementInfo | None = None, x: int | None = None, y: int | None = None) -> dict[str, Any]:
         """Double-click on an element or at specific coordinates.
 
         Args:
@@ -273,9 +259,7 @@ if app is not None:
                     x = element["x"] + (element["width"] // 2)
                     y = element["y"] + (element["height"] // 2)
                 else:
-                    raise ValueError(
-                        "Invalid element format. Must contain 'rect' or x/y/width/height"
-                    )
+                    raise ValueError("Invalid element format. Must contain 'rect' or x/y/width/height")
             elif x is not None and y is not None:
                 pass  # Use provided coordinates
             else:
@@ -331,12 +315,12 @@ if app is not None:
 
 # Add all tools to __all__
 __all__ = [
+    "double_click",
+    "drag_and_drop",
+    "get_cursor_position",
+    "mouse_hover",
     "mouse_move_relative",
     "mouse_move_to_element",
-    "mouse_hover",
-    "drag_and_drop",
-    "right_click",
-    "double_click",
     "mouse_scroll",
-    "get_cursor_position",
+    "right_click",
 ]

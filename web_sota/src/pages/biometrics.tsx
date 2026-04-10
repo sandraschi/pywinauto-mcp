@@ -206,7 +206,7 @@ export function Biometrics() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between gap-2 border border-slate-800 rounded-lg p-3 bg-slate-900/40">
-                                    <span className="text-slate-400">HITL window</span>
+                                    <span className="text-slate-400">HITL (human-in-the-loop) window</span>
                                     <span className="text-slate-200">{hitlActive ? "open" : "closed"}</span>
                                 </div>
                                 <p className="text-xs text-slate-500">

@@ -82,9 +82,7 @@ class UIElementWalker:
                 parent_window = self._get_parent_window(element)
 
                 # Handle control type for different backends
-                if hasattr(element, "element_info") and hasattr(
-                    element.element_info, "control_type"
-                ):
+                if hasattr(element, "element_info") and hasattr(element.element_info, "control_type"):
                     # UIA backend
                     control_type = element.element_info.control_type
                 else:

@@ -13,7 +13,7 @@ export const PERSONAS: Persona[] = [
         name: 'General',
         description: 'Balanced help for this repo and Windows automation',
         system: `You are a concise technical assistant helping operators work with pywinauto-mcp (Windows UI automation over MCP).
-Be accurate: mention HITL/approve_automation when discussing mouse and keyboard. Prefer actionable steps.`,
+Be accurate: mention HITL (human-in-the-loop) / approve_automation when discussing mouse and keyboard. Prefer actionable steps.`,
     },
     {
         id: 'docs',

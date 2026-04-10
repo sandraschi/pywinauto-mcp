@@ -51,28 +51,18 @@ class MonitorSensitiveAppsRequest(BaseModel):
         description="List of application names to monitor (e.g., ['notepad.exe', 'chrome.exe'])",
         min_items=1,
     )
-    webcam_required: bool = Field(
-        True, description="Whether to require webcam verification for access"
-    )
+    webcam_required: bool = Field(True, description="Whether to require webcam verification for access")
     alert_email: EmailStr | None = Field(None, description="Email address to send alerts to")
-    monitor_duration_minutes: int = Field(
-        60, description="Duration to monitor for (in minutes)", gt=0
-    )
-    time_windows: list[TimeWindow] | None = Field(
-        None, description="Time windows when monitoring should be active"
-    )
+    monitor_duration_minutes: int = Field(60, description="Duration to monitor for (in minutes)", gt=0)
+    time_windows: list[TimeWindow] | None = Field(None, description="Time windows when monitoring should be active")
 
 
 class IntruderDetectionRequest(BaseModel):
     """Request model for intruder detection."""
 
-    sensitivity: float = Field(
-        0.7, description="Motion detection sensitivity (0.1-1.0)", ge=0.1, le=1.0
-    )
+    sensitivity: float = Field(0.7, description="Motion detection sensitivity (0.1-1.0)", ge=0.1, le=1.0)
     duration_minutes: int = Field(5, description="Duration to monitor (in minutes)", gt=0)
-    alert_contacts: list[EmailStr] | None = Field(
-        None, description="List of email addresses to alert"
-    )
+    alert_contacts: list[EmailStr] | None = Field(None, description="List of email addresses to alert")
     record_video: bool = Field(True, description="Whether to record video when motion is detected")
 
 
@@ -160,9 +150,7 @@ def start_intruder_detection(
     available cameras and alerts when potential intruders are detected.
     """
     if intruder_detector.running:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Intruder detection is already running"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Intruder detection is already running")
 
     # Start detection in background
     background_tasks.add_task(

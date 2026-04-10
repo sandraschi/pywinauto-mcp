@@ -196,9 +196,7 @@ if app is not None:
                 image = Image.open(image_path)
             else:
                 # Take screenshot of window or region
-                screenshot = take_screenshot(
-                    window_handle=window_handle, region=region, return_base64=False
-                )
+                screenshot = take_screenshot(window_handle=window_handle, region=region, return_base64=False)
                 if screenshot["status"] != "success":
                     return screenshot
 
@@ -470,4 +468,4 @@ if app is not None:
             return {"status": "error", "error": str(e)}
 
     # Add all tools to __all__
-    __all__ = ["take_screenshot", "extract_text", "find_image", "highlight_element"]
+    __all__ = ["extract_text", "find_image", "highlight_element", "take_screenshot"]

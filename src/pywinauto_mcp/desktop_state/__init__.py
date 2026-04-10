@@ -23,14 +23,14 @@ except ImportError:
     VisualChange = None
 
 __all__ = [
-    "UIElementWalker",
-    "ScreenshotAnnotator",
-    "OCRExtractor",
-    "DesktopStateFormatter",
-    "DesktopStateCapture",
-    "VisualStateAssessor",
+    "VISUAL_STATE_AVAILABLE",
     "ActionResult",
+    "DesktopStateCapture",
+    "DesktopStateFormatter",
+    "OCRExtractor",
+    "ScreenshotAnnotator",
+    "UIElementWalker",
     "VisualAssessment",
     "VisualChange",
-    "VISUAL_STATE_AVAILABLE",
+    "VisualStateAssessor",
 ]

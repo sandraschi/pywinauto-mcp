@@ -2,6 +2,7 @@
 
 This package registers **seven** core portmanteau tools plus **get_desktop_state**.
 **automation_face** is optional (off by default); see `docs/SAFETY.md` §5 and `PYWINAUTO_MCP_ENABLE_FACE`.
+**global_keylogger** is optional (off by default); set `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1` (high-risk).
 
 PORTMANTEAU TOOL ARCHITECTURE:
 Instead of 60+ individual tools, this package consolidates related operations
@@ -38,11 +39,20 @@ except ImportError as e:
     app = None
 
 try:
-    from pywinauto_mcp.safety import ENV_ENABLE_FACE, is_face_tool_enabled
+    from pywinauto_mcp.safety import (
+        ENV_ENABLE_FACE,
+        ENV_ENABLE_KEYLOGGER,
+        is_face_tool_enabled,
+        is_keylogger_tool_enabled,
+    )
 except ImportError:
     ENV_ENABLE_FACE = "PYWINAUTO_MCP_ENABLE_FACE"
+    ENV_ENABLE_KEYLOGGER = "PYWINAUTO_MCP_ENABLE_KEYLOGGER"
 
     def is_face_tool_enabled() -> bool:
+        return False
+
+    def is_keylogger_tool_enabled() -> bool:
         return False
 
 
@@ -54,6 +64,7 @@ PORTMANTEAU_MODULES = [
     "portmanteau_keyboard",  # Keyboard input
     "portmanteau_visual",  # Visual/screenshot/OCR
     "portmanteau_system",  # System utilities
+    "portmanteau_mission",  # Agentic Missions (Sampling)
     "desktop_state",  # Desktop state capture (standalone)
 ]
 if is_face_tool_enabled():
@@ -65,6 +76,16 @@ else:
     logger.info(
         "automation_face not registered (opt-in). Set %s=1 and install the face extra to enable.",
         ENV_ENABLE_FACE,
+    )
+
+if is_keylogger_tool_enabled():
+    _kidx = PORTMANTEAU_MODULES.index("portmanteau_keyboard") + 1
+    PORTMANTEAU_MODULES.insert(_kidx, "portmanteau_keylogger")
+    logger.info("Keylogger tool enabled (%s=1): will load portmanteau_keylogger", ENV_ENABLE_KEYLOGGER)
+else:
+    logger.info(
+        "global_keylogger not registered (opt-in). Set %s=1 to enable.",
+        ENV_ENABLE_KEYLOGGER,
     )
 
 # Import all portmanteau tool modules - this will trigger their registration with FastMCP

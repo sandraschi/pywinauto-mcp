@@ -45,8 +45,7 @@ class DesktopStateFormatter:
             bounds = elem["bounds"]
             name = elem.get("name", elem.get("ocr_text", ""))
             lines.append(
-                f'[{elem["id"]}] {elem["type"]} "{name}" '
-                f"at ({bounds['x']},{bounds['y']}) - App: {elem['app']}"
+                f'[{elem["id"]}] {elem["type"]} "{name}" at ({bounds["x"]},{bounds["y"]}) - App: {elem["app"]}'
             )
 
         lines.append("\n")

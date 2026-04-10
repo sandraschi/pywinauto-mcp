@@ -133,7 +133,7 @@ class TestTimer:
 class TestValidateWindowHandle:
     """Tests for validate_window_handle function."""
 
-    @patch("pywinauto.Desktop")
+    @patch("pywinauto_mcp.tools.utils.Desktop")
     def test_validate_window_handle_valid(self, mock_desktop):
         """Test validating a valid window handle."""
         mock_desktop_obj = MagicMock()
@@ -146,7 +146,7 @@ class TestValidateWindowHandle:
 
         assert result is True
 
-    @patch("pywinauto.Desktop")
+    @patch("pywinauto_mcp.tools.utils.Desktop")
     def test_validate_window_handle_invalid(self, mock_desktop):
         """Test validating an invalid window handle."""
         mock_desktop_obj = MagicMock()
@@ -161,7 +161,7 @@ class TestValidateWindowHandle:
 class TestGetDesktop:
     """Tests for get_desktop function."""
 
-    @patch("pywinauto.Desktop")
+    @patch("pywinauto_mcp.tools.utils.Desktop")
     def test_get_desktop_success(self, mock_desktop):
         """Test getting desktop instance successfully."""
         mock_desktop_obj = MagicMock()
@@ -172,7 +172,7 @@ class TestGetDesktop:
         assert result == mock_desktop_obj
         mock_desktop.assert_called_once_with(backend="uia")
 
-    @patch("pywinauto.Desktop")
+    @patch("pywinauto_mcp.tools.utils.Desktop")
     @patch("pywinauto_mcp.tools.utils.logger")
     def test_get_desktop_failure(self, mock_logger, mock_desktop):
         """Test getting desktop instance with failure."""

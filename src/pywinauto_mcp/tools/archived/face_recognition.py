@@ -23,9 +23,7 @@ try:
 except ImportError:
     FACE_RECOGNITION_AVAILABLE = False
     logger = logging.getLogger(__name__)
-    logger.warning(
-        "face_recognition library not available. Face recognition features will be disabled."
-    )
+    logger.warning("face_recognition library not available. Face recognition features will be disabled.")
 
 # Import the FastMCP app instance
 try:
@@ -40,9 +38,7 @@ except ImportError as e:
 
 # Constants
 DEFAULT_KNOWN_FACES_DIR = Path("data/known_faces")
-DEFAULT_ENCRYPTION_KEY = (
-    b"your-32-byte-encryption-key-here"  # In production, load from secure storage
-)
+DEFAULT_ENCRYPTION_KEY = b"your-32-byte-encryption-key-here"  # In production, load from secure storage
 
 
 @dataclass
@@ -261,9 +257,7 @@ if app is not None and FACE_RECOGNITION_AVAILABLE:
 
                         if match[0]:
                             # Calculate face distance
-                            face_distance = float(
-                                face_recognition.face_distance([known_encoding], face_encoding)[0]
-                            )
+                            face_distance = float(face_recognition.face_distance([known_encoding], face_encoding)[0])
 
                             # Update last used timestamp
                             known_face.last_used = datetime.now().isoformat()
@@ -440,9 +434,7 @@ if app is not None and FACE_RECOGNITION_AVAILABLE:
         name="capture_and_recognize",
         description="Capture an image from the webcam and recognize faces in it.",
     )
-    def capture_and_recognize(
-        camera_index: int = 0, save_path: str | None = None
-    ) -> dict[str, Any]:
+    def capture_and_recognize(camera_index: int = 0, save_path: str | None = None) -> dict[str, Any]:
         """Capture an image from the webcam and recognize faces in it.
 
         Args:
@@ -512,10 +504,10 @@ if app is not None and FACE_RECOGNITION_AVAILABLE:
     # Add all tools to __all__
     __all__ = [
         "add_face",
-        "recognize_face",
-        "list_known_faces",
-        "delete_face",
         "capture_and_recognize",
+        "delete_face",
+        "list_known_faces",
+        "recognize_face",
     ]
 else:
     # If face recognition is not available, provide dummy implementations
@@ -565,9 +557,7 @@ else:
         name="capture_and_recognize",
         description="Face recognition not available. Install the face_recognition library.",
     )
-    def capture_and_recognize(
-        camera_index: int = 0, save_path: str | None = None
-    ) -> dict[str, Any]:
+    def capture_and_recognize(camera_index: int = 0, save_path: str | None = None) -> dict[str, Any]:
         return {
             "status": "error",
             "error": "Face recognition not available. Install the face_recognition library.",

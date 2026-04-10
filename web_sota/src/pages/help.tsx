@@ -12,8 +12,8 @@ const SAFETY_ENV = [
 const TOOLS = [
     { name: 'automation_windows', note: 'Find, focus, resize, close windows.' },
     { name: 'automation_elements', note: 'Click, type, read UI elements.' },
-    { name: 'automation_mouse', note: 'Pointer moves and clicks (HITL may apply).' },
-    { name: 'automation_keyboard', note: 'Keys and shortcuts (HITL may apply).' },
+    { name: 'automation_mouse', note: 'Pointer moves and clicks (HITL (human-in-the-loop) may apply).' },
+    { name: 'automation_keyboard', note: 'Keys and shortcuts (HITL (human-in-the-loop) may apply).' },
     { name: 'automation_visual', note: 'Screenshots, OCR, template match.' },
     {
         name: 'automation_face',
@@ -21,7 +21,7 @@ const TOOLS = [
     },
     { name: 'automation_system', note: 'status, help, wait, clipboard, processes, start_app, etc.' },
     { name: 'get_desktop_state', note: 'Structured UI tree / discovery.' },
-    { name: 'approve_automation', note: 'Extends HITL approval window (app module).' },
+    { name: 'approve_automation', note: 'Extends HITL (human-in-the-loop) approval window (app module).' },
     { name: 'automation_safety', note: 'Rate counters, kill switch / dry-run visibility.' },
 ];
 
@@ -56,7 +56,7 @@ export function Help() {
                         </li>
                         <li>
                             Mouse/keyboard mutations may require <strong className="text-slate-200">approve_automation</strong>{' '}
-                            (HITL) depending on configuration.
+                            (HITL — human-in-the-loop) depending on configuration.
                         </li>
                         <li>
                             For long desktop runs, see <code className="text-slate-300">docs/OPERATOR_PROTOCOL.md</code>{' '}

@@ -47,9 +47,7 @@ class TestPortmanteauWindowsMock:
 
     @patch("pywinauto_mcp.tools.portmanteau_windows._get_desktop")
     @patch("pywinauto_mcp.tools.portmanteau_windows.automation_windows")
-    def test_activate_minimized_window(
-        self, mock_automation_windows, mock_get_desktop, app_instance
-    ):
+    def test_activate_minimized_window(self, mock_automation_windows, mock_get_desktop, app_instance):
         """Test activating a minimized window with mocks."""
         # Setup mocks
         mock_window = MagicMock()
@@ -117,9 +115,7 @@ class TestPortmanteauWindowsMock:
 
     @patch("pywinauto_mcp.tools.portmanteau_windows._get_desktop")
     @patch("pywinauto_mcp.tools.portmanteau_windows.automation_windows")
-    def test_activate_nonexistent_window(
-        self, mock_automation_windows, mock_get_desktop, app_instance
-    ):
+    def test_activate_nonexistent_window(self, mock_automation_windows, mock_get_desktop, app_instance):
         """Test activating a non-existent window with mocks."""
         # Setup the mock to return an error result for non-existent window
         expected_result = {
@@ -150,9 +146,7 @@ class TestPortmanteauWindowsMock:
 
     @patch("pywinauto_mcp.tools.portmanteau_windows._get_desktop")
     @patch("pywinauto_mcp.tools.portmanteau_windows.automation_windows")
-    def test_activate_window_verify_focus(
-        self, mock_automation_windows, mock_get_desktop, app_instance
-    ):
+    def test_activate_window_verify_focus(self, mock_automation_windows, mock_get_desktop, app_instance):
         """Test window activation with focus verification using mocks."""
         # Setup the mock to return a success result but without focus
         expected_result = {

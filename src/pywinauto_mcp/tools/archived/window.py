@@ -436,15 +436,15 @@ def get_desktop():
 
 # Add all tools to __all__
 __all__ = [
+    "close_window",
+    "get_active_window",
+    "get_all_windows",
+    "get_window_rect",
+    "get_window_state",
+    "get_window_title",
     "maximize_window",
     "minimize_window",
     "restore_window",
-    "set_window_position",
-    "get_active_window",
-    "close_window",
-    "get_window_rect",
-    "get_window_title",
-    "get_window_state",
     "set_window_foreground",
-    "get_all_windows",
+    "set_window_position",
 ]
