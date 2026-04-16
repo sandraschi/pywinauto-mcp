@@ -69,13 +69,21 @@ def _build_help_payload() -> dict[str, Any]:
         ),
         "face_tool_active": face_on,
         "operations": [
-            "status", "help", "wait", "info", "wait_for_window", 
-            "clipboard_get", "clipboard_set", "processes", "start_app"
+            "status",
+            "help",
+            "wait",
+            "info",
+            "wait_for_window",
+            "clipboard_get",
+            "clipboard_set",
+            "processes",
+            "start_app",
         ],
     }
 
 
 if app is not None:
+
     @app.tool(
         name="automation_system",
         description="""Industrialized Windows system utility and synchronization tool.
@@ -123,30 +131,26 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                         "ready": True,
                         "pywinauto_version": pywinauto.__version__,
                         "system_metadata": system_metadata,
-                    }
+                    },
                 )
 
             # === HELP OPERATION ===
             elif operation == "help":
                 help_info = _build_help_payload()
-                return ToolResult(
-                    status="success", 
-                    message="System help retrieved.", 
-                    data=help_info
-                )
+                return ToolResult(status="success", message="System help retrieved.", data=help_info)
 
             elif operation == "wait":
                 if seconds is None:
                     return ToolResult(
                         status="error",
                         message="seconds parameter is required",
-                        recovery_tip="Provide the number of seconds to wait."
+                        recovery_tip="Provide the number of seconds to wait.",
                     )
                 time.sleep(seconds)
                 return ToolResult(
                     status="success",
                     message=f"Waited for {seconds} seconds.",
-                    data={"waited_seconds": seconds, "system_metadata": system_metadata}
+                    data={"waited_seconds": seconds, "system_metadata": system_metadata},
                 )
 
             elif operation == "info":
@@ -154,7 +158,7 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                 return ToolResult(
                     status="success",
                     message="System info collected.",
-                    data={"info": stats, "system_metadata": system_metadata}
+                    data={"info": stats, "system_metadata": system_metadata},
                 )
 
             elif operation == "wait_for_window":
@@ -162,7 +166,7 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                     return ToolResult(
                         status="error",
                         message="title parameter is required",
-                        recovery_tip="Provide the window title to wait for."
+                        recovery_tip="Provide the window title to wait for.",
                     )
                 start_time = time.time()
                 while time.time() - start_time < timeout:
@@ -180,8 +184,8 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                                 data={
                                     "window_title": window.title,
                                     "window_handle": window._hWnd,
-                                    "system_metadata": system_metadata
-                                }
+                                    "system_metadata": system_metadata,
+                                },
                             )
                     except Exception as e:
                         logger.warning(f"Error finding window: {e}")
@@ -189,7 +193,7 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                 return ToolResult(
                     status="error",
                     message=f"Window '{title}' not found within {timeout}s.",
-                    recovery_tip="Check if the window title is correct or increase timeout."
+                    recovery_tip="Check if the window title is correct or increase timeout.",
                 )
 
             elif operation == "clipboard_get":
@@ -197,13 +201,13 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                     return ToolResult(
                         status="error",
                         message="pyperclip not available.",
-                        recovery_tip="Install with: pip install pyperclip"
+                        recovery_tip="Install with: pip install pyperclip",
                     )
                 content = pyperclip.paste()
                 return ToolResult(
                     status="success",
                     message="Clipboard content retrieved.",
-                    data={"content": content, "system_metadata": system_metadata}
+                    data={"content": content, "system_metadata": system_metadata},
                 )
 
             elif operation == "clipboard_set":
@@ -211,19 +215,19 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                     return ToolResult(
                         status="error",
                         message="pyperclip not available.",
-                        recovery_tip="Install with: pip install pyperclip"
+                        recovery_tip="Install with: pip install pyperclip",
                     )
                 if text is None:
                     return ToolResult(
                         status="error",
                         message="'text' parameter is required.",
-                        recovery_tip="Provide the text string to copy."
+                        recovery_tip="Provide the text string to copy.",
                     )
                 pyperclip.copy(text)
                 return ToolResult(
                     status="success",
                     message="Text copied to clipboard.",
-                    data={"characters_copied": len(text), "system_metadata": system_metadata}
+                    data={"characters_copied": len(text), "system_metadata": system_metadata},
                 )
 
             elif operation == "processes":
@@ -239,7 +243,7 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                 return ToolResult(
                     status="success",
                     message=f"Found {len(process_list)} processes.",
-                    data={"processes": process_list, "system_metadata": system_metadata}
+                    data={"processes": process_list, "system_metadata": system_metadata},
                 )
 
             elif operation == "start_app":
@@ -247,35 +251,29 @@ If 'wait_for_window' times out, verify the 'title' exists or increase 'timeout'.
                     return ToolResult(
                         status="error",
                         message="app_path parameter is required.",
-                        recovery_tip="Provide the path to the application."
+                        recovery_tip="Provide the path to the application.",
                     )
                 try:
                     app_instance = Application().start(app_path, work_dir=work_dir)
                     return ToolResult(
                         status="success",
                         message=f"Started {app_path}.",
-                        data={"process_id": app_instance.process, "system_metadata": system_metadata}
+                        data={"process_id": app_instance.process, "system_metadata": system_metadata},
                     )
                 except Exception as e:
                     return ToolResult(
-                        status="error",
-                        message=f"Failed to start: {e}",
-                        recovery_tip="Check path and permissions."
+                        status="error", message=f"Failed to start: {e}", recovery_tip="Check path and permissions."
                     )
 
             else:
                 return ToolResult(
                     status="error",
                     message=f"Unknown operation: {operation}",
-                    recovery_tip="Use a valid operation: status, help, wait, info, wait_for_window, clipboard_get, clipboard_set, processes, start_app"
+                    recovery_tip="Use a valid operation: status, help, wait, info, wait_for_window, clipboard_get, clipboard_set, processes, start_app",
                 )
 
         except Exception as e:
-            return ToolResult(
-                status="error",
-                message=str(e),
-                recovery_tip="Check system logs for details."
-            )
+            return ToolResult(status="error", message=str(e), recovery_tip="Check system logs for details.")
 
 
 __all__ = ["automation_system"]

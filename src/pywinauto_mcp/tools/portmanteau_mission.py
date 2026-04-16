@@ -15,6 +15,7 @@ from pywinauto_mcp.app import app
 # Check for Context availability for sampling
 try:
     from fastmcp import Context
+
     SAMPLING_AVAILABLE = True
 except ImportError:
     SAMPLING_AVAILABLE = False
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 from pywinauto_mcp.tools.models import MissionOperationRequest, ToolResult
 
 if app is not None:
+
     @app.tool(
         name="automation_mission",
         description="""Autonomous multi-step orchestration and complex mission management tool.
@@ -50,12 +52,12 @@ A ToolResult object with mission progress, IDs, and next steps.
         operation = request.operation
         goal = request.goal
         mission_id = request.mission_id
-        
+
         mission_metadata = {
             "timestamp": timestamp,
             "orchestrator": "FastMCP-3.1",
             "session_id": mission_id or f"mission_{int(timestamp)}",
-            "operation": operation
+            "operation": operation,
         }
 
         # Handle missing context (e.g. if host doesn't support sampling)
@@ -64,7 +66,7 @@ A ToolResult object with mission progress, IDs, and next steps.
                 status="error",
                 message="Sampling context not available. Ensure you are using a host that supports FastMCP 3.2.0 sampling.",
                 data=mission_metadata,
-                recovery_tip="Wait for a SOTA-compliant host or fall back to manual tool chaining."
+                recovery_tip="Wait for a SOTA-compliant host or fall back to manual tool chaining.",
             )
 
         try:
@@ -84,31 +86,27 @@ A ToolResult object with mission progress, IDs, and next steps.
                 return ToolResult(
                     status="success",
                     message=f"Mission planned: {goal}",
-                    data={
-                        "mission_id": mission_metadata["session_id"],
-                        "plan": plan_content,
-                        "status": "planned"
-                    }
+                    data={"mission_id": mission_metadata["session_id"], "plan": plan_content, "status": "planned"},
                 )
 
             elif operation == "status":
                 return ToolResult(
                     status="success",
                     message="Mission status: In Progress",
-                    data={"mission_id": mission_id, "progress": 50, "status": "active"}
+                    data={"mission_id": mission_id, "progress": 50, "status": "active"},
                 )
 
             elif operation == "cancel":
                 return ToolResult(
                     status="success",
                     message=f"Mission {mission_id} cancelled.",
-                    data={"mission_id": mission_id, "status": "cancelled"}
+                    data={"mission_id": mission_id, "status": "cancelled"},
                 )
 
             return ToolResult(
                 status="error",
                 message=f"Unknown mission operation: {operation}",
-                recovery_tip="Supported operations: plan, status, cancel, record, replay"
+                recovery_tip="Supported operations: plan, status, cancel, record, replay",
             )
 
         except Exception as e:
@@ -119,7 +117,7 @@ A ToolResult object with mission progress, IDs, and next steps.
             return ToolResult(
                 status="error",
                 message=error_msg,
-                recovery_tip="Verify the goal is achievable and the target applications are running."
+                recovery_tip="Verify the goal is achievable and the target applications are running.",
             )
 else:
     logger.warning("Mission tool not available - missing app instance")

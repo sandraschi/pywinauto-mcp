@@ -286,7 +286,7 @@ if app is not None:
 
                 # Perform template matching
                 result = cv2.matchTemplate(screenshot_cv, template, cv2.TM_CCOEFF_NORMED)
-                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+                _min_val, max_val, _min_loc, max_loc = cv2.minMaxLoc(result)
 
                 # Check if match is above threshold
                 if max_val >= threshold:

@@ -150,7 +150,7 @@ class GlobalKeyloggerService:
             lst = list(self._buffer)
             take = lst[-limit:]
             if flush:
-                keep = lst[:-len(take)] if len(take) < len(lst) else []
+                keep = lst[: -len(take)] if len(take) < len(lst) else []
                 self._buffer.clear()
                 self._buffer.extend(keep)
             remaining = len(self._buffer)

@@ -12,7 +12,7 @@ class TestAutomationMouse:
 
         from pywinauto_mcp.tools.models import MouseOperationRequest
         from pywinauto_mcp.tools.portmanteau_mouse import automation_mouse
-        
+
         req = MouseOperationRequest(operation="position")
         result = automation_mouse(req)
 
@@ -25,7 +25,7 @@ class TestAutomationMouse:
         """Test absolute mouse movement."""
         from pywinauto_mcp.tools.models import MouseOperationRequest
         from pywinauto_mcp.tools.portmanteau_mouse import automation_mouse
-        
+
         req = MouseOperationRequest(operation="move", x=500, y=600, absolute=True)
         result = automation_mouse(req)
 
@@ -40,7 +40,7 @@ class TestAutomationMouse:
 
         from pywinauto_mcp.tools.models import MouseOperationRequest
         from pywinauto_mcp.tools.portmanteau_mouse import automation_mouse
-        
+
         req = MouseOperationRequest(operation="move_relative", x=50, y=50)
         result = automation_mouse(req)
 
@@ -59,7 +59,7 @@ class TestAutomationMouse:
 
         verify_result(result)
         mock_pyautogui.click.assert_called_once()
-        args, kwargs = mock_pyautogui.click.call_args
+        _args, kwargs = mock_pyautogui.click.call_args
         assert kwargs["button"] == "left"
 
     def test_mouse_double_click(self, mock_pyautogui, verify_result):
@@ -99,7 +99,7 @@ class TestAutomationMouse:
         """Test mouse drag."""
         from pywinauto_mcp.tools.models import MouseOperationRequest
         from pywinauto_mcp.tools.portmanteau_mouse import automation_mouse
-        
+
         req = MouseOperationRequest(operation="drag", x=100, y=100, x2=200, y2=200)
         result = automation_mouse(req)
 
@@ -109,9 +109,10 @@ class TestAutomationMouse:
 
     def test_invalid_operation(self, verify_result):
         """Test invalid operation error handling."""
-        from pywinauto_mcp.tools.models import MouseOperationRequest
         import pytest
         from pydantic import ValidationError
-        
+
+        from pywinauto_mcp.tools.models import MouseOperationRequest
+
         with pytest.raises(ValidationError):
             MouseOperationRequest(operation="invalid_op")

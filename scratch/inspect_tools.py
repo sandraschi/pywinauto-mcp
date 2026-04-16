@@ -1,5 +1,7 @@
 import json
+
 from pywinauto_mcp.app import app
+
 
 def inspect_tools():
     print(f"Inspecting {len(app._tools)} tools registered with FastMCP:")
@@ -8,10 +10,10 @@ def inspect_tools():
         print(f"Description: {tool.description[:100]}...")
         # Accessing schema (FastMCP internal)
         try:
-            from pydantic import TypeAdapter
             # FastMCP usually stores the function and its parameters
             # We want to see the JSON schema it would expose
             import inspect
+
             sig = inspect.signature(tool.fn)
             for param_name, param in sig.parameters.items():
                 if hasattr(param.annotation, "model_json_schema"):
@@ -19,6 +21,7 @@ def inspect_tools():
                     print(json.dumps(param.annotation.model_json_schema(), indent=4))
         except Exception as e:
             print(f"  Could not extract schema for {name}: {e}")
+
 
 if __name__ == "__main__":
     inspect_tools()

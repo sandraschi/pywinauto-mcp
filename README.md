@@ -10,6 +10,18 @@
 
 **Native Windows vs websites (HTML DOM):** **pywinauto-mcp** drives **desktop UI** (Win32 / UI Automation  windows, dialogs, many native controls). It does **not** expose the **HTML DOM** inside a browser tab. For **website** automation and analysis (selectors, accessibility tree, network, console), use a **browser MCP**; those servers are usually built on **Playwright** (or Chromium-only stacks). The two are **orthogonal**  combine them in your IDE when a workflow needs **both** a real browser page and a **native** app on the same machine.
 
+### Complementary: [autohotkey-mcp](https://github.com/sandraschi/autohotkey-mcp) (sibling repo)
+
+Fleet sibling **[`autohotkey-mcp`](https://github.com/sandraschi/autohotkey-mcp)** targets **AutoHotkey v2 scriptlets**: list/run/stop scripts from a depot, optional **ScriptletCOMBridge**, optional **LLM-assisted** generation of `.ahk` into a sandbox folder. This repo targets **PyWinAuto + portmanteau tools** (window/element tree, mouse/keyboard, visual, system). **Neither replaces the other.**
+
+| | **pywinauto-mcp (here)** | **autohotkey-mcp** |
+|--|--|--|
+| **Core idea** | **Structured native UI automation** — UIA/window discovery, element ops, OCR/screenshots, one MCP tool surface. | **AHK script lifecycle** — run and manage scriptlets, peek source/metadata, optional generate AHK. |
+| **Overlap** | Both assume a **high-trust Windows session** (read each repo’s **SAFETY**). | Same. |
+| **Not duplicated** | No first-class **scriptlet depot** or **AHK generation** workflow. | No **UI Automation tree** or **portmanteau** window/element API like here. |
+| **Typical use** | “Drive this app’s UI from the model” (clicks, fields, windows). | “Run or author **hotkey/macro** AHK I already organize in a folder.” |
+| **Together** | Install **both** MCP servers when you want **agent-driven UI control** and **AHK utilities** in the same client; keep boundaries clear (native UI here, AHK scripts there). | — |
+
 ### Discovery (GitHub, Glama, MCP catalogs)
 
 - **Safety:** [`docs/SAFETY.md`](docs/SAFETY.md)  kill switch, rate limits, HITL (human-in-the-loop), dry-run.
@@ -95,13 +107,13 @@ automation_visual("find_image", template_path="button.png", threshold=0.8)
 uvx pywinauto-mcp
 ```
 
-**Claude Desktop (example):**
+**Claude Desktop (example):** replace `<PATH-TO-CLONE>` with the directory where you cloned this repository (not a path from another machine).
 
 ```json
 "mcpServers": {
   "pywinauto-mcp": {
     "command": "uv",
-    "args": ["--directory", "D:/Dev/repos/pywinauto-mcp", "run", "pywinauto-mcp"]
+    "args": ["--directory", "<PATH-TO-CLONE>", "run", "pywinauto-mcp"]
   }
 }
 ```
@@ -184,6 +196,7 @@ See **[docs/TESTING.md](docs/TESTING.md)**  environment-aware markers (`requires
 
 - Documentation should match **implemented** tools and env vars.
 - **`glama.json`:** update when releasing or when marketplace metadata changes.
+- **Portable clones:** avoid committing machine-specific paths (e.g. a fixed drive + `Dev\repos\...`). Run **`just check-machine-paths`** (or `pwsh -File scripts/check-no-machine-paths.ps1`) on `src/` and key root files; use **`-FullRepo`** to scan the whole tree (legacy docs may still match until cleaned).
 
 ## License
 
@@ -193,9 +206,13 @@ MIT  Copyright (c) 2026 Sandra Schipal.
 
 ## Web dashboard (`web_sota`)
 
-Optional Vite UI + local backend. Default ports from **`web_sota/start.ps1`**: frontend **10788**, backend **10789**.
+Optional Vite UI + local backend. Default ports from **`web_sota/start.ps1`** (or repo-root **`start.ps1`**): frontend **10788**, backend **10789**. The start scripts **wait for the Python API to be reachable** before starting Vite so the Vite proxy does not log connection refused errors during a cold **`uv run`**.
 
 ```powershell
+# From repo root (recommended)
+.\start.ps1
+
+# Or from web_sota
 Set-Location web_sota
 .\start.ps1
 ```

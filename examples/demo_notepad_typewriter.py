@@ -44,7 +44,7 @@ def main() -> None:
     tmp, basenames = make_temp_demo_files("demo_typewriter", 1)
     path = os.path.join(tmp, basenames[0])
     np = notepad_exe()
-    subprocess.Popen([np, path], shell=False)  # noqa: S603
+    subprocess.Popen([np, path], shell=False)
 
     print(f"Waiting for Notepad ({basenames[0]!r})…")
     hwnd = wait_for_notepad_title(basenames[0], timeout=30.0)

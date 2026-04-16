@@ -253,7 +253,7 @@ def verify_result():
     def _verify(result, expected_status="success", expected_keys=None, message_contains=None):
         """
         Verify ToolResult contents.
-        
+
         Args:
             result: The ToolResult (or dict) to verify.
             expected_status: "success" or "error".
@@ -262,12 +262,12 @@ def verify_result():
         """
         # Convert Pydantic model to dict if necessary
         res = result if isinstance(result, dict) else result.model_dump()
-        
+
         assert res["status"] == expected_status, f"Expected {expected_status}, got {res['status']}"
-        
+
         if message_contains:
             assert message_contains.lower() in res["message"].lower()
-            
+
         if expected_status == "success":
             assert "data" in res
             if expected_keys and res["data"]:
@@ -275,7 +275,7 @@ def verify_result():
                     assert key in res["data"], f"Missing expected key '{key}' in result.data"
         elif expected_status == "error":
             assert res.get("recovery_tip") is not None, "Error result must include a recovery_tip"
-            
+
         return res
 
     return _verify

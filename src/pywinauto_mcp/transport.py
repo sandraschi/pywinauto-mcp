@@ -1,6 +1,6 @@
 """FastMCP 2.14.4+ Dual Transport Configuration.
 
-Standard module for all MCP servers in d:/Dev/repos.
+Standard transport module for this MCP server (stdio / HTTP / SSE).
 Provides unified transport configuration for STDIO, HTTP Streamable, and legacy SSE modes.
 
 Environment Variables:

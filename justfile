@@ -106,11 +106,15 @@ test:
 # Execute Ruff SOTA v13.1 linting
 lint:
     uv run ruff check .
+    Set-Location '{{justfile_directory()}}\web_sota'
+    npx @biomejs/biome ci .
 
 # Execute Ruff SOTA v13.1 fix and formatting
 fix:
     uv run ruff check . --fix --unsafe-fixes
     uv run ruff format .
+    Set-Location '{{justfile_directory()}}\web_sota'
+    npx @biomejs/biome check --write .
 
 # Format code with ruff
 format:
@@ -134,6 +138,10 @@ audit-deps:
     uv run safety check
 
 # ── Maintenance ───────────────────────────────────────────────────────────────
+
+# Fail if src/ and key root files contain machine-specific paths (e.g. fixed drive + Dev\repos)
+check-machine-paths:
+    pwsh -NoProfile -File .\scripts\check-no-machine-paths.ps1
 
 # Remove build artifacts and temporary files
 clean:

@@ -9,7 +9,6 @@ sys.path.append(os.path.join(os.getcwd(), "src"))
 
 try:
     from pywinauto_mcp.tools.portmanteau_mouse import automation_mouse
-    from pywinauto_mcp.tools.portmanteau_system import automation_system
     from pywinauto_mcp.tools.portmanteau_windows import automation_windows
 except ImportError as e:
     print(f"Error: Could not import pywinauto_mcp tools. Ensure you are running from the project root. {e}")

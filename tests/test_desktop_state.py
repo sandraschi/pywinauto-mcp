@@ -2,8 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from pywinauto_mcp.tools.models import DesktopStateRequest
 from pywinauto_mcp.tools.desktop_state import get_desktop_state
+from pywinauto_mcp.tools.models import DesktopStateRequest
 
 
 class TestGetDesktopState:

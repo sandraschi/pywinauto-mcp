@@ -1,234 +1,294 @@
+import {
+	Activity,
+	Box,
+	Cpu,
+	GitMerge,
+	HardDrive,
+	LayoutDashboard,
+	Network,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Box, Cpu, GitMerge, HardDrive, LayoutDashboard, Network } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiPath } from "@/lib/api";
 
 type HostInfo = {
-    cpu_percent: number;
-    memory_total_gb: number;
-    memory_available_gb: number;
-    memory_percent: number;
-    disk_path: string;
-    disk_total_gb: number;
-    disk_used_gb: number;
-    disk_percent: number;
-    network_bytes_sent_mb: number;
-    network_bytes_recv_mb: number;
-    boot_time: string;
-    os_name: string;
-    os_platform: string;
-    window_count: number | null;
+	cpu_percent: number;
+	memory_total_gb: number;
+	memory_available_gb: number;
+	memory_percent: number;
+	disk_path: string;
+	disk_total_gb: number;
+	disk_used_gb: number;
+	disk_percent: number;
+	network_bytes_sent_mb: number;
+	network_bytes_recv_mb: number;
+	boot_time: string;
+	os_name: string;
+	os_platform: string;
+	window_count: number | null;
 };
 
 type SystemInfoResponse = {
-    status?: string;
-    info?: HostInfo;
-    timestamp?: string;
+	status?: string;
+	info?: HostInfo;
+	timestamp?: string;
 };
 
 export function Dashboard() {
-    const [bridge, setBridge] = useState<"loading" | "ok" | "error">("loading");
-    const [bridgeDetail, setBridgeDetail] = useState<string>("");
-    const [host, setHost] = useState<HostInfo | null>(null);
-    const [hostFetchedAt, setHostFetchedAt] = useState<string>("");
-    const [hostError, setHostError] = useState<string>("");
+	const [bridge, setBridge] = useState<"loading" | "ok" | "error">("loading");
+	const [bridgeDetail, setBridgeDetail] = useState<string>("");
+	const [host, setHost] = useState<HostInfo | null>(null);
+	const [hostFetchedAt, setHostFetchedAt] = useState<string>("");
+	const [hostError, setHostError] = useState<string>("");
 
-    const refresh = useCallback(() => {
-        fetch(apiPath("/api/v1/health"))
-            .then(async (r) => {
-                const j = await r.json().catch(() => ({}));
-                if (r.ok && (j as { status?: string }).status === "ok") {
-                    setBridge("ok");
-                    setBridgeDetail("REST bridge reachable");
-                } else {
-                    setBridge("error");
-                    setBridgeDetail(`HTTP ${r.status}`);
-                }
-            })
-            .catch((e) => {
-                setBridge("error");
-                setBridgeDetail(String(e));
-            });
+	const refresh = useCallback(() => {
+		fetch(apiPath("/api/v1/health"))
+			.then(async (r) => {
+				const j = await r.json().catch(() => ({}));
+				if (r.ok && (j as { status?: string }).status === "ok") {
+					setBridge("ok");
+					setBridgeDetail("REST bridge reachable");
+				} else {
+					setBridge("error");
+					setBridgeDetail(`HTTP ${r.status}`);
+				}
+			})
+			.catch((e) => {
+				setBridge("error");
+				setBridgeDetail(String(e));
+			});
 
-        fetch(apiPath("/api/v1/system/info"))
-            .then(async (r) => {
-                const j = (await r.json()) as SystemInfoResponse;
-                if (!r.ok || j.status !== "success" || !j.info) {
-                    setHost(null);
-                    setHostError(`system/info HTTP ${r.status}`);
-                    return;
-                }
-                setHostError("");
-                setHost(j.info);
-                setHostFetchedAt(j.timestamp ?? new Date().toISOString());
-            })
-            .catch((e) => {
-                setHost(null);
-                setHostError(String(e));
-            });
-    }, []);
+		fetch(apiPath("/api/v1/system/info"))
+			.then(async (r) => {
+				const j = (await r.json()) as SystemInfoResponse;
+				if (!r.ok || j.status !== "success" || !j.info) {
+					setHost(null);
+					setHostError(`system/info HTTP ${r.status}`);
+					return;
+				}
+				setHostError("");
+				setHost(j.info);
+				setHostFetchedAt(j.timestamp ?? new Date().toISOString());
+			})
+			.catch((e) => {
+				setHost(null);
+				setHostError(String(e));
+			});
+	}, []);
 
-    useEffect(() => {
-        refresh();
-        const id = window.setInterval(refresh, 45000);
-        return () => {
-            window.clearInterval(id);
-        };
-    }, [refresh]);
+	useEffect(() => {
+		refresh();
+		const id = window.setInterval(refresh, 45000);
+		return () => {
+			window.clearInterval(id);
+		};
+	}, [refresh]);
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-white">Automation Dashboard</h2>
-                    <p className="text-slate-400">
-                        Live host metrics from <code className="text-slate-300">GET /api/v1/system/info</code> (same
-                        data as MCP <code className="text-slate-300">automation_system(&quot;info&quot;)</code>
-                        ). Backend:{" "}
-                        {bridge === "loading" && <span className="text-slate-500">checking…</span>}
-                        {bridge === "ok" && (
-                            <Badge variant="outline" className="border-emerald-500/40 text-emerald-400">
-                                connected — {bridgeDetail}
-                            </Badge>
-                        )}
-                        {bridge === "error" && (
-                            <Badge variant="outline" className="border-amber-500/40 text-amber-400">
-                                unreachable — {bridgeDetail}
-                            </Badge>
-                        )}
-                    </p>
-                    {hostFetchedAt && (
-                        <p className="text-xs text-slate-500 mt-1">Last host snapshot: {hostFetchedAt}</p>
-                    )}
-                    {hostError && <p className="text-xs text-amber-400 mt-1">Host metrics: {hostError}</p>}
-                </div>
-            </div>
+	return (
+		<div className="space-y-6">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div>
+					<h2 className="text-2xl font-bold tracking-tight text-white">
+						Automation Dashboard
+					</h2>
+					<p className="text-slate-400">
+						Live host metrics from{" "}
+						<code className="text-slate-300">GET /api/v1/system/info</code>{" "}
+						(same data as MCP{" "}
+						<code className="text-slate-300">
+							automation_system(&quot;info&quot;)
+						</code>
+						). Backend:{" "}
+						{bridge === "loading" && (
+							<span className="text-slate-500">checking…</span>
+						)}
+						{bridge === "ok" && (
+							<Badge
+								variant="outline"
+								className="border-emerald-500/40 text-emerald-400"
+							>
+								connected — {bridgeDetail}
+							</Badge>
+						)}
+						{bridge === "error" && (
+							<Badge
+								variant="outline"
+								className="border-amber-500/40 text-amber-400"
+							>
+								unreachable — {bridgeDetail}
+							</Badge>
+						)}
+					</p>
+					{hostFetchedAt && (
+						<p className="text-xs text-slate-500 mt-1">
+							Last host snapshot: {hostFetchedAt}
+						</p>
+					)}
+					{hostError && (
+						<p className="text-xs text-amber-400 mt-1">
+							Host metrics: {hostError}
+						</p>
+					)}
+				</div>
+			</div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">CPU</CardTitle>
-                        <Cpu className="h-4 w-4 text-emerald-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">
-                            {host ? `${host.cpu_percent.toFixed(1)}%` : "—"}
-                        </div>
-                        <p className="text-xs text-slate-400">1s sample (psutil)</p>
-                    </CardContent>
-                </Card>
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							CPU
+						</CardTitle>
+						<Cpu className="h-4 w-4 text-emerald-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-white">
+							{host ? `${host.cpu_percent.toFixed(1)}%` : "—"}
+						</div>
+						<p className="text-xs text-slate-400">1s sample (psutil)</p>
+					</CardContent>
+				</Card>
 
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">Memory</CardTitle>
-                        <Activity className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">
-                            {host ? `${host.memory_percent.toFixed(1)}%` : "—"}
-                        </div>
-                        <p className="text-xs text-slate-400">
-                            {host
-                                ? `${host.memory_available_gb} GB free of ${host.memory_total_gb} GB`
-                                : "—"}
-                        </p>
-                    </CardContent>
-                </Card>
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							Memory
+						</CardTitle>
+						<Activity className="h-4 w-4 text-blue-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-white">
+							{host ? `${host.memory_percent.toFixed(1)}%` : "—"}
+						</div>
+						<p className="text-xs text-slate-400">
+							{host
+								? `${host.memory_available_gb} GB free of ${host.memory_total_gb} GB`
+								: "—"}
+						</p>
+					</CardContent>
+				</Card>
 
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">Disk</CardTitle>
-                        <HardDrive className="h-4 w-4 text-purple-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">
-                            {host ? `${host.disk_percent.toFixed(1)}%` : "—"}
-                        </div>
-                        <p className="text-xs text-slate-400">
-                            {host ? `${host.disk_path} · ${host.disk_used_gb} / ${host.disk_total_gb} GB` : "—"}
-                        </p>
-                    </CardContent>
-                </Card>
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							Disk
+						</CardTitle>
+						<HardDrive className="h-4 w-4 text-purple-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-white">
+							{host ? `${host.disk_percent.toFixed(1)}%` : "—"}
+						</div>
+						<p className="text-xs text-slate-400">
+							{host
+								? `${host.disk_path} · ${host.disk_used_gb} / ${host.disk_total_gb} GB`
+								: "—"}
+						</p>
+					</CardContent>
+				</Card>
 
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">Network</CardTitle>
-                        <Network className="h-4 w-4 text-amber-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">
-                            {host ? `${host.network_bytes_sent_mb} / ${host.network_bytes_recv_mb}` : "—"}
-                        </div>
-                        <p className="text-xs text-slate-400">MB sent / recv (counters since boot)</p>
-                    </CardContent>
-                </Card>
-            </div>
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							Network
+						</CardTitle>
+						<Network className="h-4 w-4 text-amber-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-white">
+							{host
+								? `${host.network_bytes_sent_mb} / ${host.network_bytes_recv_mb}`
+								: "—"}
+						</div>
+						<p className="text-xs text-slate-400">
+							MB sent / recv (counters since boot)
+						</p>
+					</CardContent>
+				</Card>
+			</div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">Top-level windows</CardTitle>
-                        <LayoutDashboard className="h-4 w-4 text-emerald-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">
-                            {host?.window_count != null ? host.window_count : "—"}
-                        </div>
-                        <p className="text-xs text-slate-400">pygetwindow.getAllWindows() length</p>
-                    </CardContent>
-                </Card>
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							Top-level windows
+						</CardTitle>
+						<LayoutDashboard className="h-4 w-4 text-emerald-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-white">
+							{host?.window_count != null ? host.window_count : "—"}
+						</div>
+						<p className="text-xs text-slate-400">
+							pygetwindow.getAllWindows() length
+						</p>
+					</CardContent>
+				</Card>
 
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">Boot</CardTitle>
-                        <Activity className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-sm font-mono text-white break-all">
-                            {host?.boot_time ?? "—"}
-                        </div>
-                        <p className="text-xs text-slate-400">
-                            {host ? `${host.os_platform} (${host.os_name})` : "—"}
-                        </p>
-                    </CardContent>
-                </Card>
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							Boot
+						</CardTitle>
+						<Activity className="h-4 w-4 text-blue-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-sm font-mono text-white break-all">
+							{host?.boot_time ?? "—"}
+						</div>
+						<p className="text-xs text-slate-400">
+							{host ? `${host.os_platform} (${host.os_name})` : "—"}
+						</p>
+					</CardContent>
+				</Card>
 
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">OCR / Vision</CardTitle>
-                        <Box className="h-4 w-4 text-purple-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">—</div>
-                        <p className="text-xs text-slate-400">Tesseract on host when installed; not a live counter</p>
-                    </CardContent>
-                </Card>
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							OCR / Vision
+						</CardTitle>
+						<Box className="h-4 w-4 text-purple-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-white">—</div>
+						<p className="text-xs text-slate-400">
+							Tesseract on host when installed; not a live counter
+						</p>
+					</CardContent>
+				</Card>
 
-                <Card className="border-slate-800 bg-slate-950/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-200">Face tools</CardTitle>
-                        <GitMerge className="h-4 w-4 text-orange-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-white">—</div>
-                        <p className="text-xs text-slate-400">Opt-in via PYWINAUTO_MCP_ENABLE_FACE + face extra (Help)</p>
-                    </CardContent>
-                </Card>
-            </div>
+				<Card className="border-slate-800 bg-slate-950/50">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<CardTitle className="text-sm font-medium text-slate-200">
+							Face tools
+						</CardTitle>
+						<GitMerge className="h-4 w-4 text-orange-500" />
+					</CardHeader>
+					<CardContent>
+						<div className="text-2xl font-bold text-white">—</div>
+						<p className="text-xs text-slate-400">
+							Opt-in via PYWINAUTO_MCP_ENABLE_FACE + face extra (Help)
+						</p>
+					</CardContent>
+				</Card>
+			</div>
 
-            <Card className="border-slate-800 bg-slate-950/50">
-                <CardHeader>
-                    <CardTitle className="text-white">Notes</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-slate-400 space-y-2">
-                    <p>
-                        Host metrics refresh on load and every 45s. The REST API runs in the same process as the MCP
-                        server when you start the ASGI app (see <code className="text-slate-300">start.ps1</code>).
-                    </p>
-                    <p>This page does not stream MCP tool calls or automation logs; use your IDE or logging for that.</p>
-                </CardContent>
-            </Card>
-        </div>
-    );
+			<Card className="border-slate-800 bg-slate-950/50">
+				<CardHeader>
+					<CardTitle className="text-white">Notes</CardTitle>
+				</CardHeader>
+				<CardContent className="text-sm text-slate-400 space-y-2">
+					<p>
+						Host metrics refresh on load and every 45s. The REST API runs in the
+						same process as the MCP server when you start the ASGI app (see{" "}
+						<code className="text-slate-300">start.ps1</code>).
+					</p>
+					<p>
+						This page does not stream MCP tool calls or automation logs; use
+						your IDE or logging for that.
+					</p>
+				</CardContent>
+			</Card>
+		</div>
+	);
 }

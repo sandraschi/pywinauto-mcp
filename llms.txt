@@ -1,6 +1,11 @@
 # pywinauto-mcp
 
-Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. FastMCP 3.1+ portmanteau.
+Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. FastMCP 3.2+ portmanteau.
+
+## Related MCP servers (do not confuse)
+
+- **virtualization-mcp**: Windows Sandbox / VM provisioning — use with this server when you need disposable desktops; this server does not launch Sandbox by itself.
+- **autohotkey-mcp** (sibling, https://github.com/sandraschi/autohotkey-mcp): manages **AutoHotkey v2 scriptlets** (list/run/stop, depot, optional LLM-generated `.ahk`). **Overlap:** both are high-trust Windows session tools (read SAFETY in each repo). **Difference:** autohotkey-mcp is **AHK script lifecycle**, not UI Automation / window-element portmanteau tools. **pywinauto-mcp (this repo)** drives **native UI via UIA/PyWinAuto** (trees, controls, mouse/keyboard, visual). Use **both** MCP servers when workflows need **AHK utilities** plus **structured UI driving**; responsibilities stay separate.
 
 ## Portmanteau Tools
 - **automation_windows**: Window management: list, find, maximize, minimize, restore, close, activate, position, rect, title, state.
@@ -20,11 +25,11 @@ Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair
 - **MCP Endpoint**: http://localhost:10789/mcp
 
 ## Metadata
-- **Version**: 0.3.2
+- **Version**: 0.4.2
 - **License**: MIT
 - **Dependencies**: pywinauto, fastmcp, fastapi, opencv-python-headless, pytesseract
 
 ## Operational Rules
-See [AGENT_PROTOCOLS.md](file:///D:/Dev/repos/pywinauto-mcp/AGENT_PROTOCOLS.md).
-Mandatory HITL approval for all interaction tools via `approve_automation`.
+See AGENT_PROTOCOLS.md in the repo root.
+Mandatory HITL (human-in-the-loop) approval for mutating mouse/keyboard (and related tools) via `approve_automation` when configured; see docs/SAFETY.md.
 Use `get_desktop_state` for initial UI discovery.

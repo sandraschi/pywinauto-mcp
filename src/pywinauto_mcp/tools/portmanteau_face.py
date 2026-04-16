@@ -26,7 +26,7 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import cv2
 import numpy as np
@@ -165,7 +165,9 @@ class FaceRecognitionManager:
 
                 if self.known_faces:
                     known_names = list(self.known_faces.keys())
-                    known_encodings = [np.frombuffer(self.known_faces[n].encoding, dtype=np.float64) for n in known_names]
+                    known_encodings = [
+                        np.frombuffer(self.known_faces[n].encoding, dtype=np.float64) for n in known_names
+                    ]
 
                     face_distances = face_recognition.face_distance(known_encodings, face_encoding)
                     best_match_index = np.argmin(face_distances)
@@ -173,16 +175,18 @@ class FaceRecognitionManager:
                     if face_distances[best_match_index] <= tolerance:
                         name = known_names[best_match_index]
                         confidence = 1.0 - float(face_distances[best_match_index])
-                        
+
                         # Update metadata
                         self.known_faces[name].last_used = time.strftime("%Y-%m-%dT%H:%M:%S")
                         self.known_faces[name].usage_count += 1
 
-                results.append({
-                    "name": name,
-                    "confidence": confidence,
-                    "box": {"top": top, "right": right, "bottom": bottom, "left": left}
-                })
+                results.append(
+                    {
+                        "name": name,
+                        "confidence": confidence,
+                        "box": {"top": top, "right": right, "bottom": bottom, "left": left},
+                    }
+                )
 
             return results
         except Exception as e:
@@ -239,14 +243,14 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                 return ToolResult(
                     status="error",
                     message="face_recognition library is not installed.",
-                    recovery_tip="Run 'pip install face_recognition' on a system with dlib support."
+                    recovery_tip="Run 'pip install face_recognition' on a system with dlib support.",
                 )
 
             if face_manager is None:
                 return ToolResult(
                     status="error",
                     message="Face recognition manager failed to initialize.",
-                    recovery_tip="Check if the known_faces directory is writable and dependencies are met."
+                    recovery_tip="Check if the known_faces directory is writable and dependencies are met.",
                 )
 
             biometric_metadata = {
@@ -262,13 +266,13 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     return ToolResult(
                         status="error",
                         message="'name' and 'image_path' are required for 'add' operation.",
-                        recovery_tip="Ensure you provide both the individual's name and a path to a clear facial image."
+                        recovery_tip="Ensure you provide both the individual's name and a path to a clear facial image.",
                     )
                 if not os.path.exists(image_path):
                     return ToolResult(
                         status="error",
                         message=f"Image file not found: {image_path}",
-                        recovery_tip="Verify the file path is correct and accessible."
+                        recovery_tip="Verify the file path is correct and accessible.",
                     )
 
                 image = face_recognition.load_image_file(image_path)
@@ -278,17 +282,18 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     return ToolResult(
                         status="error",
                         message="No faces found in the image",
-                        recovery_tip="Ensure the image contains a clear, unobstructed face."
+                        recovery_tip="Ensure the image contains a clear, unobstructed face.",
                     )
 
                 if len(encodings) > 1:
                     return ToolResult(
                         status="error",
                         message="Multiple faces found. Please provide image with single face.",
-                        recovery_tip="Crop the image to include only the target individual."
+                        recovery_tip="Crop the image to include only the target individual.",
                     )
 
                 from datetime import datetime
+
                 now = datetime.now().isoformat()
                 face_data = FaceData(
                     name=name,
@@ -303,13 +308,13 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     return ToolResult(
                         status="success",
                         message=f"Face '{name}' added successfully.",
-                        data={"name": name, "biometric_metadata": biometric_metadata}
+                        data={"name": name, "biometric_metadata": biometric_metadata},
                     )
                 else:
                     return ToolResult(
                         status="error",
                         message="Failed to save face data",
-                        recovery_tip="Check disk permissions for the known_faces directory."
+                        recovery_tip="Check disk permissions for the known_faces directory.",
                     )
 
             # === RECOGNIZE OPERATION ===
@@ -318,13 +323,13 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     return ToolResult(
                         status="error",
                         message="'image_path' is required for 'recognize' operation.",
-                        recovery_tip="Provide a path to the image containing faces you wish to identify."
+                        recovery_tip="Provide a path to the image containing faces you wish to identify.",
                     )
                 if not os.path.exists(image_path):
                     return ToolResult(
                         status="error",
                         message=f"Image file not found: {image_path}",
-                        recovery_tip="Verify the file path is correct."
+                        recovery_tip="Verify the file path is correct.",
                     )
 
                 results = face_manager.recognize_faces(image_path, tolerance=tolerance)
@@ -335,19 +340,21 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                         "matches": results,
                         "count": len(results),
                         "biometric_metadata": biometric_metadata,
-                    }
+                    },
                 )
 
             # === LIST OPERATION ===
             elif operation == "list":
                 faces = []
                 for name, face_data in face_manager.known_faces.items():
-                    faces.append({
-                        "name": name,
-                        "created_at": face_data.created_at,
-                        "last_used": face_data.last_used,
-                        "usage_count": face_data.usage_count,
-                    })
+                    faces.append(
+                        {
+                            "name": name,
+                            "created_at": face_data.created_at,
+                            "last_used": face_data.last_used,
+                            "usage_count": face_data.usage_count,
+                        }
+                    )
 
                 return ToolResult(
                     status="success",
@@ -356,7 +363,7 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                         "names": faces,
                         "count": len(faces),
                         "biometric_metadata": biometric_metadata,
-                    }
+                    },
                 )
 
             # === DELETE OPERATION ===
@@ -365,14 +372,14 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     return ToolResult(
                         status="error",
                         message="'name' is required for 'delete' operation.",
-                        recovery_tip="Specify the name of the profile you wish to remove."
+                        recovery_tip="Specify the name of the profile you wish to remove.",
                     )
 
                 if name not in face_manager.known_faces:
                     return ToolResult(
                         status="error",
                         message=f"No face found for '{name}'",
-                        recovery_tip="Check the list of existing profiles using the 'list' operation."
+                        recovery_tip="Check the list of existing profiles using the 'list' operation.",
                     )
 
                 del face_manager.known_faces[name]
@@ -386,7 +393,7 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     data={
                         "name": name,
                         "biometric_metadata": biometric_metadata,
-                    }
+                    },
                 )
 
             # === CAPTURE OPERATION ===
@@ -396,9 +403,9 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     return ToolResult(
                         status="error",
                         message=f"Could not open camera at index {camera_index}.",
-                        recovery_tip="Check camera connections and ensure 'camera_index' is correct."
+                        recovery_tip="Check camera connections and ensure 'camera_index' is correct.",
                     )
-                
+
                 ret, frame = cap.read()
                 cap.release()
 
@@ -406,7 +413,7 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                     return ToolResult(
                         status="error",
                         message="Failed to capture frame from camera.",
-                        recovery_tip="Ensure the camera is not being used by another application."
+                        recovery_tip="Ensure the camera is not being used by another application.",
                     )
 
                 if save_capture_path:
@@ -418,10 +425,12 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                         image_input = f.name
 
                 results = face_manager.recognize_faces(image_input, tolerance=tolerance)
-                
+
                 if not save_capture_path:
-                    try: os.unlink(image_input)
-                    except: pass
+                    try:
+                        os.unlink(image_input)
+                    except:
+                        pass
 
                 return ToolResult(
                     status="success",
@@ -432,21 +441,21 @@ If 'capture' fails to open the camera, verify the 'camera_index' (0 is usually t
                         "camera_index": camera_index,
                         "save_path": save_capture_path,
                         "biometric_metadata": biometric_metadata,
-                    }
+                    },
                 )
 
             else:
                 return ToolResult(
                     status="error",
                     message=f"Unknown face operation: {operation}",
-                    recovery_tip="Supported operations are: add, recognize, list, delete, capture."
+                    recovery_tip="Supported operations are: add, recognize, list, delete, capture.",
                 )
 
         except Exception as e:
             return ToolResult(
                 status="error",
                 message=f"Face recognition operation failed: {e}",
-                recovery_tip="Check if 'face_recognition' and 'dlib' are correctly configured and permissions are granted."
+                recovery_tip="Check if 'face_recognition' and 'dlib' are correctly configured and permissions are granted.",
             )
 
 

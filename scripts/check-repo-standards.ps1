@@ -483,7 +483,7 @@ $(($results.Fixes | Where-Object { $_ -match "Delete|Move|Clean" } | ForEach-Obj
 
 ## 📚 References
 
-- **Central Docs:** D:\Dev\repos\mcp-central-docs\
+- **Central Docs:** clone [mcp-central-docs](https://github.com/sandraschi/mcp-central-docs) (sibling folder `../mcp-central-docs` or your own path)
 - **Standards:** mcp-central-docs/STANDARDS.md
 - **FastMCP Guide:** mcp-central-docs/FASTMCP_2.12_MIGRATION.md
 - **MCPB Packaging:** mcp-central-docs/MCPB_PACKAGING_STANDARDS.md
@@ -523,7 +523,7 @@ if ($GenerateFixScript -and $results.Fixes.Count -gt 0) {
     $fixScriptContent += "Write-Host '🔧 Fixing Repository Standards...' -ForegroundColor Cyan"
     $fixScriptContent += "if (`$DryRun) { Write-Host '🔍 DRY RUN MODE' -ForegroundColor Yellow }"
     $fixScriptContent += ""
-    $fixScriptContent += "`$centralDocs = 'D:\Dev\repos\mcp-central-docs'"
+    $fixScriptContent += "`$centralDocs = '<PATH-TO-MCP-CENTRAL-DOCS>'  # e.g. sibling clone ../mcp-central-docs"
     $fixScriptContent += ""
     
     # Add fixes

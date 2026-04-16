@@ -102,13 +102,13 @@ if app is not None:
 # Export the main components
 __all__ = [
     "app",
+    "desktop_state",
+    "portmanteau_elements",
+    "portmanteau_face",
+    "portmanteau_keyboard",
+    "portmanteau_mouse",
+    "portmanteau_system",
+    "portmanteau_visual",
     # Portmanteau tools
     "portmanteau_windows",
-    "portmanteau_elements",
-    "portmanteau_mouse",
-    "portmanteau_keyboard",
-    "portmanteau_visual",
-    "portmanteau_face",
-    "portmanteau_system",
-    "desktop_state",
 ]

@@ -9,9 +9,9 @@ Follows FastMCP 3.1 SOTA standards for robust desktop automation.
 
 import logging
 import time
-from typing import Any
 
 import pyautogui
+
 from pywinauto_mcp.app import app
 from pywinauto_mcp.tools.models import KeyboardOperationRequest, ToolResult
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 if app is not None:
+
     @app.tool(
         name="automation_keyboard",
         description="""Comprehensive keyboard input and sequence simulation system.
@@ -50,7 +51,7 @@ A ToolResult object containing standardized outcome, message, and focus metadata
         try:
             operation = request.operation
             timestamp = time.time()
-            
+
             # Focus metadata
             focus_metadata = {
                 "timestamp": timestamp,
@@ -60,6 +61,7 @@ A ToolResult object containing standardized outcome, message, and focus metadata
             # === HITL SECURITY CHECK ===
             try:
                 from pywinauto_mcp.app import approval_state
+
                 if not approval_state.is_approved():
                     action_detail = ""
                     if operation == "type":
@@ -76,8 +78,8 @@ A ToolResult object containing standardized outcome, message, and focus metadata
                         message="Human approval required for keyboard automation.",
                         data={
                             "hitl_prompt": f"Approve keyboard action? [{action_detail}]",
-                            "technical_details": request.model_dump(exclude_none=True)
-                        }
+                            "technical_details": request.model_dump(exclude_none=True),
+                        },
                     )
             except ImportError:
                 pass
@@ -85,6 +87,7 @@ A ToolResult object containing standardized outcome, message, and focus metadata
             # === SAFETY / DRY-RUN CHECK ===
             try:
                 from pywinauto_mcp.safety import before_mutation
+
                 gate = before_mutation(read_only=False)
                 if not gate.get("allow"):
                     return ToolResult(status="blocked", message=gate.get("message", "Action blocked."))
@@ -101,7 +104,7 @@ A ToolResult object containing standardized outcome, message, and focus metadata
                 return ToolResult(
                     status="success",
                     message=f"Typed {len(request.text)} characters.",
-                    data={"text_length": len(request.text), "focus_metadata": focus_metadata}
+                    data={"text_length": len(request.text), "focus_metadata": focus_metadata},
                 )
 
             # === PRESS OPERATION ===
@@ -139,9 +142,9 @@ A ToolResult object containing standardized outcome, message, and focus metadata
         except Exception as e:
             logger.error(f"Automation keyboard tool error: {e}")
             return ToolResult(
-                status="error", 
-                message=str(e), 
-                recovery_tip="Check if the target application is responsive and has focus."
+                status="error",
+                message=str(e),
+                recovery_tip="Check if the target application is responsive and has focus.",
             )
 
 else:

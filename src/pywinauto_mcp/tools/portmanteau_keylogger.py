@@ -18,6 +18,7 @@ _svc = GlobalKeyloggerService.get()
 
 
 if app is not None:
+
     @app.tool(
         name="global_keylogger",
         description="""Session-wide keyboard event capture (Windows low-level hook via pynput).

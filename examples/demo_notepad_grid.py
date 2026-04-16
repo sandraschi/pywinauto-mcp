@@ -26,15 +26,14 @@ import os
 import subprocess
 import time
 
-from pywinauto import Desktop
-from pywinauto.findwindows import WindowNotFoundError
-
 from demo_notepad_helpers import (
     collect_cmd_grid_windows,
     make_temp_demo_files,
     notepad_exe,
     wait_for_notepad_title,
 )
+from pywinauto import Desktop
+from pywinauto.findwindows import WindowNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ def _launch_cmd_grid() -> None:
     cmd = _cmd_exe()
     for i in range(9):
         # Each process gets its own console window when CREATE_NEW_CONSOLE is set.
-        subprocess.Popen(  # noqa: S603
+        subprocess.Popen(
             [cmd, "/k", f"title PyDemoGrid{i}"],
             creationflags=CREATE_NEW_CONSOLE,
             shell=False,
@@ -88,7 +87,7 @@ def _launch_notepad_grid() -> tuple[list[str], list[str]]:
     print("Starting 9 Notepad windows (one temp .txt each)…")
     for i, base in enumerate(basenames):
         path = os.path.join(tmp, base)
-        subprocess.Popen([np, path], shell=False)  # noqa: S603
+        subprocess.Popen([np, path], shell=False)
         time.sleep(0.35)
         print(f"  [{i + 1}/9] {base}")
     return tmp, basenames

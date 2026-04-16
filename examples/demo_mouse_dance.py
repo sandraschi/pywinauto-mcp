@@ -40,16 +40,8 @@ def main() -> None:
             phase += 0.11 + 0.02 * math.sin(phase * 0.5)
             a = phase
             jitter = 0.12 * math.sin(a * 11.7) * math.cos(a * 7.3)
-            x = cx + scale * (
-                0.55 * math.sin(a * 2.7)
-                + 0.25 * math.sin(a * 5.1 + 1.3)
-                + jitter
-            )
-            y = cy + scale * (
-                0.55 * math.cos(a * 2.1)
-                + 0.25 * math.sin(a * 4.4 + 0.7)
-                - jitter * 0.9
-            )
+            x = cx + scale * (0.55 * math.sin(a * 2.7) + 0.25 * math.sin(a * 5.1 + 1.3) + jitter)
+            y = cy + scale * (0.55 * math.cos(a * 2.1) + 0.25 * math.sin(a * 4.4 + 0.7) - jitter * 0.9)
             wobble = 0.08 * scale * math.sin(phase * 13.0)
             x += wobble * math.cos(phase * 3.0)
             y += wobble * math.sin(phase * 3.0)

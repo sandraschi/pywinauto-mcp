@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Web orchestration (`start.ps1`)**: Root and **`web_sota/start.ps1`** now wait until the API port accepts connections (or **`/api/v1/health`** on pywinauto) before starting Vite, set **`WorkingDirectory`** correctly for the uvicorn child, and resolve **`$RepoRoot`** without overwriting **`$PSScriptRoot`** — avoids Vite proxy **`ECONNREFUSED`** during slow `uv run` / first import. Root script uses **`Join-Path`** for **`web_sota`** so it works when the shell cwd is not the repo root.
+
 ## [0.4.2] - 2026-04-10
 
 ### Added

@@ -34,7 +34,7 @@ class TestToolRegistration:
         # FastMCP 3.2+ list_tools is async
         tools = await app_instance.list_tools()
         assert tools is not None
-        
+
         tool_names = [t.name for t in tools]
         expected_tools = [
             "automation_windows",
@@ -48,7 +48,7 @@ class TestToolRegistration:
             # automation_face is optional, so we don't strictly assert it here
             # without checking the environment first
         ]
-        
+
         for name in expected_tools:
             assert name in tool_names, f"Tool '{name}' not found in registered tools: {tool_names}"
 

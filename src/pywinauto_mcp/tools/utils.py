@@ -35,7 +35,7 @@ class SuccessResponse(BaseModel):
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 
-def handle_errors(func: F) -> Callable[..., dict[str, Any]]:
+def handle_errors[F: Callable[..., Any]](func: F) -> Callable[..., dict[str, Any]]:
     """Decorator to handle errors and standardize responses.
 
     Args:
@@ -78,7 +78,7 @@ def handle_errors(func: F) -> Callable[..., dict[str, Any]]:
     return wrapper
 
 
-def log_execution(func: F) -> Callable[..., Any]:
+def log_execution[F: Callable[..., Any]](func: F) -> Callable[..., Any]:
     """Decorator to log function execution details.
 
     Args:

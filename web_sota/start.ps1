@@ -18,11 +18,27 @@ if (-not (Test-Path "node_modules")) { npm install }
 # 3. Start the Python backend (Background)
 Write-Host "Starting Python backend on port $BackendPort ..." -ForegroundColor Cyan
 
-# Use TRIPLE backtick to ensure $env:PYTHONPATH reaches the REAL shell
 $srcPath = Join-Path $ProjectRoot "src"
-$backendCmd = "`$env:PYTHONPATH = '$srcPath;$PSScriptRoot'; Set-Location '$PSScriptRoot'; uv run uvicorn pywinauto_mcp.server:app --host 127.0.0.1 --port $BackendPort --log-level info"
+$backendCmd = "`$env:PYTHONPATH = '$srcPath'; Set-Location '$ProjectRoot'; uv run uvicorn pywinauto_mcp.server:app --host 127.0.0.1 --port $BackendPort --log-level info"
 
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd -WindowStyle Normal
+Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd -WorkingDirectory $ProjectRoot -WindowStyle Normal
+
+$healthUrl = "http://127.0.0.1:$BackendPort/api/v1/health"
+$ready = $false
+for ($i = 0; $i -lt 90; $i++) {
+    try {
+        $null = Invoke-WebRequest -Uri $healthUrl -TimeoutSec 1 -UseBasicParsing -ErrorAction Stop
+        $ready = $true
+        break
+    } catch {
+        Start-Sleep -Seconds 1
+    }
+}
+if (-not $ready) {
+    Write-Host "Backend did not respond at $healthUrl within 90s. Check the uvicorn window for import errors." -ForegroundColor Red
+    exit 1
+}
+Write-Host "Backend is ready." -ForegroundColor Green
 
 # 4. Run server (Vite dev)
 Write-Host "Starting Vite frontend on port $WebPort ..." -ForegroundColor Green

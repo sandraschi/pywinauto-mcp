@@ -106,6 +106,7 @@ def _get_element_info(element) -> dict[str, Any]:
 
 
 if app is not None:
+
     @app.tool(
         name="automation_elements",
         description="""Comprehensive UI element interaction and inspection system.
@@ -141,7 +142,7 @@ A ToolResult object containing standardized outcome, message, and element data.
         try:
             operation = request.operation
             window_handle = request.window_handle
-            timestamp = time.time()
+            time.time()
             desktop = _get_desktop()
 
             # === LIST OPERATION ===
@@ -152,7 +153,7 @@ A ToolResult object containing standardized outcome, message, and element data.
                     return ToolResult(
                         status="error",
                         message=f"Window with handle {window_handle} not found.",
-                        recovery_tip="Use 'automation_windows' to list active windows and verify the handle."
+                        recovery_tip="Use 'automation_windows' to list active windows and verify the handle.",
                     )
 
                 def get_children_recursive(elem, depth=0):
@@ -172,7 +173,7 @@ A ToolResult object containing standardized outcome, message, and element data.
                 return ToolResult(
                     status="success",
                     message=f"Discovered {len(elements)} top-level elements.",
-                    data={"window_handle": window_handle, "elements": elements}
+                    data={"window_handle": window_handle, "elements": elements},
                 )
 
             # === SELECTOR CONSTRUCTION ===
@@ -212,13 +213,13 @@ A ToolResult object containing standardized outcome, message, and element data.
                         return ToolResult(
                             status="error",
                             message=f"Operation '{operation}' cannot be performed by coordinates alone.",
-                            recovery_tip="Use a selector (control_id, title) to identify the specific element."
+                            recovery_tip="Use a selector (control_id, title) to identify the specific element.",
                         )
 
                     return ToolResult(
                         status="success",
                         message=f"Performed {operation} at ({x}, {y})",
-                        data={"x": x, "y": y, "absolute": True}
+                        data={"x": x, "y": y, "absolute": True},
                     )
                 except MouseFailSafeError as e:
                     return ToolResult(status="blocked", message=str(e))
@@ -230,7 +231,7 @@ A ToolResult object containing standardized outcome, message, and element data.
                 return ToolResult(
                     status="error",
                     message="Missing selection criteria (control_id, auto_id, title) or coordinates (x, y).",
-                    recovery_tip="Provide an identifier for the element or specific coordinates."
+                    recovery_tip="Provide an identifier for the element or specific coordinates.",
                 )
 
             try:
@@ -242,7 +243,7 @@ A ToolResult object containing standardized outcome, message, and element data.
                     return ToolResult(
                         status="error",
                         message=f"Element not found using criteria: {selector}",
-                        recovery_tip="Increase 'timeout' or verify the selectors using the 'list' operation."
+                        recovery_tip="Increase 'timeout' or verify the selectors using the 'list' operation.",
                     )
 
                 if operation == "exists":
@@ -293,9 +294,13 @@ A ToolResult object containing standardized outcome, message, and element data.
                         status="success",
                         message="Coordinates retrieved.",
                         data={
-                            "left": rect.left, "top": rect.top, "right": rect.right, "bottom": rect.bottom,
-                            "width": rect.width(), "height": rect.height()
-                        }
+                            "left": rect.left,
+                            "top": rect.top,
+                            "right": rect.right,
+                            "bottom": rect.bottom,
+                            "width": rect.width(),
+                            "height": rect.height(),
+                        },
                     )
 
                 elif operation == "visible":
@@ -310,11 +315,15 @@ A ToolResult object containing standardized outcome, message, and element data.
                     if request.expected_text is None:
                         return ToolResult(status="error", message="'expected_text' is required.")
                     actual = element.window_text()
-                    match = (actual == request.expected_text) if request.exact_match else (request.expected_text.lower() in actual.lower())
+                    match = (
+                        (actual == request.expected_text)
+                        if request.exact_match
+                        else (request.expected_text.lower() in actual.lower())
+                    )
                     return ToolResult(
                         status="success" if match else "error",
                         message="Text verification " + ("passed" if match else "failed"),
-                        data={"expected": request.expected_text, "actual": actual}
+                        data={"expected": request.expected_text, "actual": actual},
                     )
 
                 return ToolResult(status="error", message=f"Unknown operation: {operation}")
@@ -322,7 +331,9 @@ A ToolResult object containing standardized outcome, message, and element data.
             except ElementNotFoundError:
                 return ToolResult(status="error", message="Element not found (after existence check).")
             except ElementNotVisible:
-                return ToolResult(status="error", message="Element not visible.", recovery_tip="Try activating the window first.")
+                return ToolResult(
+                    status="error", message="Element not visible.", recovery_tip="Try activating the window first."
+                )
             except MouseFailSafeError as e:
                 return ToolResult(
                     status="blocked",
@@ -334,11 +345,7 @@ A ToolResult object containing standardized outcome, message, and element data.
 
         except Exception as e:
             logger.error(f"Automation elements tool error: {e}")
-            return ToolResult(
-                status="error",
-                message=str(e),
-                recovery_tip="Check if the window handle is still valid."
-            )
+            return ToolResult(status="error", message=str(e), recovery_tip="Check if the window handle is still valid.")
 
 else:
     logger.warning("Elements tool not available - missing app instance")

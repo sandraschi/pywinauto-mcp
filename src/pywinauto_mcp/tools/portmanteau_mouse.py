@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 if app is not None:
+
     @app.tool(
         name="automation_mouse",
         description="""Comprehensive mouse control and cursor simulation system.
@@ -73,8 +74,8 @@ A ToolResult object containing standardized outcome, message, and movement data.
             y = request.y
             target_x = request.target_x or request.x2
             target_y = request.target_y or request.y2
-            amount = request.amount if request.amount != 1 else (
-                request.clicks if request.clicks != 1 else request.amount
+            amount = (
+                request.amount if request.amount != 1 else (request.clicks if request.clicks != 1 else request.amount)
             )
 
             btn = cast(ButtonName, request.button)
@@ -202,7 +203,7 @@ A ToolResult object containing standardized outcome, message, and movement data.
                     if request.capture_keys:
                         cmd.append("--capture-keys")
 
-                    subprocess.Popen(  # noqa: S603
+                    subprocess.Popen(
                         cmd,
                         creationflags=subprocess.CREATE_NEW_CONSOLE if sys.platform == "win32" else 0,
                         start_new_session=True,

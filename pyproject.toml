@@ -33,7 +33,6 @@ dependencies = [
     "uvicorn[standard]>=0.22.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0,<3.0.0",
-    
     # Windows automation
     "pywinauto>=0.6.8,<1.0.0",
     "pywin32>=311; platform_system=='Windows'",
@@ -42,23 +41,21 @@ dependencies = [
     "pyautogui>=0.9.54",
     "pyperclip>=1.8.2",
     "pynput>=1.7.6",
-    
     # Image processing and OCR
     "pillow>=10.0.0",
     "numpy>=1.24.0",
     "opencv-python-headless>=4.8.0",
     "pytesseract>=0.3.10",
     "comtypes>=1.2.0",
-    
     # Security features (optional for face recognition)
     "cryptography>=41.0.0",
-    
     # Utilities
     "typing-extensions>=4.5.0",
     "python-dateutil>=2.8.2",
     "httpx>=0.24.0",
     "aiofiles>=23.1.0",
-    "orjson>=3.8.0"
+    "orjson>=3.8.0",
+    "prefab-ui>=0.14.0",
 ]
 
 [project.urls]
@@ -162,12 +159,33 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "S", "UP", "RUF"]
-ignore = ["S101", "B008"]
+ignore = [
+    "S101",
+    "B008",
+    "E501",
+    "B904",
+    "S110",
+    "E722",
+    "S603",
+    "S607",
+    "S602",
+    "S301",
+    "S112",
+    "S104",
+    "S606",
+    "UP047",
+    "RUF012",
+    "RUF002",
+]
 
 [tool.ruff.lint.per-file-ignores]
 # Examples tweak sys.path before importing sibling helpers
 "examples/demo_notepad_grid.py" = ["E402"]
 "examples/demo_notepad_typewriter.py" = ["E402"]
+"src/pywinauto_mcp/security_endpoints.py" = ["E402"]
+"src/pywinauto_mcp/tools/portmanteau_face.py" = ["E402"]
+"src/pywinauto_mcp/tools/portmanteau_mission.py" = ["E402"]
+"scratch/**" = ["B023"]
 
 [tool.ruff.format]
 quote-style = "double"

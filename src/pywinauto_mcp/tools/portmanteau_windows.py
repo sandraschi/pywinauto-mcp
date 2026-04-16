@@ -13,8 +13,9 @@ from typing import Any
 
 from pywinauto import Desktop
 from pywinauto.findwindows import WindowNotFoundError
+
 from pywinauto_mcp.app import app
-from pywinauto_mcp.tools.models import WindowOperationRequest, ToolResult
+from pywinauto_mcp.tools.models import ToolResult, WindowOperationRequest
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,7 @@ def _get_window_info(window) -> dict[str, Any]:
 
 
 if app is not None:
+
     @app.tool(
         name="automation_windows",
         description="""Comprehensive Windows window management and lifecycle control system.
@@ -107,7 +109,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                 return ToolResult(
                     status="success",
                     message=f"Successfully listed {len(windows)} visible windows.",
-                    data={"count": len(windows), "windows": windows, "timestamp": timestamp}
+                    data={"count": len(windows), "windows": windows, "timestamp": timestamp},
                 )
 
             # === FIND OPERATION ===
@@ -116,7 +118,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                     return ToolResult(
                         status="error",
                         message="At least one search criterion (title, handle, process_id, class_name) is required.",
-                        recovery_tip="Provide a title, handle, or PID to locate the window."
+                        recovery_tip="Provide a title, handle, or PID to locate the window.",
                     )
 
                 matches = []
@@ -130,7 +132,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                                     match = False
                             elif request.title != window_text:
                                 match = False
-                        
+
                         if request.class_name:
                             win_class = window.class_name()
                             if request.partial:
@@ -138,10 +140,10 @@ A ToolResult object containing standardized outcome, message, and window metadat
                                     match = False
                             elif request.class_name != win_class:
                                 match = False
-                        
+
                         if handle and window.handle != handle:
                             match = False
-                        
+
                         if request.process_id and window.process_id() != request.process_id:
                             match = False
 
@@ -153,7 +155,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                 return ToolResult(
                     status="success",
                     message=f"Found {len(matches)} matching windows.",
-                    data={"count": len(matches), "windows": matches}
+                    data={"count": len(matches), "windows": matches},
                 )
 
             # === GET ACTIVE WINDOW OPERATION ===
@@ -164,7 +166,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                         return ToolResult(
                             status="success",
                             message="Retrieved active window successfully.",
-                            data={"window": _get_window_info(active_window)}
+                            data={"window": _get_window_info(active_window)},
                         )
                     return ToolResult(status="success", message="No active window found.", data={"window": None})
                 except Exception as e:
@@ -175,7 +177,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                 return ToolResult(
                     status="error",
                     message=f"The '{operation}' operation requires a valid window handle (HWND).",
-                    recovery_tip="Use 'list' or 'find' to obtain the correct handle first."
+                    recovery_tip="Use 'list' or 'find' to obtain the correct handle first.",
                 )
 
             try:
@@ -184,7 +186,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                 return ToolResult(
                     status="error",
                     message=f"Window with handle {handle} not found.",
-                    recovery_tip="The handle may be stale. Use 'find' to get the current handle."
+                    recovery_tip="The handle may be stale. Use 'find' to get the current handle.",
                 )
 
             # === OPERATION MAPPER ===
@@ -196,20 +198,20 @@ A ToolResult object containing standardized outcome, message, and window metadat
                 "restore": lambda w: w.restore(),
                 "close": lambda w: w.close(),
                 "activate": lambda w: w.activate(),
-                "focus": lambda w: w.set_focus()
+                "focus": lambda w: w.set_focus(),
             }
 
             if operation in operation_actions:
                 try:
                     if operation == "focus" and window.is_minimized():
                         window.restore()
-                    
+
                     operation_actions[operation](window)
-                    
+
                     return ToolResult(
                         status="success",
                         message=f"Executed operation '{operation}' on window {handle}.",
-                        data={"handle": handle, "operation": operation}
+                        data={"handle": handle, "operation": operation},
                     )
                 except Exception as e:
                     return ToolResult(status="error", message=f"Failed to execute '{operation}': {e}")
@@ -221,7 +223,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                     return ToolResult(
                         status="error",
                         message="A specific 'action' (maximize, close, etc.) is required for 'manage'.",
-                        recovery_tip="Provide an 'action' parameter such as 'maximize' or 'close'."
+                        recovery_tip="Provide an 'action' parameter such as 'maximize' or 'close'.",
                     )
 
                 if action in operation_actions:
@@ -229,7 +231,7 @@ A ToolResult object containing standardized outcome, message, and window metadat
                     return ToolResult(
                         status="success",
                         message=f"Executed '{action}' on window {handle}.",
-                        data={"handle": handle, "action": action}
+                        data={"handle": handle, "action": action},
                     )
                 return ToolResult(status="error", message=f"Unknown action: {action}")
 
@@ -238,28 +240,28 @@ A ToolResult object containing standardized outcome, message, and window metadat
                 if request.x is None or request.y is None or request.width is None or request.height is None:
                     return ToolResult(
                         status="error",
-                        message="Spatial coordinates (x, y) and dimensions (width, height) are required for 'position'."
+                        message="Spatial coordinates (x, y) and dimensions (width, height) are required for 'position'.",
                     )
                 window.move_window(x=request.x, y=request.y, width=request.width, height=request.height)
                 return ToolResult(
                     status="success",
                     message=f"Window {handle} moved and resized.",
-                    data={"x": request.x, "y": request.y, "width": request.width, "height": request.height}
+                    data={"x": request.x, "y": request.y, "width": request.width, "height": request.height},
                 )
 
             # === SIMPLE METADATA OPERATIONS ===
             elif operation == "title":
                 val = window.window_text()
                 return ToolResult(status="success", message=f"Title: {val}", data={"title": val})
-            
+
             elif operation == "rect":
                 r = window.rectangle()
                 return ToolResult(
                     status="success",
                     message="Rect retrieved.",
-                    data={"left": r.left, "top": r.top, "right": r.right, "bottom": r.bottom}
+                    data={"left": r.left, "top": r.top, "right": r.right, "bottom": r.bottom},
                 )
-            
+
             elif operation == "state":
                 return ToolResult(
                     status="success",
@@ -269,8 +271,8 @@ A ToolResult object containing standardized outcome, message, and window metadat
                         "is_enabled": window.is_enabled(),
                         "has_focus": window.has_focus(),
                         "is_minimized": window.is_minimized(),
-                        "is_maximized": window.is_maximized()
-                    }
+                        "is_maximized": window.is_maximized(),
+                    },
                 )
 
             return ToolResult(status="error", message=f"Unknown operation: {operation}")

@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from pywinauto_mcp.tools.models import MissionOperationRequest
 from pywinauto_mcp.tools.portmanteau_mission import automation_mission
 
@@ -32,7 +33,7 @@ class TestAutomationMission:
         assert mock_ctx.report_progress.called
 
         # Verify the prompt sent to sample
-        args, kwargs = mock_ctx.sample.call_args
+        _args, kwargs = mock_ctx.sample.call_args
         assert "Test goal" in kwargs["messages"]
 
     @pytest.mark.asyncio

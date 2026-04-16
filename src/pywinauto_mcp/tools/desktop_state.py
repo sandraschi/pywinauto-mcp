@@ -6,7 +6,6 @@ visual annotations, and OCR capabilities.
 
 import logging
 import time
-from typing import Optional
 
 # Import the FastMCP app instance
 try:
@@ -33,6 +32,7 @@ except ImportError as e:
 
 
 if app is not None and DesktopStateCapture is not None:
+
     @app.tool(
         name="get_desktop_state",
         description="""Captures the complete hierarchical state of the Windows desktop UI.
@@ -58,7 +58,7 @@ If the UI tree is exceptionally deep, increase 'max_depth' or target a specific 
             element_timeout = request.element_timeout
 
             logger.info(f"Starting SOTA desktop state capture (vision={use_vision}, ocr={use_ocr})")
-            
+
             timestamp = time.time()
             visual_metadata = {
                 "timestamp": timestamp,
@@ -71,19 +71,19 @@ If the UI tree is exceptionally deep, increase 'max_depth' or target a specific 
 
             # Inject SOTA metadata
             result["visual_metadata"] = visual_metadata
-            
+
             return ToolResult(
                 status="success",
                 message=f"Desktop state capture completed: {result.get('element_count', 0)} elements found",
-                data=result
+                data=result,
             )
 
         except Exception as e:
             logger.error(f"Desktop state capture failed: {e}")
             return ToolResult(
                 status="error",
-                message=f"Desktop state capture failed: {str(e)}",
-                recovery_tip="Ensure the desktop session is active and not locked. Try disabling vision/ocr to isolate issues."
+                message=f"Desktop state capture failed: {e!s}",
+                recovery_tip="Ensure the desktop session is active and not locked. Try disabling vision/ocr to isolate issues.",
             )
 else:
     logger.warning("Desktop state tools not available - missing dependencies or app instance")

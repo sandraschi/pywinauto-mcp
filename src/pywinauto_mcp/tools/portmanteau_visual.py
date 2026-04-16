@@ -20,7 +20,6 @@ import logging
 import os
 import tempfile
 import time
-from typing import Any
 
 import cv2
 import numpy as np
@@ -123,13 +122,13 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                             top += region[1]
                             right = min(left + (region[2] - region[0]), right)
                             bottom = min(top + (region[3] - region[1]), bottom)
-                        
+
                         screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
                     except Exception as e:
                         return ToolResult(
                             status="error",
                             message=f"Failed to capture window: {e}",
-                            recovery_tip="Ensure the window handle is still valid and the window is not minimized or obscured."
+                            recovery_tip="Ensure the window handle is still valid and the window is not minimized or obscured.",
                         )
                 elif region:
                     screenshot = ImageGrab.grab(bbox=region)
@@ -145,7 +144,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                 file_path = None
                 if return_base64:
                     img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-                
+
                 # Save to file if output_path is provided or if not returning base64
                 if not return_base64 or output_path:
                     if output_path:
@@ -166,7 +165,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                         "screenshot_path": file_path,
                         "timestamp": timestamp,
                         "visual_metadata": visual_metadata,
-                    }
+                    },
                 )
 
             # === EXTRACT_TEXT OPERATION ===
@@ -175,7 +174,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                     return ToolResult(
                         status="error",
                         message="OCR functionality is unavailable because pytesseract is not installed.",
-                        recovery_tip="Install Tesseract OCR on the host and run 'pip install pytesseract'."
+                        recovery_tip="Install Tesseract OCR on the host and run 'pip install pytesseract'.",
                     )
 
                 # Get image
@@ -184,7 +183,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                         return ToolResult(
                             status="error",
                             message=f"Image file not found: {image_path}",
-                            recovery_tip="Verify the image path or capture a new screenshot using 'screenshot' first."
+                            recovery_tip="Verify the image path or capture a new screenshot using 'screenshot' first.",
                         )
                     image = Image.open(image_path)
                 else:
@@ -193,6 +192,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                         image = ImageGrab.grab(bbox=region)
                     elif window_handle:
                         import win32gui
+
                         rect = win32gui.GetWindowRect(window_handle)
                         image = ImageGrab.grab(bbox=rect)
                     else:
@@ -223,7 +223,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                         "language": language,
                         "timestamp": timestamp,
                         "visual_metadata": visual_metadata,
-                    }
+                    },
                 )
 
             # === FIND_IMAGE OPERATION ===
@@ -232,14 +232,14 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                     return ToolResult(
                         status="error",
                         message="template_path parameter is required for 'find_image' operation.",
-                        recovery_tip="Provide a valid path to a template image file."
+                        recovery_tip="Provide a valid path to a template image file.",
                     )
 
                 if not os.path.exists(template_path):
                     return ToolResult(
                         status="error",
                         message=f"Template file not found: {template_path}",
-                        recovery_tip="Ensure the template image exists at the specified location."
+                        recovery_tip="Ensure the template image exists at the specified location.",
                     )
 
                 # Load template
@@ -248,7 +248,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                     return ToolResult(
                         status="error",
                         message=f"Failed to load template image: {template_path}",
-                        recovery_tip="Check if the file is a valid image format supported by OpenCV."
+                        recovery_tip="Check if the file is a valid image format supported by OpenCV.",
                     )
 
                 template_h, template_w = template.shape[:2]
@@ -258,6 +258,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                     screenshot = ImageGrab.grab(bbox=region)
                 elif window_handle:
                     import win32gui
+
                     rect = win32gui.GetWindowRect(window_handle)
                     screenshot = ImageGrab.grab(bbox=rect)
                 else:
@@ -268,7 +269,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
 
                 # Template matching
                 result_cv = cv2.matchTemplate(screen_cv, template, cv2.TM_CCOEFF_NORMED)
-                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result_cv)
+                _min_val, max_val, _min_loc, max_loc = cv2.minMaxLoc(result_cv)
 
                 best_match = None
                 if max_val >= threshold:
@@ -300,7 +301,9 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                         "timestamp": timestamp,
                         "visual_metadata": visual_metadata,
                     },
-                    recovery_tip="If no match was found, try decreasing the 'threshold' or ensure the UI is currently visible." if not best_match else None
+                    recovery_tip="If no match was found, try decreasing the 'threshold' or ensure the UI is currently visible."
+                    if not best_match
+                    else None,
                 )
 
             # === HIGHLIGHT OPERATION ===
@@ -309,7 +312,7 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                     return ToolResult(
                         status="error",
                         message="window_handle and control_id are required for 'highlight' operation.",
-                        recovery_tip="Specify both the parent window handle and the target element's control_id."
+                        recovery_tip="Specify both the parent window handle and the target element's control_id.",
                     )
 
                 desktop = Desktop(backend="uia")
@@ -320,12 +323,13 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                     return ToolResult(
                         status="error",
                         message=f"Element with control_id '{control_id}' not found in window {window_handle}.",
-                        recovery_tip="Verify the control_id using 'get_desktop_state' or 'automation_elements(operation=\"list\")'."
+                        recovery_tip="Verify the control_id using 'get_desktop_state' or 'automation_elements(operation=\"list\")'.",
                     )
 
                 rect = element.rectangle()
 
                 import win32gui
+
                 win_rect = win32gui.GetWindowRect(window_handle)
                 screenshot = ImageGrab.grab(bbox=win_rect)
                 img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
@@ -368,21 +372,21 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
                             "height": rect.height(),
                         },
                         "timestamp": timestamp,
-                    }
+                    },
                 )
 
             else:
                 return ToolResult(
                     status="error",
                     message=f"Unknown operation: {operation}",
-                    recovery_tip="Supported operations are: screenshot, extract_text, find_image, highlight."
+                    recovery_tip="Supported operations are: screenshot, extract_text, find_image, highlight.",
                 )
 
         except Exception as e:
             return ToolResult(
                 status="error",
                 message=f"Visual operation failed: {e}",
-                recovery_tip="Check if all vision dependencies (opencv-python, pytesseract, pillow) are correctly installed."
+                recovery_tip="Check if all vision dependencies (opencv-python, pytesseract, pillow) are correctly installed.",
             )
 
 
