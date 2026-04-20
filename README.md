@@ -1,8 +1,10 @@
 # PyWinAuto MCP
 
+[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2.0-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+
 **Let an AI assistant control real Windows apps**  through a single MCP server that wraps window, UI, mouse, keyboard, screenshots, OCR, and optional face checks behind a small set of **portmanteau** tools (many operations, few entry points so models stay focused).
 
-**Stack:** v0.4.2  FastMCP 3.2+  Python 3.12+  Windows 10/11  
+**Stack:** v0.4.2  FastMCP 3.2.0+  Python 3.12+  Windows 10/11  
 
 **Web dashboard (optional):** This repo ships **`web_sota`** — a local browser UI (Vite; default **http://localhost:10788**) that talks to the same backend as the REST API (**http://127.0.0.1:10789**). Use it for a **tools hub**, safety/help pages, **local LLM chat** (Ollama or LM Studio), **camera** selection, biometrics, and overview — run **`web_sota/start.ps1`**. You do **not** need the webapp for normal MCP **stdio** use in an IDE; it is an extra operator surface.
 
@@ -197,6 +199,17 @@ See **[docs/TESTING.md](docs/TESTING.md)**  environment-aware markers (`requires
 - Documentation should match **implemented** tools and env vars.
 - **`glama.json`:** update when releasing or when marketplace metadata changes.
 - **Portable clones:** avoid committing machine-specific paths (e.g. a fixed drive + `Dev\repos\...`). Run **`just check-machine-paths`** (or `pwsh -File scripts/check-no-machine-paths.ps1`) on `src/` and key root files; use **`-FullRepo`** to scan the whole tree (legacy docs may still match until cleaned).
+
+
+## 🛡️ Industrial Quality Stack
+
+This project adheres to **SOTA 14.1** industrial standards for high-fidelity agentic orchestration:
+
+- **Python (Core)**: [Ruff](https://astral.sh/ruff) for linting and formatting. Zero-tolerance for `print` statements in core handlers (`T201`).
+- **Webapp (UI)**: [Biome](https://biomejs.dev/) for sub-millisecond linting. Strict `noConsoleLog` enforcement.
+- **Protocol Compliance**: Hardened `stdout/stderr` isolation to ensure crash-resistant JSON-RPC communication.
+- **Automation**: [Justfile](./justfile) recipes for all fleet operations (`just lint`, `just fix`, `just dev`).
+- **Security**: Automated audits via `bandit` and `safety`.
 
 ## License
 
