@@ -7,6 +7,9 @@
   <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.2-7c5cfc?style=flat-square" alt="FastMCP"></a>
 </p>
 
+
+> 📖 **[Installation Guide](INSTALL.md)** — quick start, manual setup, and troubleshooting
+
 **Let an AI assistant control real Windows apps**  through a single MCP server that wraps window, UI, mouse, keyboard, screenshots, OCR, and optional face checks behind a small set of **portmanteau** tools (many operations, few entry points so models stay focused).
 
 **Stack:** v0.4.2  FastMCP 3.2.0+  Python 3.12+  Windows 10/11  
