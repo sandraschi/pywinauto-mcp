@@ -163,3 +163,4 @@ screenshots/
 # DXT build artifacts (keep dist/ in repo for releases)
 # build/  # Keep build directory for CI/CD
 *.dxt    # But ignore loose DXT files
+_dashboard/

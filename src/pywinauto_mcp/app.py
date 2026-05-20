@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 # Import FastMCP and create the app instance
 try:
     from fastmcp import FastMCP
+    from fastmcp.server import create_proxy
 
     logger.info("Successfully imported FastMCP")
 
@@ -25,6 +26,18 @@ try:
     )
 
     logger.info("FastMCP 3.2.0 app instance created successfully")
+
+    _bridge_proxies: list[str] = []
+    bridge_urls = os.getenv("MCP_BRIDGE_URLS", "")
+    if bridge_urls:
+        for url in bridge_urls.split(","):
+            url = url.strip()
+            if url:
+                try:
+                    app.add_provider(create_proxy(url))
+                    _bridge_proxies.append(url)
+                except Exception:
+                    pass
 
 except ImportError as e:
     logger.critical(f"Failed to import FastMCP: {e}")
