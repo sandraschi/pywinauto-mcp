@@ -20,6 +20,18 @@ When you ask to **start an application** and **test or drive it via pywinauto**,
 
 > “I’m going to start or test **{app}** using desktop automation. **Please don’t keep the terminal or IDE in the foreground** while clicks run — switch to **{app}** or leave it focused, and **avoid Alt+Tabbing** to other apps until I say the step is done. If you need to approve a prompt, do that only, then let the automated window stay on top.”
 
+## Profiles: foreground (default) vs background (Cua-style)
+
+| Profile | Env | Operator expectation |
+|---------|-----|----------------------|
+| **Foreground** (default) | `PYWINAUTO_MCP_DISPATCH=foreground` or unset | Target app should hold focus; see rules above. |
+| **Background** | `PYWINAUTO_MCP_DISPATCH=background` | User may keep **Cursor/IDE** focused; agent uses `get_window_state` + `snapshot_id` / `element_index`. Coordinate clicks may still move the **physical** cursor unless UIA/PostMessage succeeds. |
+
+Background profile is for **dedicated computer-use MCP configs only** — not default IDE + webapp chains. See [`CUA_PARITY.md`](CUA_PARITY.md), [`OFFICE_BACKGROUND_MATRIX.md`](OFFICE_BACKGROUND_MATRIX.md).
+
+Optional: `PYWINAUTO_MCP_TRAJECTORY_LOG=1` (JSONL under `%LOCALAPPDATA%\pywinauto-mcp\trajectories`), `PYWINAUTO_MCP_AGENT_OVERLAY=1` (virtual agent marker).
+
 ## Related
 
 - [`SAFETY.md`](SAFETY.md) — HITL (human-in-the-loop), env limits, two-server model with `virtualization-mcp`.
+- [`CUA_PARITY.md`](CUA_PARITY.md) — Cua-shaped tool loop

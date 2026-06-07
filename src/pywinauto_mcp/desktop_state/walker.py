@@ -1,8 +1,11 @@
 """UI Element Walker - Traverse Windows UI Automation tree and extract elements."""
 
+import os
 import threading
 
 from pywinauto import Desktop
+
+ENV_LOOSE_UIA = "PYWINAUTO_MCP_LOOSE_UIA"
 
 
 class UIElementWalker:
@@ -22,9 +25,19 @@ class UIElementWalker:
         "ScrollBar",
         "DataItem",
         "Link",
+        "Pane",
+        "Custom",
+        "Document",
+        "Table",
+        "Tree",
+        "TreeItem",
+        "Group",
+        "SplitButton",
+        "Spinner",
+        "MenuBar",
     }
 
-    INFORMATIVE_TYPES = {"Text", "StatusBar", "TitleBar", "ToolBar", "Header"}
+    INFORMATIVE_TYPES = {"Text", "StatusBar", "TitleBar", "ToolBar", "Header", "Window"}
 
     def __init__(self, max_depth: int = 10, element_timeout: float = 0.5):
         self.max_depth = max_depth
@@ -38,6 +51,30 @@ class UIElementWalker:
 
         self.elements = []
         self._recurse(root_element, depth=0)
+        return self.elements
+
+    def walk_window(self, window_handle: int) -> list[dict]:
+        """Walk UI tree scoped to one top-level window (HWND)."""
+        desktop = Desktop(backend="uia")
+        window = desktop.window(handle=window_handle)
+        if not window.exists(timeout=2):
+            raise ValueError(f"Window handle {window_handle} not found")
+        self.elements = []
+        try:
+            for desc in window.descendants():
+                try:
+                    info = self._extract_element_info(desc)
+                    if info and self._should_include(info):
+                        info["id"] = len(self.elements)
+                        self.elements.append(info)
+                        if len(self.elements) >= 500:
+                            break
+                except Exception:
+                    pass
+        except Exception:
+            self._recurse(window, depth=0)
+        if not self.elements:
+            self._recurse(window, depth=0)
         return self.elements
 
     def _recurse(self, element, depth: int):
@@ -143,7 +180,14 @@ class UIElementWalker:
 
         # Must be interactive or informative
         elem_type = info.get("type", "")
-        if elem_type not in self.INTERACTIVE_TYPES and elem_type not in self.INFORMATIVE_TYPES:
-            return False
+        if elem_type in self.INTERACTIVE_TYPES or elem_type in self.INFORMATIVE_TYPES:
+            return True
+        if _loose_uia_enabled():
+            name = (info.get("name") or "").strip()
+            if name and info["bounds"]["width"] >= 8 and info["bounds"]["height"] >= 8:
+                return True
+        return False
 
-        return True
+
+def _loose_uia_enabled() -> bool:
+    return os.getenv(ENV_LOOSE_UIA, "").strip().lower() in ("1", "true", "yes", "on")

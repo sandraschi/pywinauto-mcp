@@ -94,7 +94,12 @@ def get_registered_tools() -> list[str]:
 
 
 def main() -> None:
-    """Run the PyWinAuto MCP server."""
+    """Run the PyWinAuto MCP server or print MCP config snippet."""
+    if len(sys.argv) > 1 and sys.argv[1] == "mcp-config":
+        from pywinauto_mcp.cli import print_mcp_config
+
+        print_mcp_config()
+        return
     try:
         logger.info("=" * 60)
         logger.info("PyWinAuto MCP - Portmanteau Edition v0.4.2")
@@ -121,6 +126,8 @@ def main() -> None:
             "automation_face",
             "automation_system",
             "get_desktop_state",
+            "get_window_state",
+            "cua_computer_use_screenshot",
         ]
         logger.info(f"Expected tools: {', '.join(expected_tools)}")
 

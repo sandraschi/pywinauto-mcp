@@ -8,7 +8,13 @@ from .walker import UIElementWalker
 class DesktopStateFormatter:
     """Format desktop state into structured output."""
 
-    def format(self, elements: list[dict], screenshot: Any | None = None) -> dict:
+    def format(
+        self,
+        elements: list[dict],
+        screenshot: Any | None = None,
+        *,
+        capture_mode: str = "ax",
+    ) -> dict:
         """Format complete state output."""
         # Separate element types
         interactive = [e for e in elements if self._is_interactive(e)]
@@ -23,6 +29,7 @@ class DesktopStateFormatter:
             "interactive_elements": interactive,
             "informative_elements": informative,
             "element_count": len(elements),
+            "capture_mode": capture_mode,
         }
 
         # Add screenshot if provided
@@ -44,8 +51,9 @@ class DesktopStateFormatter:
         for elem in interactive:
             bounds = elem["bounds"]
             name = elem.get("name", elem.get("ocr_text", ""))
+            label = elem.get("element_index", elem.get("id", "?"))
             lines.append(
-                f'[{elem["id"]}] {elem["type"]} "{name}" at ({bounds["x"]},{bounds["y"]}) - App: {elem["app"]}'
+                f'[{label}] {elem["type"]} "{name}" at ({bounds["x"]},{bounds["y"]}) - App: {elem["app"]}'
             )
 
         lines.append("\n")

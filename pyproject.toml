@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pywinauto-mcp"
-version = "0.4.2"
-description = "Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. FastMCP 3.2.0 agentic sampling."
+version = "0.4.3"
+description = "CUA-MCP (Computer Use Agent): Windows GUI automation with verification — read docs/SAFETY.md and docs/CUA_ROADMAP.md. FastMCP 3.2.0 agentic sampling."
 readme = "README.md"
 authors = [
     {name = "Sandra Schilling", email = "sandra@example.com"},

@@ -93,6 +93,18 @@ class ElementOperationRequest(BaseModel):
     button: Literal["left", "right", "middle"] = Field("left", description="Mouse button for clicks.")
     duration: float = Field(0.0, description="Duration for 'hover' or movement delay.")
 
+    # Cua-style snapshot targeting
+    snapshot_id: str | None = Field(
+        None, description="Snapshot from get_window_state; use with element_index."
+    )
+    element_index: int | None = Field(
+        None, description="Index from snapshot elements[].element_index."
+    )
+    dispatch: Literal["foreground", "background"] | None = Field(
+        None,
+        description="Input dispatch mode; default from PYWINAUTO_MCP_DISPATCH (foreground).",
+    )
+
     # Discovery parameters
     max_depth: int = Field(2, description="Max depth for 'list' recursion.")
     timeout: float = Field(10.0, description="Max wait time in seconds.")
@@ -242,8 +254,68 @@ class DesktopStateRequest(BaseModel):
 
     use_vision: bool = Field(False, description="Include annotated screenshots.")
     use_ocr: bool = Field(False, description="Use OCR for text extraction.")
+    capture_mode: Literal["ax", "som", "vision"] | None = Field(
+        None,
+        description="Cua-style capture: ax (tree only), som (tree + annotated screenshot), vision (image only).",
+    )
     max_depth: int = Field(10, description="Max UI tree depth.", ge=1)
     element_timeout: float = Field(0.5, description="Timeout per element capture.", ge=0)
+
+
+class WindowStateRequest(BaseModel):
+    """Request model for get_window_state (per-window, Cua-shaped)."""
+
+    window_handle: int = Field(..., description="Target window HWND.")
+    capture_mode: Literal["ax", "som", "vision"] = Field(
+        "som",
+        description="ax = UIA tree only; som = tree + set-of-mark screenshot; vision = window image only.",
+    )
+    use_ocr: bool = Field(False, description="OCR enrich elements when capture_mode is som.")
+    max_depth: int = Field(10, description="Max UI tree depth.", ge=1)
+    element_timeout: float = Field(0.5, description="Timeout per element capture.", ge=0)
+
+
+class AssertOperationRequest(BaseModel):
+    """Request model for UI verification and stability assertions."""
+
+    operation: Literal[
+        "hash",
+        "hash_region",
+        "diff",
+        "wait_stable",
+        "assert_changed",
+        "assert_unchanged",
+        "assert_template",
+        "assert_text",
+    ] = Field(..., description="Verification operation to perform.")
+
+    window_handle: int | None = Field(None, description="HWND for live capture.")
+    image_path: str | None = Field(None, description="Primary image path (before / source).")
+    image_path_b: str | None = Field(None, description="Second image path (after) for diff/assert ops.")
+
+    region_left: int | None = Field(None, description="Region left (X1).")
+    region_top: int | None = Field(None, description="Region top (Y1).")
+    region_right: int | None = Field(None, description="Region right (X2).")
+    region_bottom: int | None = Field(None, description="Region bottom (Y2).")
+
+    hash_algorithm: Literal["sha256", "dhash"] = Field("dhash", description="Hash algorithm for stability checks.")
+    stable_frames_required: int = Field(2, description="Consecutive stable frames for wait_stable.", ge=1)
+    poll_interval_s: float = Field(0.5, description="Poll interval for wait_stable.", ge=0.05)
+    timeout_s: float = Field(10.0, description="Timeout for wait_stable.", ge=0.5)
+
+    change_threshold_pct: float = Field(1.0, description="Min % pixel change for assert_changed.", ge=0)
+    unchanged_threshold_pct: float = Field(0.5, description="Max % pixel change for assert_unchanged.", ge=0)
+    pixel_diff_threshold: int = Field(25, description="Per-pixel diff sensitivity (0-255).", ge=1, le=255)
+
+    template_path: str | None = Field(None, description="Template image for assert_template.")
+    match_threshold: float = Field(0.8, description="Template match confidence (0-1).", ge=0, le=1)
+
+    expected_text: str | None = Field(None, description="Text to find for assert_text.")
+    exact_match: bool = Field(False, description="Exact OCR match if true.")
+    language: str = Field("eng", description="Tesseract language code.")
+
+    output_path: str | None = Field(None, description="Path to save diff/heatmap PNG.")
+    output_dir: str | None = Field(None, description="Directory for wait_stable snapshot files.")
 
 
 class MissionOperationRequest(BaseModel):

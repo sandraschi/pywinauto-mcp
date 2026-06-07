@@ -104,25 +104,16 @@ If 'find_image' fails to meet the confidence threshold (default 0.8), consider d
 
             # === SCREENSHOT OPERATION ===
             if operation == "screenshot":
-                # Capture screenshot
+                from pywinauto_mcp.win32_window import get_window_bbox
+
                 if window_handle is not None:
                     try:
-                        import win32gui
-                        from pywinauto.win32functions import SetForegroundWindow
-
-                        SetForegroundWindow(window_handle)
-                        time.sleep(0.3)
-
-                        # Get window rect
-                        rect = win32gui.GetWindowRect(window_handle)
-                        left, top, right, bottom = rect
-
+                        left, top, right, bottom = get_window_bbox(window_handle)
                         if region:
                             left += region[0]
                             top += region[1]
                             right = min(left + (region[2] - region[0]), right)
                             bottom = min(top + (region[3] - region[1]), bottom)
-
                         screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
                     except Exception as e:
                         return ToolResult(

@@ -27,10 +27,12 @@ class ScreenshotAnnotator:
         except:
             self.font = ImageFont.load_default()
 
-    def capture_and_annotate(self, elements: list[dict]) -> Image:
+    def capture_and_annotate(self, elements: list[dict], *, bbox: tuple[int, int, int, int] | None = None) -> Image:
         """Capture screenshot and draw element annotations."""
-        # Capture full screen
-        screenshot = ImageGrab.grab()
+        if bbox:
+            screenshot = ImageGrab.grab(bbox=bbox)
+        else:
+            screenshot = ImageGrab.grab()
         draw = ImageDraw.Draw(screenshot)
 
         # Draw each element

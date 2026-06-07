@@ -16,6 +16,7 @@ Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair
 - **automation_face**: Face recognition (optional): add, recognize, list, delete, capture.
 - **automation_system**: System utilities: health, help, wait, wait_for_window, clipboard_get, clipboard_set, process_list.
 - **get_desktop_state**: Comprehensive desktop UI element discovery with visual annotations and OCR.
+- **get_window_state**: Per-window snapshot (Cua-shaped): snapshot_id, element_index, capture_mode ax|som|vision.
 - **approve_automation**: Open HITL safety window (duration_minutes).
 - **automation_safety**: Inspect/reset server-side safety limits.
 
@@ -28,6 +29,12 @@ Windows UI automation (PyWinAuto): desktop control — read docs/SAFETY.md; pair
 - **Version**: 0.4.2
 - **License**: MIT
 - **Dependencies**: pywinauto, fastmcp, fastapi, opencv-python-headless, pytesseract
+
+## Cua parity (Phases 1–4)
+- get_window_state, capture_mode, snapshot_id + element_index, PYWINAUTO_MCP_DISPATCH
+- PYWINAUTO_MCP_TRAJECTORY_LOG, PYWINAUTO_MCP_AGENT_OVERLAY, cua_computer_use_screenshot
+- CLI: pywinauto-mcp mcp-config
+- E2E: pytest -m e2e (LibreOffice Calc)
 
 ## Operational Rules
 See AGENT_PROTOCOLS.md in the repo root.

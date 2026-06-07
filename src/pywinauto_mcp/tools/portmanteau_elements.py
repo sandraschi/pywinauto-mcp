@@ -21,6 +21,9 @@ except ImportError:
     ButtonWrapper = EditWrapper = ComboBoxWrapper = None
 
 from pywinauto_mcp.app import app
+from pywinauto_mcp.dispatch import BACKGROUND_UNAVAILABLE, click_element, resolve_dispatch
+from pywinauto_mcp.trajectory import log_trajectory
+from pywinauto_mcp.snapshot_store import get_snapshot_store
 from pywinauto_mcp.tools.models import ElementOperationRequest, ToolResult
 from pywinauto_mcp.win32_mouse import (
     ButtonName,
@@ -105,6 +108,105 @@ def _get_element_info(element) -> dict[str, Any]:
     return info
 
 
+def _operate_snapshot_element(
+    request: ElementOperationRequest, snap_elem: dict, desktop
+) -> ToolResult:
+    """Resolve snapshot element_index to a control or coordinate click."""
+    operation = request.operation
+    window_handle = request.window_handle
+    dispatch = resolve_dispatch(request.dispatch)
+    bounds = snap_elem.get("bounds") or {}
+    name = snap_elem.get("name") or ""
+    class_name = snap_elem.get("class_name")
+    control_type = snap_elem.get("type")
+
+    selector: dict = {}
+    if class_name:
+        selector["class_name"] = class_name
+    if name:
+        selector["title"] = name
+    if control_type:
+        selector["control_type"] = control_type
+
+    try:
+        window = desktop.window(handle=window_handle)
+        element = None
+        if selector:
+            try:
+                element = window.child_window(**selector)
+                if not element.exists(timeout=min(request.timeout, 3.0)):
+                    element = None
+            except Exception:
+                element = None
+
+        if operation in ("click", "double_click", "right_click") and element is not None:
+            meta = click_element(
+                element,
+                dispatch=dispatch,
+                button=request.button,
+                double=(operation == "double_click"),
+                window_handle=window_handle,
+            )
+            log_trajectory(
+                "element_click",
+                snapshot_id=request.snapshot_id,
+                element_index=request.element_index,
+                operation=operation,
+                dispatch=dispatch,
+                meta=meta,
+            )
+            if meta.get("code") == BACKGROUND_UNAVAILABLE:
+                return ToolResult(
+                    status="blocked",
+                    message="Background click unavailable for this control.",
+                    data=meta,
+                    recovery_tip='Retry with dispatch="foreground" if the app requires focus.',
+                )
+            if operation == "right_click" and meta.get("method") not in ("postmessage",):
+                try:
+                    element.click(button="right")
+                except Exception:
+                    pass
+            return ToolResult(
+                status="success",
+                message=f"Snapshot {operation} via {meta.get('method')} ({meta.get('dispatch')})",
+                data={"element_index": request.element_index, **meta},
+            )
+
+        x = bounds.get("x", 0) + bounds.get("width", 0) // 2
+        y = bounds.get("y", 0) + bounds.get("height", 0) // 2
+        btn = cast(ButtonName, request.button)
+        if operation == "click":
+            click(int(x), int(y), button=btn, clicks=1)
+        elif operation == "double_click":
+            double_click(int(x), int(y), button=btn)
+        elif operation == "right_click":
+            right_click(int(x), int(y))
+        elif operation == "hover":
+            move_to(int(x), int(y), duration=0.3)
+            time.sleep(request.duration)
+            return ToolResult(status="success", message="Hovered snapshot element.", data={"x": x, "y": y})
+        elif operation == "set_text" and element is not None and request.text is not None:
+            element.set_focus()
+            element.set_text(request.text)
+            return ToolResult(status="success", message="Text set on snapshot element.")
+        else:
+            return ToolResult(
+                status="error",
+                message=f"Operation '{operation}' not supported via snapshot for this element.",
+                recovery_tip="Use click/hover/set_text or refresh snapshot with capture_mode=som.",
+            )
+        return ToolResult(
+            status="success",
+            message=f"Snapshot {operation} at ({x},{y})",
+            data={"x": x, "y": y, "dispatch": dispatch, "coordinate_fallback": True},
+        )
+    except MouseFailSafeError as e:
+        return ToolResult(status="blocked", message=str(e))
+    except Exception as e:
+        return ToolResult(status="error", message=f"Snapshot operation failed: {e!s}")
+
+
 if app is not None:
 
     @app.tool(
@@ -144,6 +246,32 @@ A ToolResult object containing standardized outcome, message, and element data.
             window_handle = request.window_handle
             time.time()
             desktop = _get_desktop()
+
+            # === SNAPSHOT INDEX (Cua-style) ===
+            if request.snapshot_id is not None and request.element_index is not None:
+                snap = get_snapshot_store().get(request.snapshot_id)
+                if snap is None:
+                    return ToolResult(
+                        status="error",
+                        message=f"Unknown snapshot_id: {request.snapshot_id}",
+                        recovery_tip="Call get_window_state again to refresh snapshot_id.",
+                    )
+                if snap.window_handle != window_handle:
+                    return ToolResult(
+                        status="error",
+                        message="window_handle does not match snapshot window_handle.",
+                        recovery_tip=f"Use window_handle={snap.window_handle} for this snapshot.",
+                    )
+                snap_elem = get_snapshot_store().resolve_element(
+                    request.snapshot_id, request.element_index
+                )
+                if snap_elem is None:
+                    return ToolResult(
+                        status="error",
+                        message=f"element_index {request.element_index} not in snapshot.",
+                        recovery_tip="Re-run get_window_state and use an index from elements[].",
+                    )
+                return _operate_snapshot_element(request, snap_elem, desktop)
 
             # === LIST OPERATION ===
             if operation == "list":

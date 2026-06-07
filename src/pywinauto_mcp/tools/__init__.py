@@ -13,9 +13,11 @@ into comprehensive portmanteau tools:
 3. automation_mouse     - Mouse control (9 operations)
 4. automation_keyboard  - Keyboard input (4 operations)
 5. automation_visual    - Screenshots/OCR/image recognition (4 operations)
-6. automation_face      - Face recognition (5 operations) — **opt-in** (`PYWINAUTO_MCP_ENABLE_FACE=1` + face extra)
-7. automation_system    - System utilities (7 operations)
+6. automation_assert    - UI verification: hash, diff, wait_stable, asserts (8 operations)
+7. automation_face      - Face recognition (5 operations) — **opt-in** (`PYWINAUTO_MCP_ENABLE_FACE=1` + face extra)
+8. automation_system    - System utilities (7 operations)
 8. get_desktop_state    - Comprehensive desktop UI discovery (standalone)
+9. get_window_state     - Per-window snapshot (Cua-shaped; snapshot_id + element_index)
 
 This design:
 - Prevents tool explosion while maintaining full functionality
@@ -63,9 +65,12 @@ PORTMANTEAU_MODULES = [
     "portmanteau_mouse",  # Mouse control
     "portmanteau_keyboard",  # Keyboard input
     "portmanteau_visual",  # Visual/screenshot/OCR
+    "portmanteau_assert",  # UI verification and stability
     "portmanteau_system",  # System utilities
     "portmanteau_mission",  # Agentic Missions (Sampling)
     "desktop_state",  # Desktop state capture (standalone)
+    "window_state",  # Per-window capture (Cua parity)
+    "computer_use_compat",  # Claude CU window screenshot alias
 ]
 if is_face_tool_enabled():
     # Insert before system so ordering matches historical "face before system" lists

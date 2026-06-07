@@ -2,6 +2,18 @@
 
 Comprehensive test harness for PyWinAuto MCP server.
 
+## E2E (LibreOffice Calc — Cua parity)
+
+Requires LibreOffice `soffice` (same install as **libreoffice-mcp**). Default pytest **excludes** e2e (`-m "not e2e"`).
+
+```powershell
+uv run pytest -m e2e -v --no-cov
+```
+
+Optional: `$env:PYWINAUTO_E2E_SOFFICE = "C:\Program Files\LibreOffice\program\soffice.exe"`
+
+Tests live under `tests/e2e/` and set `PYWINAUTO_MCP_LOOSE_UIA=1` for LibreOffice UIA nodes.
+
 ## Test Structure
 
 ```

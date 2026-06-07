@@ -44,6 +44,7 @@ WHEN TO USE:
 - Use this as your 'Primary Discovery' tool when starting a new automation task.
 - Use it to find stable selectors (Control IDs, Class Names, Names) for 'automation_elements' calls.
 - Use 'use_vision=True' to get visual snapshots of the elements for multi-modal analysis.
+- Use capture_mode='ax'|'som'|'vision' (Cua-style); prefer get_window_state for one HWND.
 
 RECOVERY:
 If the UI tree is exceptionally deep, increase 'max_depth' or target a specific window first using 'automation_windows'. If capture is slow, decrease 'max_depth' or disable 'use_ocr'.
@@ -54,10 +55,16 @@ If the UI tree is exceptionally deep, increase 'max_depth' or target a specific 
         try:
             use_vision = request.use_vision
             use_ocr = request.use_ocr
+            capture_mode = request.capture_mode
             max_depth = request.max_depth
             element_timeout = request.element_timeout
 
-            logger.info(f"Starting SOTA desktop state capture (vision={use_vision}, ocr={use_ocr})")
+            logger.info(
+                "Desktop state capture vision=%s ocr=%s capture_mode=%s",
+                use_vision,
+                use_ocr,
+                capture_mode,
+            )
 
             timestamp = time.time()
             visual_metadata = {
@@ -67,7 +74,11 @@ If the UI tree is exceptionally deep, increase 'max_depth' or target a specific 
             }
 
             capturer = DesktopStateCapture(max_depth=max_depth, element_timeout=element_timeout)
-            result = capturer.capture(use_vision=use_vision, use_ocr=use_ocr)
+            result = capturer.capture(
+                use_vision=use_vision,
+                use_ocr=use_ocr,
+                capture_mode=capture_mode,
+            )
 
             # Inject SOTA metadata
             result["visual_metadata"] = visual_metadata
