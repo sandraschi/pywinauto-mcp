@@ -1,10 +1,10 @@
-set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+﻿set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
 # Open the interactive recipe dashboard in the browser
 default:
-    @pwsh.exe -NoProfile -ExecutionPolicy Bypass -File ../mcp-central-docs/scripts/just-dashboard.ps1 -Path .
+    @just --list
 
 # ── Operations ────────────────────────────────────────────────────────────────
 
@@ -128,3 +128,4 @@ clean:
     if (Test-Path ".pytest_cache") { Remove-Item -Recurse -Force .pytest_cache }
     if (Test-Path "src/pywinauto_mcp.egg-info") { Remove-Item -Recurse -Force src/pywinauto_mcp.egg-info }
     Get-ChildItem -Recurse -Filter "__pycache__" | Remove-Item -Recurse -Force
+
