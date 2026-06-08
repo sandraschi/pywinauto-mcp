@@ -36,8 +36,8 @@ interface ToolInfo {
 export function Tools() {
 	const [tools, setTools] = useState<ToolInfo[]>([]);
 	const [selectedTool, setSelectedTool] = useState<ToolInfo | null>(null);
-	const [args, setArgs] = useState<Record<string, any>>({});
-	const [result, setResult] = useState<any>(null);
+	const [args, setArgs] = useState<Record<string, unknown>>({});
+	const [result, setResult] = useState<unknown>(null);
 	const [loading, setLoading] = useState(false);
 	const {
 		cameras,
@@ -206,7 +206,11 @@ export function Tools() {
 											type="number"
 											className="bg-slate-950 border-slate-800"
 											placeholder="0"
-											value={args.camera_index ?? 0}
+											value={
+												typeof args.camera_index === "number"
+													? args.camera_index
+													: 0
+											}
 											onChange={(e) =>
 												setArgs((prev) => ({
 													...prev,
@@ -250,7 +254,7 @@ export function Tools() {
 														param.description || `Enter ${param.name}`
 													}
 													onChange={(e) => {
-														let val: any = e.target.value;
+														let val: unknown = e.target.value;
 														if (
 															param.type === "integer" ||
 															param.type === "number"
@@ -258,8 +262,10 @@ export function Tools() {
 															val = Number(val);
 														} else if (param.type === "array") {
 															try {
-																val = JSON.parse(val);
-															} catch (_e) {}
+																val = JSON.parse(e.target.value) as unknown;
+															} catch {
+																val = e.target.value;
+															}
 														}
 														setArgs((prev) => ({ ...prev, [param.name]: val }));
 													}}
@@ -286,7 +292,7 @@ export function Tools() {
 						)}
 
 						{/* Results Console */}
-						{result && (
+						{result != null && (
 							<div className="mt-6 space-y-2">
 								<Label className="flex items-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
 									<Terminal className="w-3 h-3 mr-2" />

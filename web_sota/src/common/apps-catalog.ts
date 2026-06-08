@@ -4,6 +4,7 @@ import {
 	Bot,
 	Brain,
 	LayoutGrid,
+	type LucideIcon,
 	MonitorPlay,
 	Scan,
 } from "lucide-react";
@@ -12,7 +13,7 @@ export interface AppEntry {
 	id: string;
 	label: string;
 	description: string;
-	icon: any;
+	icon: LucideIcon;
 	url: string; // Absolute URL for cross-app navigation
 	port: number;
 	tags: string[];

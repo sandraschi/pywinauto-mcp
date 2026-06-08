@@ -11,6 +11,7 @@ import { Dashboard } from "@/pages/dashboard";
 import { Elements } from "@/pages/elements";
 import { Help } from "@/pages/help";
 import { Settings } from "@/pages/settings";
+import { Targets } from "@/pages/targets";
 import { Tools } from "@/pages/tools";
 import { Windows } from "@/pages/windows";
 
@@ -25,6 +26,7 @@ function App() {
 					<Route path="/biometrics" element={<Biometrics />} />
 					<Route path="/chat" element={<Chat />} />
 					<Route path="/tools" element={<Tools />} />
+					<Route path="/targets" element={<Targets />} />
 					<Route path="/help" element={<Help />} />
 					<Route path="/settings" element={<Settings />} />
 					<Route path="*" element={<Navigate to="/" replace />} />

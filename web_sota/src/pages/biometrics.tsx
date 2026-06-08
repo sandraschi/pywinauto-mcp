@@ -39,7 +39,7 @@ export function Biometrics() {
 	const [cameraIndex, setCameraIndex] = useState(0);
 	const [safety, setSafety] = useState<SafetyPayload | null>(null);
 	const [safetyErr, setSafetyErr] = useState("");
-	const [toolNames, _setToolNames] = useState<string[]>([]);
+	const [toolNames] = useState<string[]>([]);
 	const [faceBusy, setFaceBusy] = useState<
 		null | "list" | "capture" | "delete"
 	>(null);

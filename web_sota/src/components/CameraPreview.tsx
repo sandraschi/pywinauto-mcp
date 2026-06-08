@@ -36,6 +36,7 @@ export function CameraPreview({ cameraIndex }: Props) {
 	useEffect(() => {
 		let stream: MediaStream | null = null;
 		let cancelled = false;
+		const videoEl = videoRef.current;
 
 		async function run() {
 			setErr("");
@@ -53,8 +54,12 @@ export function CameraPreview({ cameraIndex }: Props) {
 				const deviceId = videos[idx].deviceId;
 				setStreamLabel(videos[idx].label || `Camera ${idx}`);
 
+				const videoConstraint: MediaTrackConstraints = deviceId
+					? { deviceId: { exact: deviceId } }
+					: { width: { ideal: 1280 }, height: { ideal: 720 } };
+
 				stream = await navigator.mediaDevices.getUserMedia({
-					video: { deviceId: deviceId ? { exact: deviceId } : true },
+					video: videoConstraint,
 					audio: false,
 				});
 				if (cancelled || !videoRef.current) {
@@ -74,8 +79,8 @@ export function CameraPreview({ cameraIndex }: Props) {
 			if (stream) {
 				stream.getTracks().forEach((t) => t.stop());
 			}
-			if (videoRef.current) {
-				videoRef.current.srcObject = null;
+			if (videoEl) {
+				videoEl.srcObject = null;
 			}
 		};
 	}, [cameraIndex]);

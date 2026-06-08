@@ -70,6 +70,15 @@ PROFILES: dict[str, AppProfile] = {
         keyboard_backend="pyautogui",
         description="Calc/Writer — background UIA often works",
     ),
+    "kicad": AppProfile(
+        app_id="kicad",
+        window_title="KiCad",
+        dispatch="foreground",
+        keyboard_backend="win32",
+        description="EDA — schematic/PCB design, no API, shortcut-first",
+        stable_region=RegionMask(0, 80, 1920, 1040, label="canvas"),
+        template_version="default",
+    ),
 }
 
 

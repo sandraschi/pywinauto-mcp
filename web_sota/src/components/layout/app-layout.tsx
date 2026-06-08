@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -9,13 +9,9 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-	const [collapsed, setCollapsed] = useState(false);
-
-	// Persist sidebar state
-	useEffect(() => {
-		const stored = localStorage.getItem("sidebar-collapsed");
-		if (stored !== null) setCollapsed(stored === "true");
-	}, []);
+	const [collapsed, setCollapsed] = useState(
+		() => localStorage.getItem("sidebar-collapsed") === "true",
+	);
 
 	const handleToggle = () => {
 		const newState = !collapsed;
