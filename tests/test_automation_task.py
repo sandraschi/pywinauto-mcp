@@ -22,6 +22,7 @@ def test_vroid_profile():
     p = get_profile("vroidstudio")
     assert p is not None
     assert p.dispatch == "foreground"
+    assert p.stable_region is not None
 
 
 def test_list_profiles():
@@ -99,3 +100,16 @@ def test_automation_task_list_profiles():
     result = automation_task(req)
     assert isinstance(result, ToolResult)
     assert result.status == "success"
+    profiles = result.data["profiles"]
+    vroid = next(p for p in profiles if p["app_id"] == "vroidstudio")
+    assert "stable_region" in vroid
+
+
+def test_automation_task_list_templates():
+    from pywinauto_mcp.template_library import ensure_placeholder_templates
+
+    ensure_placeholder_templates("vroidstudio")
+    req = TaskOperationRequest(operation="list_templates", app="vroidstudio")
+    result = automation_task(req)
+    assert result.status == "success"
+    assert len(result.data["templates"]) >= 4

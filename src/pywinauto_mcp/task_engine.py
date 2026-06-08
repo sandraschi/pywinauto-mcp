@@ -21,6 +21,7 @@ StepKind = Literal[
     "focus",
     "wait_stable",
     "assert_file",
+    "assert_template",
     "screenshot",
     "sleep",
     "click",
@@ -146,6 +147,32 @@ def _invalidate_snapshots_after_mutation(hwnd: int | None) -> dict[str, Any]:
             return {"invalidated": 0, "error": str(exc)}
 
 
+def _step_region(session: TaskSession, step: dict[str, Any]) -> tuple[int, int, int, int] | None:
+    """Resolve crop region from step fields or app profile (T2.4)."""
+    from pywinauto_mcp import assert_engine
+    from pywinauto_mcp.app_profiles import get_profile
+
+    explicit = assert_engine._region_tuple(
+        step.get("region_left"),
+        step.get("region_top"),
+        step.get("region_right"),
+        step.get("region_bottom"),
+    )
+    if explicit:
+        return explicit
+
+    hint = step.get("region_hint")
+    profile = get_profile(session.app)
+    if not profile or not profile.stable_region:
+        return None
+
+    if hint in (None, "editor_canvas", profile.stable_region.label):
+        return profile.stable_region.as_tuple()
+    if hint == "full_window":
+        return None
+    return profile.stable_region.as_tuple()
+
+
 def _execute_step(session: TaskSession, step: dict[str, Any], hwnd: int | None) -> dict[str, Any]:
     kind = step.get("kind", "shortcut")
     result: dict[str, Any] = {"kind": kind}
@@ -191,14 +218,40 @@ def _execute_step(session: TaskSession, step: dict[str, Any], hwnd: int | None) 
     if kind == "wait_stable":
         from pywinauto_mcp import assert_engine
 
+        region = _step_region(session, step)
         stable = assert_engine.wait_stable(
             window_handle=hwnd,
+            region=region,
             timeout_s=float(step.get("timeout_s", 10.0)),
             stable_frames_required=int(step.get("stable_frames_required", 2)),
+            hash_algorithm=str(step.get("hash_algorithm", "dhash")),
+            output_dir=step.get("output_dir"),
         )
         result["stable"] = stable
         if not stable.get("stable"):
             raise TimeoutError(f"wait_stable failed: {stable}")
+        return result
+
+    if kind == "assert_template":
+        from pywinauto_mcp import assert_engine, template_library
+
+        template_id = step["template_id"]
+        version = step.get("version")
+        template_path = str(template_library.resolve_template(session.app, template_id, version=version))
+        region = _step_region(session, step)
+        haystack = assert_engine.capture_image(window_handle=hwnd, region=region)
+        entries = {e.template_id: e for e in template_library.list_template_entries(session.app)}
+        entry = entries.get(template_id)
+        threshold = float(step.get("match_threshold", entry.match_threshold if entry else 0.8))
+        match = assert_engine.assert_template_match(
+            haystack,
+            template_path,
+            match_threshold=threshold,
+            region=None,
+        )
+        result["template"] = match
+        if not match.get("found"):
+            raise RuntimeError(f"assert_template failed: {template_id} {match}")
         return result
 
     if kind == "assert_file":

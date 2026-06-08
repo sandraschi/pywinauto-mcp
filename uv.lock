@@ -2197,7 +2197,7 @@ wheels = [
 
 [[package]]
 name = "pywinauto-mcp"
-version = "0.5.0"
+version = "0.5.3"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
@@ -2222,6 +2222,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "pywinauto" },
+    { name = "pyyaml" },
     { name = "typing-extensions" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -2318,6 +2319,7 @@ requires-dist = [
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=311" },
     { name = "pywinauto", specifier = ">=0.6.8,<1.0.0" },
     { name = "pywinauto-mcp", extras = ["face", "dev"], marker = "extra == 'all'" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.0.280" },
     { name = "types-psutil", marker = "extra == 'dev'", specifier = ">=5.9.0" },
     { name = "types-python-dateutil", marker = "extra == 'dev'", specifier = ">=2.8.0" },

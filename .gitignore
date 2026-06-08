@@ -154,6 +154,9 @@ ruff_stats*.txt
 ehthumbs.db
 Thumbs.db
 
+web_sota/node_modules/
+web_sota/dist/
+
 # Windows automation specific
 data/known_faces/*.jpg
 data/known_faces/*.png

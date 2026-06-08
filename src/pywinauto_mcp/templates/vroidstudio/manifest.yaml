@@ -1,0 +1,34 @@
+# VRoid Studio UI template library (T2.3)
+# Replace placeholder PNGs with captures from your calibrated resolution/DPI.
+app: vroidstudio
+version: default
+baseline_resolution: "1920x1080"
+notes: >
+  Shortcut-first workflows rarely need templates; use these for dialog
+  confirmation, sample tile grounding, and export dialog detection when
+  shortcuts miss after a VRoid Studio update.
+
+templates:
+  - id: export_dialog_title
+    file: export_dialog_title.png
+    description: Export VRM dialog title bar / header strip
+    match_threshold: 0.75
+    region_hint: editor_canvas
+
+  - id: sample_tile_female
+    file: sample_tile_female.png
+    description: Default female sample thumbnail in new-project picker
+    match_threshold: 0.72
+    region_hint: editor_canvas
+
+  - id: file_dialog_path_field
+    file: file_dialog_path_field.png
+    description: Windows file dialog path entry focus indicator
+    match_threshold: 0.78
+    region_hint: full_window
+
+  - id: export_complete_toast
+    file: export_complete_toast.png
+    description: VRoid export completion notification (if visible)
+    match_threshold: 0.7
+    region_hint: editor_canvas

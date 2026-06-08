@@ -7,6 +7,7 @@ import time
 
 from pywinauto_mcp import task_engine
 from pywinauto_mcp.app_profiles import list_profiles
+from pywinauto_mcp.template_library import list_templates
 
 try:
     from pywinauto_mcp.app import app
@@ -38,7 +39,8 @@ OPERATIONS:
 - run: execute steps
 - status: query task session
 - cancel: mark task cancelled
-- list_profiles: app profiles (foreground policy, window title)
+- list_profiles: app profiles (foreground policy, window title, stable_region)
+- list_templates: per-app template library manifest (T2.3)
 
 See docs/CUA_ASSISTANT_TODO.md and docs/MEMOPS_CUA.md.
 """,
@@ -55,6 +57,15 @@ See docs/CUA_ASSISTANT_TODO.md and docs/MEMOPS_CUA.md.
                     status="success",
                     message=f"{len(profiles)} app profiles.",
                     data={"profiles": profiles, "timestamp": ts},
+                )
+
+            if op == "list_templates":
+                app_name = (request.app or "vroidstudio").strip().lower()
+                templates = list_templates(app_name)
+                return ToolResult(
+                    status="success",
+                    message=f"{len(templates)} templates for {app_name}.",
+                    data={"app": app_name, "templates": templates, "timestamp": ts},
                 )
 
             if op == "status":

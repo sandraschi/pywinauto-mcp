@@ -29,6 +29,36 @@ def _get_desktop():
         raise
 
 
+def _fast_find_by_title(title: str, *, partial: bool = True) -> list[dict[str, Any]]:
+    """Fast title search via pygetwindow — avoids slow UIA desktop enumeration."""
+    try:
+        import pygetwindow as gw
+
+        needle = title.lower()
+        matches: list[dict[str, Any]] = []
+        for win in gw.getAllWindows():
+            wt = win.title or ""
+            if partial:
+                if needle not in wt.lower():
+                    continue
+            elif wt != title:
+                continue
+            matches.append(
+                {
+                    "handle": int(win._hWnd),
+                    "title": wt,
+                    "class_name": "",
+                    "is_visible": True,
+                    "is_enabled": True,
+                    "process_id": None,
+                }
+            )
+        return matches
+    except Exception as exc:
+        logger.debug("fast title find failed: %s", exc)
+        return []
+
+
 def _get_window_info(window) -> dict[str, Any]:
     """Extract standard window information."""
     try:
@@ -119,6 +149,15 @@ A ToolResult object containing standardized outcome, message, and window metadat
                         status="error",
                         message="At least one search criterion (title, handle, process_id, class_name) is required.",
                         recovery_tip="Provide a title, handle, or PID to locate the window.",
+                    )
+
+                # Title-only search: pygetwindow is orders of magnitude faster than UIA scan.
+                if request.title and not request.class_name and not request.process_id and not handle:
+                    fast = _fast_find_by_title(request.title, partial=bool(request.partial))
+                    return ToolResult(
+                        status="success",
+                        message=f"Found {len(fast)} matching windows (fast path).",
+                        data={"count": len(fast), "windows": fast},
                     )
 
                 matches = []

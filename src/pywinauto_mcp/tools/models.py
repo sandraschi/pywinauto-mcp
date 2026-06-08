@@ -279,7 +279,9 @@ class WindowStateRequest(BaseModel):
 class TaskOperationRequest(BaseModel):
     """Request model for closed-loop automation_task runner."""
 
-    operation: Literal["run", "status", "cancel", "list_profiles"] = Field(..., description="Task operation.")
+    operation: Literal["run", "status", "cancel", "list_profiles", "list_templates"] = Field(
+        ..., description="Task operation."
+    )
 
     app: str | None = Field(None, description="App profile id (vroidstudio, libreoffice).")
     task_id: str | None = Field(None, description="Task session id for status/cancel/run.")

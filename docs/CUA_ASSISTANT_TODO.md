@@ -25,8 +25,8 @@ See [MEMOPS_CUA.md](MEMOPS_CUA.md) for fleet doctrine. Highest leverage: **`auto
 |----|---------|--------|-------|
 | T2.1 | Structured perception bundle for host LLM | partial | `evidence_bundle` on assert |
 | T2.2 | Auto re-snapshot after every mutating step | done (v0.5.2) | `task_engine._invalidate_snapshots_after_mutation` |
-| T2.3 | Template library per app version | todo | `templates/vroidstudio/` |
-| T2.4 | Region masks in app profiles (not env-only) | todo | `app_profiles` |
+| T2.3 | Template library per app version | done (v0.5.3) | `template_library.py`, `templates/vroidstudio/` |
+| T2.4 | Region masks in app profiles (not env-only) | done (v0.5.3) | `app_profiles.RegionMask`, `task_engine._step_region` |
 | T2.5 | `find_image` multi-match | todo | `portmanteau_visual` |
 | T2.6 | Color spot assert at region | todo | `automation_assert` |
 
