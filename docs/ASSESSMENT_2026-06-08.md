@@ -1,7 +1,27 @@
 # pywinauto-mcp / cua-mcp — Assessment & TODO
 **Date:** 2026-06-08 (rev 2 — full source audit)
-**Version assessed:** 0.5.3 (pyproject) / 0.4.2 (app.py hardcode — version drift)
-**Supersedes:** docs/ASSESSMENT_2026-06-08.md (same day, rev 1 — incomplete)
+**Version assessed:** 0.5.3
+**Supersedes:** rev 1 (same day, incomplete)
+**Operator console spec:** [TARGETS_PAGE_SKETCH.md](TARGETS_PAGE_SKETCH.md) (W1)
+
+---
+
+## Reconciliation (Cursor, 2026-06-08)
+
+Items verified against running fleet + commits through `07d5358`:
+
+| ID | Original claim | Reconciled status |
+|----|----------------|-------------------|
+| Bug 1 | Version drift in `app.py` | **Fixed** — `app.py` reads `importlib.metadata.version("pywinauto-mcp")` |
+| Bug 2 | Portmanteau tools not registered | **Closed — false alarm** — `main.py` imports `pywinauto_mcp.tools`; `tools/__init__.py` loads `portmanteau_assert`, `portmanteau_task`, etc. HTTP smoke: `automation_task`, `automation_windows` work |
+| Bug 4 | VRoid region hardcoded 1920×1080 | **Partial** — `RegionMask` in `app_profiles.py` + `task_engine._step_region`; still needs F2 auto-calibration on 4K/DPI |
+| Bug 5 | No template PNGs | **Partial** — manifest + 32×32 placeholders committed; **production captures still required** (F1) |
+| T2.3 / T2.4 | Template library + region masks | **Done** v0.5.3 |
+| T2.2 | Snapshot invalidation after mutation | **Done** v0.5.2 |
+| W1 | Targets operator console | **Spec ready** — see [TARGETS_PAGE_SKETCH.md](TARGETS_PAGE_SKETCH.md); implementation = T3.4 |
+| — | `automation_windows find` slow/hang | **Fixed** — pygetwindow fast path in `portmanteau_windows.py` |
+
+**Still open (confirmed):** Bug 3 (`mission.plan` non-sampling fallback), Bug 7 (`mission.status` stub), F1 real template capture, F2 region calibration, F4 evidence base64, `type_text` step kind (noted in TARGETS sketch).
 
 ---
 
@@ -35,11 +55,9 @@ The CUA parity phases 1–4 are genuinely done. Phase 6 (rename) is 60% done (`c
 
 ### Critical
 
-**1. Version drift: pyproject says 0.5.3, app.py/CHANGELOG/mcpb say 0.4.2, server.py says 0.4.2.**
-`app = FastMCP(name="pywinauto-mcp", version="0.4.2")` is hardcoded. The FastMCP resource string also returns "v0.4.2". This breaks `uvx pywinauto-mcp`, confuses Glama rescans, and makes `automation_system("help")` lie about its own version. Fix: single source of truth, read from `importlib.metadata.version("pywinauto-mcp")`.
+**1. ~~Version drift~~ → FIXED (reconciliation).** `server.py` FastAPI title version may still lag — align on next touch.
 
-**2. New tools (portmanteau_assert, portmanteau_task, portmanteau_mission, portmanteau_shortcut, portmanteau_dialog) are NOT imported anywhere in the startup path.**
-`app.py` does not import them. `main.py` would need to import them for the `@app.tool()` self-registration to fire. If `main.py` only imports `app` and starts uvicorn, these tools never register. This is the most critical functional gap — vroidstudio-mcp's `automation_assert`, `automation_task`, `automation_shortcut` calls all 404. Audit `main.py` and add explicit imports for every portmanteau module.
+**2. ~~Tools not registered~~ → CLOSED (false alarm).** Verified via `POST /api/v1/tools/call` for `automation_task`, `automation_windows`. Registration path: `main.py` → `import tools` → `tools/__init__.py` portmanteau imports.
 
 **3. `automation_mission.plan` operation requires FastMCP sampling context — it returns an error if the host doesn't support it.**
 The error message is clear but the fallback is useless ("fall back to manual tool chaining"). A non-sampling `plan` that just decomposes a goal into a static step template would be far more useful. The sampling path is a bonus, not the primary.
@@ -49,8 +67,8 @@ The error message is clear but the fallback is useless ("fall back to manual too
 **4. `app_profiles.py` VRoid stable region is hardcoded to `(280, 120, 1640, 980)` — assumes 1920×1080.**
 On Goliath with a 4K display or custom DPI scaling this is wrong, and wrong region masks are worse than no mask (they hash the wrong area). The profile needs either a resolution-relative ratio or a runtime calibration step that measures the VRoid editor canvas bounds from a fresh screenshot.
 
-**5. `template_library.py` VRoid template directory (`src/pywinauto_mcp/templates/vroidstudio/`) has no actual PNG files — only a `manifest.yaml` placeholder path.**
-`ensure_placeholder_templates()` creates 32×32 color blocks for smoke testing, which means `assert_template` steps in production silently pass against wrong templates. VRoid template captures need to be taken and committed: `export_dialog_title.png`, `sample_picker_grid.png`, `save_confirm_dialog.png`, `f8_export_button_active.png`.
+**5. Template library has placeholders only — production captures still required.**
+`manifest.yaml` + 32×32 placeholders exist (smoke/CI). **Do not treat `assert_template` as production-ready until F1 captures** at your calibrated resolution: `export_dialog_title`, `sample_picker_grid`, `save_confirm_dialog`, `f8_export_button_active`.
 
 **6. `shortcut_engine.py` exists and is called by `task_engine.py` but the module has not been read yet — confirm it has the VRoid shortcut registry and `send_shortcut()` with `verify_stable` support.**
 If `shortcut_engine` only wraps `automation_keyboard(hotkey)` without the per-app expect-state verification, vroidstudio-mcp's `VROID_USE_CUA_SHORTCUT=1` path buys nothing over raw keyboard.
@@ -214,7 +232,7 @@ Pre-condition: F-bug #2 (tool registration) must be fixed first, otherwise the r
 | F10 | Rename completion | Low | 1 day |
 | W1 | Targets page (operator console) | Medium | 2-3 days |
 
-**Immediate unblock order: Bug 2 → Bug 1 → Bug 6 → F1 → F3**. Everything else is a force multiplier on a working core.
+**Immediate unblock order: F1 (real templates) → F2 (region cal) → F3 (export task demo) → W1 (Targets page per [TARGETS_PAGE_SKETCH.md](TARGETS_PAGE_SKETCH.md))**. Core wiring is live; remaining gaps are calibration + operator UX.
 
 ---
 

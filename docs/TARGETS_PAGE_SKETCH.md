@@ -123,8 +123,9 @@ export function useWindowFind(windowTitle: string) {
       setResult(s => ({ ...s, loading: false, found: false, handle: null, error: r.error }));
       return;
     }
-    // automation_windows returns nested result.data.handle
-    const handle = (r.raw.result as any)?.data?.handle ?? null;
+    // automation_windows find returns data.windows[] (fast path) — take first match
+    const data = (r.raw.result as any)?.data ?? (r.raw.result as any)?.structured_content?.data;
+    const handle = data?.windows?.[0]?.handle ?? data?.handle ?? null;
     setResult({ handle, found: handle != null, title: windowTitle, loading: false, error: null });
   }, [windowTitle]);
 

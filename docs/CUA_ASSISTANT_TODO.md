@@ -37,7 +37,7 @@ See [MEMOPS_CUA.md](MEMOPS_CUA.md) for fleet doctrine. Highest leverage: **`auto
 | T3.1 | Goal → decomposed steps (LLM planner inside cua-mcp) | todo | optional VLM |
 | T3.2 | Cross-app workflow session (fleet handoff) | todo | avatar-mcp integration |
 | T3.3 | Natural language `run_task(goal=...)` | todo | host or local planner |
-| T3.4 | Operator console / live status | todo | web_sota dashboard |
+| T3.4 | Operator console / live status | spec ready | [TARGETS_PAGE_SKETCH.md](TARGETS_PAGE_SKETCH.md) — `/targets` page (W1) |
 | T3.5 | Full audit replay (video + screenshots) | todo | extend trajectory |
 | T3.6 | Human coexistence — pause on user input | todo | pynput hook |
 | T3.7 | No-warp virtual input | todo | research |

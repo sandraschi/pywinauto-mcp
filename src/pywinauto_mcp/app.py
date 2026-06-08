@@ -19,10 +19,18 @@ try:
 
     logger.info("Successfully imported FastMCP")
 
+    def _package_version() -> str:
+        try:
+            from importlib.metadata import version
+
+            return version("pywinauto-mcp")
+        except Exception:
+            return "0.0.0"
+
     # Create the FastMCP app instance with SOTA 3.2.0 features
     app = FastMCP(
         name="pywinauto-mcp",
-        version="0.4.2",
+        version=_package_version(),
     )
 
     logger.info("FastMCP 3.2.0 app instance created successfully")
