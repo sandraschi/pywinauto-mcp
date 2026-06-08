@@ -275,6 +275,22 @@ class WindowStateRequest(BaseModel):
     element_timeout: float = Field(0.5, description="Timeout per element capture.", ge=0)
 
 
+class DialogOperationRequest(BaseModel):
+    """Request model for file dialog path entry."""
+
+    operation: Literal["set_path", "confirm", "submit_path"] = Field(
+        ..., description="Dialog operation."
+    )
+
+    path: str | None = Field(None, description="File path for set_path / submit_path.")
+    use_clipboard: bool = Field(True, description="Paste via clipboard (recommended for long paths).")
+    select_all_first: bool = Field(True, description="Ctrl+A before paste/type.")
+    confirm_key: str = Field("enter", description="Key to confirm dialog (enter, escape).")
+    pause_before_confirm_s: float = Field(0.3, description="Pause before confirm key.", ge=0)
+    post_confirm_pause_s: float = Field(0.0, description="Pause after confirm (submit_path).", ge=0)
+    type_interval: float = Field(0.02, description="Per-char interval when typing path.", ge=0)
+
+
 class AssertOperationRequest(BaseModel):
     """Request model for UI verification and stability assertions."""
 
