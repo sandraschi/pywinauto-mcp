@@ -59,9 +59,10 @@ cua-mcp (10789)           ← hands: click, shortcut, dialog, assert
 
 1. **`automation_task`** — closed-loop runner (T1.1)
 2. Outcome asserts — file/process (T1.2)
-3. vroidstudio → task delegation (T1.6)
-4. Template libraries per app version (T2.3)
-5. Full rename to `cua-mcp` PyPI (T5.1)
+3. ~~vroidstudio → task delegation (T1.6)~~ done v0.3.4
+4. **system-admin-mcp preflight** — process find, RAM/disk depletion (T1.8)
+5. Template libraries per app version (T2.3)
+6. Full rename to `cua-mcp` PyPI (T5.1)
 
 Track: [CUA_ASSISTANT_TODO.md](CUA_ASSISTANT_TODO.md)
 
@@ -72,7 +73,20 @@ $env:CUA_MCP_URL = "http://127.0.0.1:10789"
 $env:CUA_MCP_KEYBOARD = "win32"
 $env:CUA_MCP_RETRY_ATTEMPTS = "3"
 $env:PYWINAUTO_MCP_DISPATCH = "foreground"   # VRoid / Unity
+$env:SYSTEM_ADMIN_MCP_URL = "http://127.0.0.1:10861"
+$env:VROID_USE_CUA_TASK = "1"
+$env:VROID_USE_SYSADMIN_PREFLIGHT = "1"
 ```
+
+## Fleet crossconnect (system-admin-mcp)
+
+Before long `automation_task` runs, cua-mcp / vroidstudio can call **system-admin-mcp** for:
+
+- `list_processes` — VRoid Studio already running?
+- `get_performance_metrics` — RAM/CPU headroom
+- `get_top_resource_processes` — what's starving the host?
+
+vroidstudio runs async preflight (`preflight.py`); cua-mcp task steps support `kind: preflight` for inline checks.
 
 ## Relations
 

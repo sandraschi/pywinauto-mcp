@@ -23,6 +23,8 @@ StepKind = Literal[
     "assert_file",
     "screenshot",
     "sleep",
+    "click",
+    "preflight",
 ]
 
 _TASKS: dict[str, TaskSession] = {}
@@ -190,6 +192,31 @@ def _execute_step(session: TaskSession, step: dict[str, Any], hwnd: int | None) 
         result["screenshot_path"] = shot
         return result
 
+    if kind == "click":
+        from pywinauto_mcp.win32_mouse import click
+
+        x = int(step["x"])
+        y = int(step["y"])
+        button = step.get("button", "left")
+        click(x, y, button=button)
+        result["clicked"] = {"x": x, "y": y, "button": button}
+        return result
+
+    if kind == "preflight":
+        from pywinauto_mcp.sysadmin_preflight import run_sync_preflight
+
+        pf = run_sync_preflight(
+            output_dir=step.get("output_dir"),
+            min_memory_mb=float(step.get("min_memory_mb", 2048)),
+            min_disk_mb=float(step.get("min_disk_mb", 500)),
+            filter_process=step.get("filter_process"),
+            sysadmin_url=step.get("sysadmin_url"),
+        )
+        result["preflight"] = pf
+        if not pf.get("ok"):
+            raise RuntimeError(pf.get("error") or "preflight failed")
+        return result
+
     raise ValueError(f"Unknown step kind: {kind}")
 
 
@@ -245,13 +272,19 @@ def run_task(
                 time.sleep(0.5 * (attempt + 1))
 
         if last_exc is not None:
-            step_evidence["status"] = "failed"
-            step_evidence["error"] = str(last_exc)
-            session.evidence.append(step_evidence)
-            session.status = "failed"
-            session.error = f"Step {idx} ({step.get('kind')}): {last_exc}"
-            session.finished_at = time.time()
-            return session
+            if step.get("optional"):
+                step_evidence["status"] = "skipped_optional"
+                step_evidence["error"] = str(last_exc)
+                session.evidence.append(step_evidence)
+                last_exc = None
+            else:
+                step_evidence["status"] = "failed"
+                step_evidence["error"] = str(last_exc)
+                session.evidence.append(step_evidence)
+                session.status = "failed"
+                session.error = f"Step {idx} ({step.get('kind')}): {last_exc}"
+                session.finished_at = time.time()
+                return session
 
     session.status = "complete"
     session.finished_at = time.time()

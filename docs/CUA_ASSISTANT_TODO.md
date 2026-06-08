@@ -15,8 +15,9 @@ See [MEMOPS_CUA.md](MEMOPS_CUA.md) for fleet doctrine. Highest leverage: **`auto
 | T1.3 | **App profiles** — foreground policy, default HWND title | done | `app_profiles.py` |
 | T1.4 | **Evidence trail** per step (screenshot paths, results) | done | `TaskSession.evidence` |
 | T1.5 | **Recovery strategies** — `retry`, `refocus_retry`, `abort` | done | step `on_fail` field |
-| T1.6 | Wire vroidstudio archetypes → `automation_task` | todo | vroidstudio-mcp |
+| T1.6 | Wire vroidstudio archetypes → `automation_task` | done (vroidstudio v0.3.4) | `task_steps.py`, `automation.py` |
 | T1.7 | Snapshot invalidation on UI hash change | done | `snapshot_store.py` |
+| T1.8 | **system-admin-mcp crossconnect** — process find, resource preflight | done | `sysadmin_client.py`, `sysadmin_preflight.py`, vroid `preflight.py` |
 
 ## Tier 2 — Perception & grounding
 
@@ -64,7 +65,7 @@ See [MEMOPS_CUA.md](MEMOPS_CUA.md) for fleet doctrine. Highest leverage: **`auto
 
 ```json
 {
-  "kind": "shortcut | dialog | focus | wait_stable | assert_file | screenshot",
+  "kind": "shortcut | dialog | focus | wait_stable | assert_file | screenshot | click | preflight",
   "app": "vroidstudio",
   "action": "export_vrm",
   "path": "D:\\out\\model.vrm",
@@ -79,4 +80,5 @@ See [MEMOPS_CUA.md](MEMOPS_CUA.md) for fleet doctrine. Highest leverage: **`auto
 - [x] Agent can call **one tool** with a step list; cua-mcp runs the full loop
 - [x] Failures return **evidence trail** (screenshots + recovery attempts)
 - [x] Outcomes verified by **filesystem/process**, not pixels alone
-- [ ] VRoid export works end-to-end via task profile without manual tool chaining (T1.6)
+- [x] VRoid export works end-to-end via task profile without manual tool chaining (T1.6)
+- [x] Preflight checks disk/memory/process via system-admin-mcp before task run (T1.8)

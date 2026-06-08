@@ -26,7 +26,7 @@ if app is not None:
         description="""Closed-loop task runner — the MVP computer use assistant.
 
 WHAT IT DOES:
-Executes a list of steps (shortcut, dialog, wait_stable, assert_file, focus, screenshot)
+Executes a list of steps (shortcut, dialog, wait_stable, assert_file, focus, screenshot, click, preflight)
 with automatic retry, refocus recovery, and per-step evidence (screenshot paths).
 
 WHEN TO USE:
