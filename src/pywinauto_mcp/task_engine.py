@@ -29,6 +29,8 @@ StepKind = Literal[
 
 _TASKS: dict[str, TaskSession] = {}
 
+_MUTATING_KINDS = frozenset({"shortcut", "dialog", "click"})
+
 
 @dataclass
 class TaskSession:
@@ -119,6 +121,29 @@ def _refocus(hwnd: int | None) -> None:
         from pywinauto_mcp.win32_keyboard import focus_window
 
         focus_window(hwnd)
+
+
+def _invalidate_snapshots_after_mutation(hwnd: int | None) -> dict[str, Any]:
+    """Drop stale element snapshots after UI mutation (T2.2)."""
+    if not hwnd:
+        return {"invalidated": 0, "reason": "no_hwnd"}
+    try:
+        from pywinauto_mcp import assert_engine
+        from pywinauto_mcp.snapshot_store import get_snapshot_store
+
+        img = assert_engine.capture_image(window_handle=hwnd)
+        ui_hash = assert_engine.image_hash(img)
+        count = get_snapshot_store().invalidate_for_handle(hwnd, ui_hash)
+        return {"invalidated": count, "ui_hash": ui_hash}
+    except Exception as exc:
+        logger.debug("snapshot invalidation failed: %s", exc)
+        try:
+            from pywinauto_mcp.snapshot_store import get_snapshot_store
+
+            count = get_snapshot_store().invalidate_for_handle(hwnd)
+            return {"invalidated": count, "fallback": True}
+        except Exception:
+            return {"invalidated": 0, "error": str(exc)}
 
 
 def _execute_step(session: TaskSession, step: dict[str, Any], hwnd: int | None) -> dict[str, Any]:
@@ -259,6 +284,9 @@ def run_task(
                 )
                 step_evidence["after_screenshot"] = after_shot
                 step_evidence["status"] = "success"
+                if step.get("kind") in _MUTATING_KINDS:
+                    inv = _invalidate_snapshots_after_mutation(hwnd)
+                    step_evidence["snapshot_invalidation"] = inv
                 session.evidence.append(step_evidence)
                 last_exc = None
                 break

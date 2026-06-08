@@ -65,6 +65,35 @@ def test_run_task_fails_with_evidence(mock_exec, tmp_path: Path):
     assert session.evidence[0]["status"] == "failed"
 
 
+@patch("pywinauto_mcp.task_engine._invalidate_snapshots_after_mutation")
+@patch("pywinauto_mcp.task_engine._execute_step")
+def test_run_task_invalidates_snapshots_on_mutation(mock_exec, mock_inv, tmp_path: Path):
+    mock_exec.return_value = {"kind": "shortcut", "action": "new"}
+    mock_inv.return_value = {"invalidated": 2, "ui_hash": "abc"}
+
+    session = task_engine.run_task(
+        app="vroidstudio",
+        steps=[{"kind": "shortcut", "action": "new", "app": "vroidstudio"}],
+        window_handle=12345,
+        output_dir=str(tmp_path),
+    )
+    assert session.status == "complete"
+    mock_inv.assert_called_once_with(12345)
+    assert session.evidence[0].get("snapshot_invalidation") == {"invalidated": 2, "ui_hash": "abc"}
+
+
+@patch("pywinauto_mcp.task_engine._execute_step")
+def test_run_task_optional_step_skipped(mock_exec, tmp_path: Path):
+    mock_exec.side_effect = RuntimeError("optional miss")
+    session = task_engine.run_task(
+        app="vroidstudio",
+        steps=[{"kind": "shortcut", "action": "rare", "optional": True, "on_fail": "abort"}],
+        output_dir=str(tmp_path),
+    )
+    assert session.status == "complete"
+    assert session.evidence[0]["status"] == "skipped_optional"
+
+
 def test_automation_task_list_profiles():
     req = TaskOperationRequest(operation="list_profiles")
     result = automation_task(req)
