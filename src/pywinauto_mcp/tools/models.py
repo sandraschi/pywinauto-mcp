@@ -276,6 +276,18 @@ class WindowStateRequest(BaseModel):
     element_timeout: float = Field(0.5, description="Timeout per element capture.", ge=0)
 
 
+class TaskOperationRequest(BaseModel):
+    """Request model for closed-loop automation_task runner."""
+
+    operation: Literal["run", "status", "cancel", "list_profiles"] = Field(..., description="Task operation.")
+
+    app: str | None = Field(None, description="App profile id (vroidstudio, libreoffice).")
+    task_id: str | None = Field(None, description="Task session id for status/cancel/run.")
+    window_handle: int | None = Field(None, description="Default HWND for steps.")
+    steps: list[dict[str, Any]] | None = Field(None, description="Step list for run.")
+    output_dir: str | None = Field(None, description="Directory for evidence screenshots.")
+
+
 class ShortcutOperationRequest(BaseModel):
     """Request model for semantic app shortcuts."""
 

@@ -26,6 +26,18 @@ class SnapshotStore:
     def __init__(self, max_snapshots: int = 32) -> None:
         self._max = max_snapshots
         self._by_id: dict[str, WindowSnapshot] = {}
+        self._hwnd_hash: dict[int, str] = {}
+
+    def invalidate_for_handle(self, window_handle: int, ui_hash: str | None = None) -> int:
+        """Drop snapshots for HWND when UI hash changes (T1.7)."""
+        if ui_hash and self._hwnd_hash.get(window_handle) == ui_hash:
+            return 0
+        if ui_hash:
+            self._hwnd_hash[window_handle] = ui_hash
+        stale = [sid for sid, s in self._by_id.items() if s.window_handle == window_handle]
+        for sid in stale:
+            del self._by_id[sid]
+        return len(stale)
 
     def put(
         self,

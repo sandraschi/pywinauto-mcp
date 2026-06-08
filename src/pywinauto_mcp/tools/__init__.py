@@ -16,7 +16,8 @@ into comprehensive portmanteau tools:
 6. automation_assert    - UI verification: hash, diff, wait_stable, asserts (8 operations)
 7. automation_dialog    - File dialog path entry (3 operations)
 8. automation_shortcut  - Semantic app shortcuts (3 operations)
-9. automation_face      - Face recognition (5 operations) — **opt-in** (`PYWINAUTO_MCP_ENABLE_FACE=1` + face extra)
+9. automation_task      - Closed-loop task runner (4 operations)
+10. automation_face     - Face recognition (5 operations) — **opt-in** (`PYWINAUTO_MCP_ENABLE_FACE=1` + face extra)
 8. automation_system    - System utilities (7 operations)
 8. get_desktop_state    - Comprehensive desktop UI discovery (standalone)
 9. get_window_state     - Per-window snapshot (Cua-shaped; snapshot_id + element_index)
@@ -70,6 +71,7 @@ PORTMANTEAU_MODULES = [
     "portmanteau_assert",  # UI verification and stability
     "portmanteau_dialog",  # File dialog path entry
     "portmanteau_shortcut",  # Semantic app shortcuts
+    "portmanteau_task",  # Closed-loop task runner
     "portmanteau_system",  # System utilities
     "portmanteau_mission",  # Agentic Missions (Sampling)
     "desktop_state",  # Desktop state capture (standalone)

@@ -44,6 +44,17 @@ See docs/CUA_PARITY.md and PYWINAUTO_MCP_DISPATCH for background vs foreground d
     )
     def get_window_state(request: WindowStateRequest) -> ToolResult:
         try:
+            try:
+                from pywinauto_mcp import assert_engine
+
+                img = assert_engine.capture_image(window_handle=request.window_handle)
+                ui_hash = assert_engine.image_hash(img, "dhash")
+                dropped = get_snapshot_store().invalidate_for_handle(request.window_handle, ui_hash)
+                if dropped:
+                    logger.debug("Invalidated %d stale snapshots for hwnd %s", dropped, request.window_handle)
+            except Exception:
+                pass
+
             capturer = DesktopStateCapture(
                 max_depth=request.max_depth,
                 element_timeout=request.element_timeout,
