@@ -185,6 +185,7 @@ class KeyboardOperationRequest(BaseModel):
     presses: int = Field(1, description="Number of times to press the key.")
     interval: float = Field(0.0, description="Pause between characters for 'type'.")
     pause: float = Field(0.0, description="Pause between repeated presses.")
+    window_handle: int | None = Field(None, description="HWND to focus before send (win32 keyboard backend).")
 
 
 class VisualOperationRequest(BaseModel):
@@ -275,6 +276,18 @@ class WindowStateRequest(BaseModel):
     element_timeout: float = Field(0.5, description="Timeout per element capture.", ge=0)
 
 
+class ShortcutOperationRequest(BaseModel):
+    """Request model for semantic app shortcuts."""
+
+    operation: Literal["send", "list", "describe"] = Field(..., description="Shortcut operation.")
+
+    app: str | None = Field(None, description="Application id (vroidstudio, vroid, vroid_studio).")
+    action: str | None = Field(None, description="Semantic action (export_vrm, new, face_editor, ...).")
+    window_handle: int | None = Field(None, description="HWND to focus before send (win32 backend).")
+    verify_stable: bool | None = Field(None, description="Wait for UI stable after send; default from registry.")
+    pause: float = Field(0.05, description="Pause after key send.", ge=0)
+
+
 class DialogOperationRequest(BaseModel):
     """Request model for file dialog path entry."""
 
@@ -332,6 +345,7 @@ class AssertOperationRequest(BaseModel):
 
     output_path: str | None = Field(None, description="Path to save diff/heatmap PNG.")
     output_dir: str | None = Field(None, description="Directory for wait_stable snapshot files.")
+    evidence_bundle: bool = Field(False, description="Include before/after/diff paths in error data.")
 
 
 class MissionOperationRequest(BaseModel):
@@ -340,7 +354,7 @@ class MissionOperationRequest(BaseModel):
     operation: Literal["plan", "status", "cancel", "record", "replay"] = Field(
         "plan", description="The mission operation to perform."
     )
-    goal: str = Field(..., description="The high-level objective to achieve.")
+    goal: str = Field("", description="The high-level objective to achieve (required for plan).")
     strategy: Literal["element", "visual"] = Field(
         "element", description="Whether to prefer UIA elements or visual cues."
     )

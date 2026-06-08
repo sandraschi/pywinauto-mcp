@@ -10,12 +10,19 @@ Follows FastMCP 3.1 SOTA standards for robust desktop automation.
 import logging
 import time
 
-import pyautogui
-
 from pywinauto_mcp.app import app
+from pywinauto_mcp.keyboard_send import send_hotkey, send_press
+from pywinauto_mcp.retry import with_retry
 from pywinauto_mcp.tools.models import KeyboardOperationRequest, ToolResult
 
 logger = logging.getLogger(__name__)
+
+
+def _hold_keys(modifier: str, target: str) -> None:
+    import pyautogui
+
+    with pyautogui.hold(modifier):
+        pyautogui.press(target)
 
 
 if app is not None:
@@ -100,7 +107,12 @@ A ToolResult object containing standardized outcome, message, and focus metadata
             if operation == "type":
                 if request.text is None:
                     return ToolResult(status="error", message="Parameter 'text' is required for typing.")
-                pyautogui.write(request.text, interval=request.interval)
+                import pyautogui
+
+                with_retry(
+                    lambda: pyautogui.write(request.text, interval=request.interval),
+                    label="keyboard:type",
+                )
                 return ToolResult(
                     status="success",
                     message=f"Typed {len(request.text)} characters.",
@@ -111,20 +123,25 @@ A ToolResult object containing standardized outcome, message, and focus metadata
             elif operation == "press":
                 if request.key is None:
                     return ToolResult(status="error", message="Parameter 'key' is required for press.")
-                for _ in range(request.presses):
-                    pyautogui.press(request.key)
-                    if request.pause > 0:
-                        time.sleep(request.pause)
+                with_retry(
+                    lambda: send_press(
+                        request.key,
+                        hwnd=request.window_handle,
+                        presses=request.presses,
+                        pause=request.pause,
+                    ),
+                    label="keyboard:press",
+                )
                 return ToolResult(status="success", message=f"Pressed '{request.key}' {request.presses} times.")
 
             # === HOTKEY OPERATION ===
             elif operation == "hotkey":
                 if not request.keys:
                     return ToolResult(status="error", message="Parameter 'keys' (list) is required for hotkey.")
-                for _ in range(request.presses):
-                    pyautogui.hotkey(*request.keys)
-                    if request.pause > 0:
-                        time.sleep(request.pause)
+                with_retry(
+                    lambda: send_hotkey(request.keys, hwnd=request.window_handle, pause=request.pause),
+                    label="keyboard:hotkey",
+                )
                 return ToolResult(status="success", message=f"Triggered hotkey: {'+'.join(request.keys)}")
 
             # === HOLD OPERATION ===
@@ -133,8 +150,12 @@ A ToolResult object containing standardized outcome, message, and focus metadata
                     return ToolResult(status="error", message="'hold' requires at least a modifier and a trigger key.")
                 modifier = request.keys[0]
                 target = request.keys[-1]
-                with pyautogui.hold(modifier):
-                    pyautogui.press(target)
+                import pyautogui
+
+                with_retry(
+                    lambda: _hold_keys(modifier, target),
+                    label="keyboard:hold",
+                )
                 return ToolResult(status="success", message=f"Executed held operation: {modifier} + {target}")
 
             return ToolResult(status="error", message=f"Unknown operation: {operation}")

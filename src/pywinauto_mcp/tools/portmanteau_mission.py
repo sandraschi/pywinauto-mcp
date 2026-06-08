@@ -60,16 +60,56 @@ A ToolResult object with mission progress, IDs, and next steps.
             "operation": operation,
         }
 
-        # Handle missing context (e.g. if host doesn't support sampling)
-        if not SAMPLING_AVAILABLE or ctx is None:
-            return ToolResult(
-                status="error",
-                message="Sampling context not available. Ensure you are using a host that supports FastMCP 3.2.0 sampling.",
-                data=mission_metadata,
-                recovery_tip="Wait for a SOTA-compliant host or fall back to manual tool chaining.",
-            )
-
         try:
+            if operation == "record":
+                if not mission_id or not request.steps:
+                    return ToolResult(
+                        status="error",
+                        message="record requires mission_id and steps list.",
+                    )
+                from pywinauto_mcp.mission_store import record_step
+
+                for step in request.steps:
+                    record_step(mission_id, step)
+                return ToolResult(
+                    status="success",
+                    message=f"Recorded {len(request.steps)} steps.",
+                    data={"mission_id": mission_id, "count": len(request.steps)},
+                )
+
+            if operation == "replay":
+                if not mission_id:
+                    return ToolResult(status="error", message="replay requires mission_id.")
+                from pywinauto_mcp.mission_store import get_steps
+                from pywinauto_mcp.keyboard_send import parse_hotkey, send_hotkey, send_press
+
+                steps = get_steps(mission_id)
+                if not steps:
+                    return ToolResult(status="error", message=f"No steps for mission {mission_id}.")
+                executed = []
+                for step in steps:
+                    kind = step.get("kind") or step.get("tool")
+                    if kind == "hotkey" and step.get("keys"):
+                        keys = step["keys"] if isinstance(step["keys"], list) else parse_hotkey(step["keys"])
+                        send_hotkey(keys, hwnd=step.get("window_handle"))
+                    elif kind == "press" and step.get("key"):
+                        send_press(step["key"], hwnd=step.get("window_handle"))
+                    executed.append(step)
+                return ToolResult(
+                    status="success",
+                    message=f"Replayed {len(executed)} steps.",
+                    data={"mission_id": mission_id, "executed": len(executed)},
+                )
+
+            # plan requires sampling context
+            if operation == "plan" and (not SAMPLING_AVAILABLE or ctx is None):
+                return ToolResult(
+                    status="error",
+                    message="Sampling context not available. Ensure you are using a host that supports FastMCP 3.2.0 sampling.",
+                    data=mission_metadata,
+                    recovery_tip="Wait for a SOTA-compliant host or fall back to manual tool chaining.",
+                )
+
             if operation == "plan":
                 # 1. REPORT INITIALIZATION
                 await ctx.info(f"Initializing mission: {goal}")
@@ -97,6 +137,10 @@ A ToolResult object with mission progress, IDs, and next steps.
                 )
 
             elif operation == "cancel":
+                if mission_id:
+                    from pywinauto_mcp.mission_store import clear_mission
+
+                    clear_mission(mission_id)
                 return ToolResult(
                     status="success",
                     message=f"Mission {mission_id} cancelled.",

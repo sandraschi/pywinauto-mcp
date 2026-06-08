@@ -154,10 +154,18 @@ If assert_changed fails with low changed_pct, the shortcut may not have reached 
                         message=f"UI changed ({diff['changed_pct']}% >= {request.change_threshold_pct}%).",
                         data={**diff, "timestamp": ts},
                     )
+                err_data = {**diff, "timestamp": ts}
+                if request.evidence_bundle:
+                    err_data["evidence"] = {
+                        "before_path": request.image_path,
+                        "after_path": request.image_path_b,
+                        "diff_path": diff.get("diff_path"),
+                        "changed_pct": diff["changed_pct"],
+                    }
                 return ToolResult(
                     status="error",
                     message=f"UI unchanged ({diff['changed_pct']}% < {request.change_threshold_pct}%).",
-                    data={**diff, "timestamp": ts},
+                    data=err_data,
                     recovery_tip="The action may not have reached the focused window. Call automation_windows(focus) first.",
                 )
 

@@ -63,12 +63,17 @@ def submit_path(
     post_confirm_pause_s: float = 0.0,
 ) -> dict[str, Any]:
     """Set path in focused dialog field and confirm."""
-    entry = set_path_field(
-        path,
-        use_clipboard=use_clipboard,
-        select_all_first=select_all_first,
-    )
-    confirm = confirm_dialog(confirm_key=confirm_key, pause_s=pause_before_confirm_s)
-    if post_confirm_pause_s > 0:
-        time.sleep(post_confirm_pause_s)
-    return {**entry, **confirm, "submitted": True}
+    from pywinauto_mcp.retry import with_retry
+
+    def _run() -> dict[str, Any]:
+        entry = set_path_field(
+            path,
+            use_clipboard=use_clipboard,
+            select_all_first=select_all_first,
+        )
+        confirm = confirm_dialog(confirm_key=confirm_key, pause_s=pause_before_confirm_s)
+        if post_confirm_pause_s > 0:
+            time.sleep(post_confirm_pause_s)
+        return {**entry, **confirm, "submitted": True}
+
+    return with_retry(_run, label="dialog:submit_path")

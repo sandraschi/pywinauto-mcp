@@ -247,6 +247,24 @@ A ToolResult object containing standardized outcome, message, and element data.
             time.time()
             desktop = _get_desktop()
 
+            _MUTATING = {
+                "click",
+                "double_click",
+                "right_click",
+                "set_text",
+            }
+            if operation in _MUTATING:
+                try:
+                    from pywinauto_mcp.safety import before_mutation
+
+                    gate = before_mutation(read_only=False)
+                    if not gate.get("allow"):
+                        return ToolResult(status="blocked", message=gate.get("message", "Action blocked."))
+                    if gate.get("dry_run"):
+                        return ToolResult(status="success", message=f"[DRY RUN] Would execute {operation}")
+                except ImportError:
+                    pass
+
             # === SNAPSHOT INDEX (Cua-style) ===
             if request.snapshot_id is not None and request.element_index is not None:
                 snap = get_snapshot_store().get(request.snapshot_id)

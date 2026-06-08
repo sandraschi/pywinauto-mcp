@@ -74,14 +74,14 @@ Formerly `pywinauto-mcp`. Nobody knows what pywinauto is; this server is a **com
 |-------|------|--------|
 | 0 | Rename planning (this doc) | done |
 | 1 | `automation_assert` tool | done |
-| 2 | Wire `RETRY_ATTEMPTS` into mutating ops | todo |
-| 3 | Win32 keyboard to HWND (replace PyAutoGUI global send) | todo |
+| 2 | Wire `RETRY_ATTEMPTS` into mutating ops | done |
+| 3 | Win32 keyboard to HWND (replace PyAutoGUI global send) | done |
 | 4 | `automation_dialog` (save/open/export flows) | done |
-| 5 | `automation_shortcut` with per-app registries (VRoid first) | todo |
-| 6 | Package rename `cua-mcp` / `cua_mcp` | todo |
-| 7 | Architecture hardening (HITL, snapshots, foreground defaults) | todo |
-| 8 | `automation_mission` record/replay + trajectory | todo |
-| 9 | Vision polish (multi-match, evidence bundles, region masks) | todo |
+| 5 | `automation_shortcut` with per-app registries (VRoid first) | done |
+| 6 | Package rename `cua-mcp` / `cua_mcp` | partial (`cua_env.py` aliases) |
+| 7 | Architecture hardening (HITL, snapshots, foreground defaults) | partial (elements HITL) |
+| 8 | `automation_mission` record/replay + trajectory | partial (JSONL replay) |
+| 9 | Vision polish (multi-match, evidence bundles, region masks) | partial (`evidence_bundle`) |
 
 ---
 
