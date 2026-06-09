@@ -8,7 +8,7 @@
   "type": "mcp_server",
   "status": "production",
   "framework": "FastMCP 3.1+",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "last_sota_sync": "2026-06-09",
   "sota_version": "13.0",
   "tools": 8,

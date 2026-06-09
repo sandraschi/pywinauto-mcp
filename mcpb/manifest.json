@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "pywinauto-mcp",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Windows computer use agent (CUA-MCP): native UI automation via portmanteau MCP tools. High privilege — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM. HITL, kill switch, rate limits.",
   "author": {
     "name": "sandraschi",

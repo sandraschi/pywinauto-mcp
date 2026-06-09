@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-06-08
+
+### Added
+
+- **Tauri desktop 0.5.4**: Production shell on port 10789 with sidecar backend spawn and fleet-standard CORS/API config.
+
 ### Changed
-- **Documentation (fleet standard):** Root **README** shortened with TOC and sub-readme tables; hero positions the project as a Windows **computer use agent**. Added **docs/ARCHITECTURE.md**, **docs/TOOLS.md**. Refreshed **docs/README.md**, **docs/PRD.md** (CUA tools, v0.5.x), **mcpb/README.md**, **mcpb/manifest.json** (v0.5.3).
+- **Documentation (fleet standard):** Root **README** shortened with TOC and sub-readme tables; hero positions the project as a Windows **computer use agent**. Added **docs/ARCHITECTURE.md**, **docs/TOOLS.md**. Refreshed **docs/README.md**, **docs/PRD.md** (CUA tools, v0.5.x), **mcpb/README.md**, **mcpb/manifest.json** (v0.5.4).
 - **MCPB build:** `scripts/build-mcpb-package.ps1` syncs `src/pywinauto_mcp` into `mcpb/` and packs `dist/pywinauto-mcp.mcpb`; **`just mcpb-pack`** recipe added.
 
 ### Removed
