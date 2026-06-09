@@ -34,6 +34,37 @@ def get_window_bbox(window_handle: int) -> tuple[int, int, int, int]:
     return int(left), int(top), int(right), int(bottom)
 
 
+def virtual_screen_bounds() -> tuple[int, int, int, int]:
+    """Return (left, top, right, bottom) of the entire virtual screen.
+
+    Spans all monitors — unlike GetSystemMetrics(SM_CXSCREEN) which
+    only returns the primary monitor.
+    """
+    _require_win32()
+    vs_left = win32api.GetSystemMetrics(76)   # SM_XVIRTUALSCREEN
+    vs_top = win32api.GetSystemMetrics(77)    # SM_YVIRTUALSCREEN
+    vs_width = win32api.GetSystemMetrics(78)  # SM_CXVIRTUALSCREEN
+    vs_height = win32api.GetSystemMetrics(79) # SM_CYVIRTUALSCREEN
+    return vs_left, vs_top, vs_left + vs_width, vs_top + vs_height
+
+
+def clamp_bbox(
+    bbox: tuple[int, int, int, int],
+    vs: tuple[int, int, int, int] | None = None,
+) -> tuple[int, int, int, int]:
+    """Clamp (left, top, right, bottom) so it stays within virtual screen."""
+    if vs is None:
+        vs = virtual_screen_bounds()
+    left, top, right, bottom = bbox
+    vs_left, vs_top, vs_right, vs_bottom = vs
+    return (
+        max(left, vs_left),
+        max(top, vs_top),
+        min(right, vs_right),
+        min(bottom, vs_bottom),
+    )
+
+
 def grab_window_image(window_handle: int | None, *, avoid_foreground: bool = True):
     """Capture window or full screen without activating the window when avoid_foreground."""
     from PIL import ImageGrab
@@ -49,6 +80,7 @@ def grab_window_image(window_handle: int | None, *, avoid_foreground: bool = Tru
                 win32gui.SetForegroundWindow(window_handle)
             except Exception as exc:
                 logger.debug("SetForegroundWindow skipped: %s", exc)
+        left, top, right, bottom = clamp_bbox((left, top, right, bottom))
         return ImageGrab.grab(bbox=(left, top, right, bottom))
     except Exception as exc:
         logger.warning("Window grab failed (%s); falling back to full screen", exc)

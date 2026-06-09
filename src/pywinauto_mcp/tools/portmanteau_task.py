@@ -19,7 +19,6 @@ except ImportError:
 
 from pywinauto_mcp.tools.models import TaskOperationRequest, ToolResult
 
-
 if app is not None:
 
     @app.tool(

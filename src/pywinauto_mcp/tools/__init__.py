@@ -74,6 +74,7 @@ PORTMANTEAU_MODULES = [
     "portmanteau_task",  # Closed-loop task runner
     "portmanteau_system",  # System utilities
     "portmanteau_mission",  # Agentic Missions (Sampling)
+    "portmanteau_analyze",  # WinApp analysis: crawl, discover, portfolio
     "desktop_state",  # Desktop state capture (standalone)
     "window_state",  # Per-window capture (Cua parity)
     "computer_use_compat",  # Claude CU window screenshot alias
@@ -114,12 +115,12 @@ if app is not None:
 __all__ = [
     "app",
     "desktop_state",
+    "portmanteau_analyze",
     "portmanteau_elements",
     "portmanteau_face",
     "portmanteau_keyboard",
     "portmanteau_mouse",
     "portmanteau_system",
     "portmanteau_visual",
-    # Portmanteau tools
     "portmanteau_windows",
 ]

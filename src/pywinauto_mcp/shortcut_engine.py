@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import time
 from typing import Any
 
 from pywinauto_mcp.app_shortcuts.registry import get_shortcut, list_shortcuts

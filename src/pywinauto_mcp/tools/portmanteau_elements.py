@@ -22,9 +22,9 @@ except ImportError:
 
 from pywinauto_mcp.app import app
 from pywinauto_mcp.dispatch import BACKGROUND_UNAVAILABLE, click_element, resolve_dispatch
-from pywinauto_mcp.trajectory import log_trajectory
 from pywinauto_mcp.snapshot_store import get_snapshot_store
 from pywinauto_mcp.tools.models import ElementOperationRequest, ToolResult
+from pywinauto_mcp.trajectory import log_trajectory
 from pywinauto_mcp.win32_mouse import (
     ButtonName,
     MouseFailSafeError,

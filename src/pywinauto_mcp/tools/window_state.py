@@ -12,8 +12,8 @@ try:
         normalize_elements_for_snapshot,
     )
     from pywinauto_mcp.snapshot_store import get_snapshot_store
-    from pywinauto_mcp.trajectory import log_trajectory
     from pywinauto_mcp.tools.models import ToolResult, WindowStateRequest
+    from pywinauto_mcp.trajectory import log_trajectory
 
 except ImportError as e:
     logger.error("window_state tools import failed: %s", e)

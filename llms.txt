@@ -4,19 +4,26 @@ Windows **computer use agent** (CUA-MCP): structured native UI automation via Py
 
 ## Related MCP servers
 
-- **virtualization-mcp**: Sandbox/VM isolation — pair when you need disposable desktops.
-- **autohotkey-mcp**: AHK scriptlet depot — orthogonal; use alongside for hotkey macros.
+| Tool | Use for |
+|------|---------|
+| **[autohotkey-mcp](https://github.com/sandraschi/autohotkey-mcp)** | Low-level input recording/replay via AHK scripts. Use pywinauto for UIA/OCR; use AHK for raw mouse/keyboard macros. |
+| **virtualization-mcp** | Sandbox/VM isolation — pair when you need disposable desktops. |
 
 ## Default portmanteau tools (always registered)
 
 - **automation_windows**, **automation_elements**, **automation_mouse**, **automation_keyboard**
 - **automation_visual**, **automation_assert**, **automation_dialog**, **automation_shortcut**, **automation_task**, **automation_system**
 - **get_desktop_state**, **get_window_state**, **approve_automation**, **automation_safety**
+- **analyze_winapp** — auto-crawl apps: UI tree walk + SOM screenshot + element map + markdown report. Operations: crawl, discover (shortcut probe), portfolio. Shows "CUA at work" HUD.
 
 ## Opt-in only (NOT in default install)
 
 - **automation_face**: local webcam face profiles — `PYWINAUTO_MCP_ENABLE_FACE=1` + `face` extra. Implemented, not background surveillance.
-- **global_keylogger**: session keyboard debug hook — `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1`, HITL to start, in-memory buffer, stops on server exit. Not stealth spyware.
+- **global_keylogger**: session keyboard debug hook — `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1`, HITL to start, in-memory buffer, stops on server exit. Shows "CUA at work" HUD while active.
+
+## CUA HUD
+
+All long-running operations (`analyze_winapp`, `global_keylogger`) show a "CUA at work" blinking red overlay with an emergency stop button. The target window is auto-refocused before each action to prevent focus stealers.
 
 ## Python stack (namesake)
 
@@ -39,7 +46,3 @@ Windows **computer use agent** (CUA-MCP): structured native UI automation via Py
 
 - Package: pywinauto-mcp 0.5.x
 - License: MIT
-
-## Operational rules
-
-HITL via `approve_automation` for mutating input — docs/SAFETY.md, AGENT_PROTOCOLS.md.

@@ -52,7 +52,7 @@ def capture_image(
     from PIL import ImageGrab
 
     if window_handle is not None:
-        from pywinauto_mcp.win32_window import get_window_bbox
+        from pywinauto_mcp.win32_window import clamp_bbox, get_window_bbox
 
         left, top, right, bottom = get_window_bbox(window_handle)
         if region:
@@ -60,6 +60,7 @@ def capture_image(
             top += region[1]
             right = min(left + (region[2] - region[0]), right)
             bottom = min(top + (region[3] - region[1]), bottom)
+        left, top, right, bottom = clamp_bbox((left, top, right, bottom))
         return ImageGrab.grab(bbox=(left, top, right, bottom)).convert("RGB")
 
     if region:
@@ -143,7 +144,7 @@ def image_diff(
         cv2.imwrite(output_path, heatmap)
         diff_path = output_path
     elif output_path:
-        Image.fromarray((mask.astype(np.uint8) * 255)).save(output_path)
+        Image.fromarray(mask.astype(np.uint8) * 255).save(output_path)
         diff_path = output_path
 
     return {

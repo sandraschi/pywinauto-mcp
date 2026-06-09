@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from pywinauto_mcp.app_profiles import get_profile
-from pywinauto_mcp.retry import retry_attempts, with_retry
+from pywinauto_mcp.retry import retry_attempts
 
 logger = logging.getLogger(__name__)
 

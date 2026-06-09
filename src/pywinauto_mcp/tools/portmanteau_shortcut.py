@@ -17,7 +17,6 @@ except ImportError:
 
 from pywinauto_mcp.tools.models import ShortcutOperationRequest, ToolResult
 
-
 if app is not None:
 
     @app.tool(

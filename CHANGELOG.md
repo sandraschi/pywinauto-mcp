@@ -1,4 +1,4 @@
-# 📋 Changelog
+# Changelog
 
 All notable changes to PyWinAuto MCP will be documented in this file.
 
@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`analyze_winapp` tool** — auto-crawl Windows apps: walk UI tree, SOM annotated screenshot, element map with coordinates/types/names, markdown report. Three operations: `crawl` (full tree), `discover` (shortcut probe), `portfolio` (named state captures).
+- **`CuaHUD` module** — always-on-top "CUA at work" blinking red overlay with emergency stop button. Used by `analyze_winapp` (all operations) and `global_keylogger` (start/stop). Target window auto-refocused before each action to prevent focus stealers.
+- **Crawler webapp page** — new `/crawler` route with three tabs: Start Crawl (target + options form), Reports (history from localStorage), Tree Viewer (collapsible element tree grouped by type + full-screen screenshot modal).
+- **Cross-connection docs** — README fleet/siblings table updated with "when to use" guidance vs `autohotkey-mcp`. Both repos now cross-reference each other.
+
 ### Changed
 
-- **Documentation:** Retired stale `docs/development/` notepadpp-mcp imports to `docs/development/archive/`; added canonical [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+- **`get_window_state` / `automation_visual` / `automation_assert`** — fixed "tile cannot extend outside image" error by adding `virtual_screen_bounds()` + `clamp_bbox()` helpers. Window rects extending off-screen are now clamped to the virtual screen bounds before `PIL.ImageGrab.grab()` calls.
+- **`global_keylogger`** — shows CUA HUD while active; `status` response includes `hud_active` field.
+- **`win32_window.py`** — added `virtual_screen_bounds()`, `clamp_bbox()`, updated `grab_window_image()`.
+- **`annotator.py`** — `capture_and_annotate()` clamps bbox + try/except fallback; `_draw_element()` clamps label y-coords to ≥0.
+- **`assert_engine.py`** — `capture_image()` clamps bbox before `ImageGrab.grab()`.
 
 ## [0.5.4] - 2026-06-08
 

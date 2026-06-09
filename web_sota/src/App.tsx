@@ -7,6 +7,7 @@ import {
 import { AppLayout } from "@/components/layout/app-layout";
 import { Biometrics } from "@/pages/biometrics";
 import { Chat } from "@/pages/chat";
+import { Crawler } from "@/pages/crawler";
 import { Dashboard } from "@/pages/dashboard";
 import { Elements } from "@/pages/elements";
 import { Help } from "@/pages/help";
@@ -23,6 +24,7 @@ function App() {
 					<Route path="/" element={<Dashboard />} />
 					<Route path="/windows" element={<Windows />} />
 					<Route path="/elements" element={<Elements />} />
+					<Route path="/crawler" element={<Crawler />} />
 					<Route path="/biometrics" element={<Biometrics />} />
 					<Route path="/chat" element={<Chat />} />
 					<Route path="/tools" element={<Tools />} />

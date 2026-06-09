@@ -160,12 +160,14 @@ Stdio MCP has no port (host-launched process).
 
 ## Fleet & siblings
 
-| Repo | Role |
-|------|------|
-| **pywinauto-mcp (here)** | **Computer use agent** — structured native UI automation |
-| [autohotkey-mcp](https://github.com/sandraschi/autohotkey-mcp) | AHK scriptlet depot / hotkey macros |
-| [openmanus-mcp](https://github.com/sandraschi/openmanus-mcp) | OpenManus agent bridge + computer/bash tools |
-| [virtualization-mcp](https://github.com/sandraschi/virtualization-mcp) | Sandbox / VM isolation |
+| Tool | What it does | When to use |
+|------|-------------|-------------|
+| **pywinauto-mcp (here)** | **Computer use agent** — structured native UI automation via UIA element tree, screenshots, OCR | You need to **inspect controls, click buttons, read text** from apps with accessibility trees. Best for modern Windows apps. Shows "CUA at work" HUD during `analyze_winapp` crawls and `global_keylogger` sessions. |
+| [autohotkey-mcp](https://github.com/sandraschi/autohotkey-mcp) | AHK scriptlet depot — list, run, stop, generate `.ahk` scripts. Best for **low-level input recording/replay** and apps that don't expose UIA. | You have a **depot of AHK scripts** or need **raw keyboard/mouse recording** via AHK's built-in recorder. Shows "CUA at work" HUD while scriptlets run. |
+| [openmanus-mcp](https://github.com/sandraschi/openmanus-mcp) | OpenManus agent bridge + computer/bash tools | You need a general-purpose agent with bash/computer access inside a sandbox. |
+| [virtualization-mcp](https://github.com/sandraschi/virtualization-mcp) | Sandbox / VM isolation | You need to isolate automation in a disposable VM. |
+
+**Overlap:** both pywinauto-mcp and autohotkey-mcp control Windows input. **Use AHK** for raw low-level recording/replay (AHK's built-in recorder + `run_scriptlet`). **Use pywinauto** when you need UIA element tree access, OCR, or structured window state capture.
 
 Fleet standards: [mcp-central-docs](https://github.com/sandraschi/mcp-central-docs) — `patterns/PYWINAUTO_MCP_SAFETY.md`, `standards/MCPB_PACKAGING_STANDARDS.md`.
 

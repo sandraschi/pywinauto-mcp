@@ -8,6 +8,7 @@ import {
 	Lock,
 	MessageSquare,
 	Monitor,
+	Search,
 	Settings,
 	Wrench,
 } from "lucide-react";
@@ -26,6 +27,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 		{ href: "/", label: "Overview", icon: LayoutDashboard },
 		{ href: "/windows", label: "Windows", icon: LayoutDashboard },
 		{ href: "/elements", icon: Monitor, label: "UI Elements" },
+		{ href: "/crawler", icon: Search, label: "App Crawler" },
 		{ href: "/tools", label: "Tools Hub", icon: Wrench },
 		{ href: "/targets", label: "Targets", icon: Crosshair },
 		{ href: "/chat", label: "Local LLM", icon: MessageSquare },

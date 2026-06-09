@@ -2268,7 +2268,7 @@ wheels = [
 
 [[package]]
 name = "pywinauto-mcp"
-version = "0.5.3"
+version = "0.5.4"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },

@@ -2,6 +2,8 @@
 
 Uses pynput's low-level keyboard hook for the current Windows session. High-risk:
 only enable on machines you own and for legitimate debugging or automation tasks.
+
+Shows a "CUA at work" HUD overlay while the keylogger is active.
 """
 
 from __future__ import annotations
@@ -9,12 +11,14 @@ from __future__ import annotations
 import logging
 
 from pywinauto_mcp.app import app
+from pywinauto_mcp.cua_hud import CuaHUD
 from pywinauto_mcp.keylogger_service import GlobalKeyloggerService
 from pywinauto_mcp.tools.models import KeyloggerOperationRequest, ToolResult
 
 logger = logging.getLogger(__name__)
 
 _svc = GlobalKeyloggerService.get()
+_hud: CuaHUD | None = None
 
 
 if app is not None:
@@ -98,6 +102,9 @@ ToolResult with status, message, and data (events list, counts, etc.).
                         data=out,
                         recovery_tip="If already running, call 'stop' first.",
                     )
+                global _hud
+                _hud = CuaHUD()
+                _hud.start()
                 return ToolResult(
                     status="success",
                     message="Global keylogger started.",
@@ -106,10 +113,16 @@ ToolResult with status, message, and data (events list, counts, etc.).
 
             if op == "stop":
                 out = _svc.stop()
+                global _hud
+                if _hud:
+                    _hud.stop()
+                    _hud = None
                 return ToolResult(status="success", message="Global keylogger stopped.", data=out)
 
             if op == "status":
                 out = _svc.status()
+                global _hud
+                out["hud_active"] = _hud is not None
                 return ToolResult(status="success", message="Keylogger status.", data=out)
 
             if op == "read":
@@ -128,6 +141,10 @@ ToolResult with status, message, and data (events list, counts, etc.).
 
         except Exception as e:
             logger.error("global_keylogger error: %s", e)
+            global _hud
+            if _hud:
+                _hud.stop()
+                _hud = None
             return ToolResult(
                 status="error",
                 message=str(e),

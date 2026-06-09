@@ -1,9 +1,12 @@
 """Screenshot Annotator - Annotate screenshots with UI element bounding boxes."""
 
 import base64
+import logging
 from io import BytesIO
 
-from PIL import Image, ImageDraw, ImageFont, ImageGrab
+from PIL import Image, ImageDraw, ImageFont
+
+logger = logging.getLogger(__name__)
 
 
 class ScreenshotAnnotator:
@@ -24,43 +27,47 @@ class ScreenshotAnnotator:
         self.font_size = font_size
         try:
             self.font = ImageFont.truetype("arial.ttf", font_size)
-        except:
+        except Exception:
             self.font = ImageFont.load_default()
 
     def capture_and_annotate(self, elements: list[dict], *, bbox: tuple[int, int, int, int] | None = None) -> Image:
         """Capture screenshot and draw element annotations."""
-        if bbox:
-            screenshot = ImageGrab.grab(bbox=bbox)
-        else:
+        from PIL import ImageGrab
+
+        try:
+            if bbox:
+                from pywinauto_mcp.win32_window import clamp_bbox
+                clamped = clamp_bbox(bbox)
+                screenshot = ImageGrab.grab(bbox=clamped)
+            else:
+                screenshot = ImageGrab.grab()
+        except Exception as exc:
+            logger.warning("Annotator grab failed (%s); falling back to full screen", exc)
             screenshot = ImageGrab.grab()
+
         draw = ImageDraw.Draw(screenshot)
 
-        # Draw each element
         for elem in elements:
             self._draw_element(draw, elem)
 
         return screenshot
 
     def _draw_element(self, draw: ImageDraw, elem: dict):
-        """Draw single element annotation."""
         bounds = elem["bounds"]
         x = bounds["x"]
         y = bounds["y"]
         x2 = x + bounds["width"]
         y2 = y + bounds["height"]
 
-        # Get color for element type
         color = self.COLOR_MAP.get(elem["type"], self.COLOR_MAP["default"])
 
-        # Draw bounding box
         draw.rectangle([x, y, x2, y2], outline=color, width=2)
 
-        # Draw label with ID
         label = str(elem["id"])
-        label_bg = [x, y - 18, x + 30, y - 2]
-
-        draw.rectangle(label_bg, fill=color)
-        draw.text((x + 2, y - 16), label, fill="#000000", font=self.font)
+        label_top = max(y - 18, 0)
+        label_bottom = max(y - 2, label_top + 1)
+        draw.rectangle([x, label_top, x + 30, label_bottom], fill=color)
+        draw.text((x + 2, label_top + 2), label, fill="#000000", font=self.font)
 
     def to_base64(self, image: Image) -> str:
         """Convert image to base64 string."""

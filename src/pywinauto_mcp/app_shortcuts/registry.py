@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pywinauto_mcp.app_shortcuts.vroidstudio import ShortcutDef, VROIDSTUDIO_SHORTCUTS
+from pywinauto_mcp.app_shortcuts.vroidstudio import VROIDSTUDIO_SHORTCUTS, ShortcutDef
 
 REGISTRIES: dict[str, dict[str, ShortcutDef]] = {
     "vroidstudio": VROIDSTUDIO_SHORTCUTS,

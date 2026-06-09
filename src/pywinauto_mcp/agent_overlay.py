@@ -9,7 +9,7 @@ import time
 logger = logging.getLogger(__name__)
 
 _overlay_lock = threading.Lock()
-_active_overlay: "AgentCursorOverlay | None" = None
+_active_overlay: AgentCursorOverlay | None = None
 
 
 class AgentCursorOverlay:

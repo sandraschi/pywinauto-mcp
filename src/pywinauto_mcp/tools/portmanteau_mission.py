@@ -80,8 +80,8 @@ A ToolResult object with mission progress, IDs, and next steps.
             if operation == "replay":
                 if not mission_id:
                     return ToolResult(status="error", message="replay requires mission_id.")
-                from pywinauto_mcp.mission_store import get_steps
                 from pywinauto_mcp.keyboard_send import parse_hotkey, send_hotkey, send_press
+                from pywinauto_mcp.mission_store import get_steps
 
                 steps = get_steps(mission_id)
                 if not steps:
