@@ -18,6 +18,25 @@ function Get-ClaudeConfigPath {
     Join-Path $env:APPDATA "Claude\claude_desktop_config.json"
 }
 
+function Backup-ConfigFile {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+    $dir = Split-Path -Parent $Path
+    $file = Split-Path -Leaf $Path
+    $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
+    if ($file -match '^(.+)\.json$') {
+        $backupName = "$($Matches[1])_$stamp.json.bak"
+    } else {
+        $backupName = "${file}_$stamp.bak"
+    }
+    $backup = Join-Path $dir $backupName
+    Copy-Item -LiteralPath $Path -Destination $backup -Force
+    Write-Host "Backup: $backup"
+    return $backup
+}
+
 function Register-McpClient {
     param([string]$Path)
 
@@ -54,6 +73,7 @@ function Register-McpClient {
     if ($parent -and -not (Test-Path $parent)) {
         New-Item -ItemType Directory -Path $parent -Force | Out-Null
     }
+    Backup-ConfigFile -Path $Path | Out-Null
     $json = ($root | ConvertTo-Json -Depth 8)
     Set-Content -Path $Path -Value $json -Encoding UTF8
 }
@@ -87,7 +107,7 @@ function Show-InstallDialog {
 
     $claudeBox = New-Object System.Windows.Forms.CheckBox
     $claudeBox.Text = "Claude Desktop (claude_desktop_config.json)"
-    $claudeBox.Checked = $true
+    $claudeBox.Checked = $false
     $claudeBox.Location = New-Object System.Drawing.Point(20, 125)
     $form.Controls.Add($claudeBox)
 

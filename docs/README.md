@@ -1,6 +1,8 @@
 # Documentation index
 
-Hub for **pywinauto-mcp** — the fleet's Windows **computer use agent**. Root overview: [README.md](../README.md). Releases: [CHANGELOG.md](../CHANGELOG.md).
+Hub for **pywinauto-mcp** — the fleet's Windows **computer use agent**. Root overview: [README.md](../README.md) (includes **Python stack** and **opt-in invasive tools**). Releases: [CHANGELOG.md](../CHANGELOG.md).
+
+**Canonical map:** [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) — lists stale/archival folders (`notepadpp/`, old `COMPLETE_DOCUMENTATION_STRUCTURE.md`, etc.).
 
 ## Core
 

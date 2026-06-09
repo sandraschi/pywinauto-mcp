@@ -1,8 +1,9 @@
 # PyWinAuto MCP - Usage Scenarios & Patterns
 
-**Version:** 0.3.0 (Portmanteau Edition)  
 **Target:** AI Agents, Claude Desktop, MCP Clients  
 **Platform:** Windows 10/11 only
+
+> **Opt-in tools:** `automation_face` and `global_keylogger` are **not registered** in default installs. Scenarios below that mention them require env flags — see [SAFETY.md](SAFETY.md) and [README.md](../README.md).
 
 ---
 
@@ -14,7 +15,7 @@ PyWinAuto MCP provides **programmatic control of the Windows desktop** through a
 2. **Interact with any application** - Click buttons, type text, navigate menus
 3. **Automate complex workflows** - Chain operations across multiple apps
 4. **Provide accessibility insights** - Deep UI element tree inspection
-5. **Add security layers** - Face recognition before sensitive operations
+5. **Optional local face unlock** - Only if you enable `automation_face` (not default)
 
 The key insight: **Claude becomes a Windows power user** who can see and interact with your desktop like a remote assistant.
 
@@ -48,7 +49,7 @@ The key insight: **Claude becomes a Windows power user** who can see and interac
 | `automation_mouse` | Mouse control | move, click, scroll, drag |
 | `automation_keyboard` | Keyboard input | type, press, hotkey |
 | `automation_visual` | Vision/OCR | screenshot, extract_text, find_image |
-| `automation_face` | Face recognition | add, recognize, capture, list |
+| `automation_face` | Face recognition (**opt-in**) | add, recognize, capture, list |
 | `automation_system` | System utilities | health, wait, clipboard, process_list |
 | `get_desktop_state` | UI tree discovery | Full element hierarchy with OCR |
 

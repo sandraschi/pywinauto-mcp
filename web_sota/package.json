@@ -20,7 +20,7 @@
 		"icons:generate": "uv run --directory .. python scripts/generate-tauri-icons.py",
 		"tauri": "tauri",
 		"tauri:dev": "tauri dev",
-		"tauri:build": "npm run sidecar:build && tauri build"
+		"tauri:build": "npm run sidecar:build && tauri build && pwsh -NoLogo -File ./scripts/update-tauri-starts-link.ps1"
 	},
 	"dependencies": {
 		"@radix-ui/react-dialog": "^1.1.15",

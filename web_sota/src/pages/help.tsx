@@ -17,7 +17,11 @@ const SAFETY_ENV = [
 	},
 	{
 		name: "PYWINAUTO_MCP_ENABLE_FACE",
-		note: "Set to 1 to register automation_face (requires face extra / deps).",
+		note: "Set to 1 to register automation_face (requires face extra / deps). Off by default.",
+	},
+	{
+		name: "PYWINAUTO_MCP_ENABLE_KEYLOGGER",
+		note: "Set to 1 to register global_keylogger (debug hook only; HITL to start). Off by default.",
 	},
 ];
 
@@ -35,7 +39,11 @@ const TOOLS = [
 	{ name: "automation_visual", note: "Screenshots, OCR, template match." },
 	{
 		name: "automation_face",
-		note: "Optional. Local UVC / built-in camera via OpenCV index (see docs/SAFETY.md §5). Tapo/IP cameras not supported for capture.",
+		note: "Opt-in only (not registered by default). Local UVC camera via OpenCV index — docs/SAFETY.md §5.",
+	},
+	{
+		name: "global_keylogger",
+		note: "Opt-in only. Session keyboard debug buffer — not stealth; HITL to start — docs/SAFETY.md §6.",
 	},
 	{
 		name: "automation_system",

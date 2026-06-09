@@ -1,5 +1,7 @@
 # 📚 Documentation Organization Summary
 
+> **Archive.** Sections below still reference **notepadpp-mcp** paths from a fleet doc import. Current index: **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)**.
+
 **Complete reorganization of pywinauto-mcp documentation - January 2026**
 
 ---

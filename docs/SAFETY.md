@@ -69,7 +69,9 @@ Clone **mcp-central-docs** (sibling repo) and read:
 
 ---
 
-## 5. Face recognition (`automation_face`) — opt-in, purpose, and data
+## 5. Face recognition (`automation_face`) — opt-in, implemented, not default
+
+**Not a roadmap-only idea** — the tool is **implemented** but **excluded from default installs** (no `face` extra, env flag unset). It is for **local, operator-initiated** webcam capture on a machine you control — not ambient surveillance.
 
 The **`automation_face`** tool is **off by default**. Two steps are required to expose it:
 
@@ -108,7 +110,9 @@ Use the **`camera_index`** argument (`0`, `1`, …) to pick the device. Order is
 
 ---
 
-## 6. Global keyboard capture (`global_keylogger`) — opt-in, high-risk
+## 6. Global keyboard capture (`global_keylogger`) — opt-in, high-risk, non-stealth
+
+This project is **not** a hacker or spyware tool. **`global_keylogger`** exists only as an **explicit, operator-controlled** debugging aid — never enabled in default installs, never silent background exfiltration.
 
 The **`global_keylogger`** tool is **off by default**. The server does **not** register it unless you set:
 
@@ -126,6 +130,8 @@ Session-wide keyboard hooks support **authorized** debugging and analysis (for e
 - **`approve_automation`** / **HITL (human-in-the-loop)** applies to **`start`** the same way as other sensitive input tools (unless **`PYWINAUTO_MCP_BYPASS_HITL`** is set — see §2).
 - **`PYWINAUTO_MCP_KILL_SWITCH=1`** blocks starting capture; **`PYWINAUTO_MCP_DRY_RUN=1`** simulates **`start`** without installing the hook.
 - The MCP server attempts to **stop** the listener on shutdown.
+- Events live in a **bounded in-memory ring buffer** exposed only via MCP `read` — not written to hidden log files.
+- **`start`** requires **HITL approval** (same as other sensitive input) unless bypass is explicitly set.
 
 ### If you do not need it
 

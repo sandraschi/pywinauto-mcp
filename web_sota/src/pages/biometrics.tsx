@@ -135,6 +135,9 @@ export function Biometrics() {
 					Biometrics
 				</h1>
 				<p className="text-slate-400">
+					Opt-in feature only —{" "}
+					<code className="text-slate-500">automation_face</code> is not
+					registered unless you enable it (see Help / docs/SAFETY.md §5).
 					Camera selection matches the REST/OpenCV list for{" "}
 					<code className="text-slate-500">camera_index</code>. The live preview
 					uses the browser&apos;s{" "}

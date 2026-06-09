@@ -42,16 +42,16 @@
 | `get_desktop_state` / `get_window_state` | Discovery, set-of-mark |
 | `approve_automation`, `automation_safety` | HITL and counters |
 
-**Opt-in only:**
+**Opt-in only (not registered in default / desktop bundle):**
 
-- `automation_face` — `PYWINAUTO_MCP_ENABLE_FACE=1` + `face` extra ([SAFETY.md](SAFETY.md) §5)
-- `global_keylogger` — `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1` ([SAFETY.md](SAFETY.md) §6)
+- `automation_face` — implemented local webcam tool; `PYWINAUTO_MCP_ENABLE_FACE=1` + `face` extra ([SAFETY.md](SAFETY.md) §5)
+- `global_keylogger` — implemented session debug hook; non-stealth, HITL-gated; `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1` ([SAFETY.md](SAFETY.md) §6)
 
 ### 3.2 HTTP / ASGI
 
 - FastAPI **`/api/v1/*`** — health, tools, windows, LLM proxy, cameras, safety
 - FastMCP **`http_app()`** mounted at **`/mcp`**
-- CORS for local `web_sota` dev ports
+- CORS for local `web_sota` dev ports and Tauri webview (`PYWINAUTO_TAURI=1`)
 
 ### 3.3 Web operator (`web_sota`)
 

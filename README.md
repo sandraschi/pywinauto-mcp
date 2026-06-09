@@ -15,11 +15,15 @@ Pair with **[virtualization-mcp](https://github.com/sandraschi/virtualization-mc
 
 > 📖 **[INSTALL.md](INSTALL.md)** — desktop installer, `uv` setup, MCP client config
 
+This repo is named after **[Pywinauto](https://github.com/pywinauto/pywinauto)** — the Python library that drives **Windows UI Automation (UIA)** and Win32 controls. The MCP server wraps that (and related libraries) as structured tools for AI clients. It is an **operator-visible automation assistant**, not covert surveillance software.
+
 ---
 
 ## Contents
 
 - [Quick Start](#quick-start)
+- [Python stack (py- modules)](#python-stack-py--modules)
+- [Optional invasive features](#optional-invasive-features-off-by-default)
 - [Documentation](#documentation)
 - [Ports](#ports)
 - [Tech Stack](#tech-stack)
@@ -56,6 +60,39 @@ just serve
 
 ---
 
+## Python stack (py- modules)
+
+| Package | Role in this project |
+|---------|----------------------|
+| **[pywinauto](https://github.com/pywinauto/pywinauto)** | **Core** — attach to HWNDs, walk UIA/Win32 control trees, click/type/read elements (`automation_windows`, `automation_elements`). |
+| **pywin32** | Low-level Win32 COM/API (session, processes, DPI helpers) used alongside pywinauto. |
+| **pygetwindow** | Window titles/rectangles for discovery and layout. |
+| **pyautogui** | Fallback screen-level pointer/screenshot helpers where UIA is not enough. |
+| **pynput** | Injects and **optionally** listens to keyboard/mouse at the session level; powers normal `automation_keyboard` simulation and the **opt-in** `global_keylogger` hook. |
+| **pyperclip** | Clipboard read/write for `automation_system`. |
+| **opencv-python-headless** | Screenshots, camera index probe, template match paths in `automation_visual` / biometrics preview. |
+| **pytesseract** | OCR in `automation_visual` (needs Tesseract installed on the host). |
+| **face_recognition** + **dlib** | **Optional extra only** (`uv sync --extra face`) for `automation_face` — not installed in the default desktop bundle. |
+
+Other important non-`py` deps: **FastMCP** (MCP server), **FastAPI** + **uvicorn** (REST + `/mcp` HTTP), **Pillow**, **numpy**, **httpx**.
+
+---
+
+## Optional invasive features (off by default)
+
+**Default install:** window/element/mouse/keyboard/visual automation only. No ambient monitoring.
+
+| Feature | Shipped in code? | Default? | Enable |
+|---------|------------------|----------|--------|
+| **`automation_face`** | Yes — local webcam capture/match | **Off** — tool not registered | `PYWINAUTO_MCP_ENABLE_FACE=1` + `uv sync --extra face` ([SAFETY.md §5](docs/SAFETY.md)) |
+| **`global_keylogger`** | Yes — session keyboard hook | **Off** — tool not registered | `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1` ([SAFETY.md §6](docs/SAFETY.md)) |
+
+**Keylogger is not stealth spyware.** It is an explicit MCP tool: disabled unless you set the env flag, requires **HITL approval** to `start`, stores events in a **bounded in-memory buffer** (not hidden files), and the server **stops the hook on shutdown**. Use only on machines you own for debugging shortcut/focus issues — not for credential harvesting.
+
+**Face recognition is not a background plan-only sketch** — the tool is implemented but **opt-in** like the keylogger. The operator UI **Biometrics** page is a control panel when you enable it; it does not run face matching unless you opt in and call the tool.
+
+---
+
 ## Documentation
 
 ### For operators
@@ -63,7 +100,7 @@ just serve
 | Doc | Content |
 |-----|---------|
 | [INSTALL.md](INSTALL.md) | Desktop app, `uv` / `uvx`, MCP client wiring |
-| [docs/SAFETY.md](docs/SAFETY.md) | HITL, kill switch, dual-use framing, face/keylogger opt-in |
+| [docs/SAFETY.md](docs/SAFETY.md) | HITL, kill switch, opt-in face & keylogger (non-stealth) |
 | [docs/OPERATOR_PROTOCOL.md](docs/OPERATOR_PROTOCOL.md) | Foreground focus during automation |
 | [docs/DESKTOP_APP.md](docs/DESKTOP_APP.md) | Tauri operator app + PyInstaller sidecar |
 | [docs/MEMOPS_CUA.md](docs/MEMOPS_CUA.md) | Computer use agent doctrine (fleet CUA role) |
@@ -74,7 +111,8 @@ just serve
 
 | Doc | Content |
 |-----|---------|
-| [docs/README.md](docs/README.md) | Full documentation index |
+| [docs/README.md](docs/README.md) | Documentation hub |
+| [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) | Full map + stale-doc warning |
 | [docs/PRD.md](docs/PRD.md) | Product requirements |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System diagram, components, fleet role |
 | [docs/TOOLS.md](docs/TOOLS.md) | Portmanteau MCP tools reference |

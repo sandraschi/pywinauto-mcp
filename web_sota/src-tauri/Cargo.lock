@@ -2367,7 +2367,7 @@ dependencies = [
 
 [[package]]
 name = "pywinauto-mcp-operator"
-version = "0.5.3"
+version = "0.5.4"
 dependencies = [
  "serde",
  "serde_json",
