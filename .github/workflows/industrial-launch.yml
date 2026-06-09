@@ -66,18 +66,17 @@ jobs:
         with:
           name: "pywinauto-mcp ${{ github.ref_name }}"
           body: |
-            ## Industrial Launch: ${{ github.ref_name }}
+            ## ${{ github.ref_name }}
 
-            Zero-install:
-            ```powershell
-            uvx pywinauto-mcp
-            ```
+            **Desktop:** download the NSIS `.exe` or MSI from CI / local `npm run tauri:build` (not attached by this workflow).
+
+            **Claude Desktop:** `pywinauto-mcp.mcpb` below.
+
+            **Python (PyPI):** `uvx pywinauto-mcp` — wheel is on PyPI, not duplicated here.
 
             ### What's New
             ${{ steps.changelog.outputs.notes }}
           files: |
-            dist/*.whl
-            dist/*.tar.gz
             dist/*.mcpb
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
