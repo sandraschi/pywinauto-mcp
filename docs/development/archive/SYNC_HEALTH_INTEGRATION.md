@@ -1,3 +1,4 @@
+> **Archived fleet import** — From **notepadpp-mcp** / generic fleet dev notes. **Not** pywinauto-mcp source of truth. See [DEVELOPMENT.md](../../DEVELOPMENT.md) and [TESTING.md](../../TESTING.md).
 # Sync Health Monitoring - Integration Guide
 
 **How to integrate robust sync monitoring into any MCP server**

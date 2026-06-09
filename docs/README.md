@@ -14,6 +14,7 @@ Hub for **pywinauto-mcp** — the fleet's Windows **computer use agent**. Root o
 | [SAFETY.md](SAFETY.md) | HITL, kill switch, isolation, dual-use, opt-in invasive tools |
 | [OPERATOR_PROTOCOL.md](OPERATOR_PROTOCOL.md) | Foreground / focus during automation |
 | [TESTING.md](TESTING.md) | CI vs local pytest, markers |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Layout, justfile, CI parity |
 | [DESKTOP_APP.md](DESKTOP_APP.md) | Tauri operator installer architecture |
 
 ## Computer use (CUA)
@@ -39,7 +40,7 @@ Hub for **pywinauto-mcp** — the fleet's Windows **computer use agent**. Root o
 |-----------|--------|
 | [mcp-technical/](mcp-technical/README.md) | Transport, production checklist, troubleshooting |
 | [mcpb-packaging/](mcpb-packaging/README.md) | MCPB build and distribution |
-| [development/](development/README.md) | Contributor guides |
+| [development/](development/README.md) | Archived fleet imports → use [DEVELOPMENT.md](DEVELOPMENT.md) |
 | [glama-platform/](glama-platform/README.md) | Glama.ai catalog metadata |
 | [repository-protection/](repository-protection/README.md) | Branch protection and backups |
 

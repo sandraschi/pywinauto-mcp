@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation:** Retired stale `docs/development/` notepadpp-mcp imports to `docs/development/archive/`; added canonical [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
 ## [0.5.4] - 2026-06-08
 
 ### Added

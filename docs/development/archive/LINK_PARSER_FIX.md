@@ -1,3 +1,4 @@
+> **Archived fleet import** — From **notepadpp-mcp** / generic fleet dev notes. **Not** pywinauto-mcp source of truth. See [DEVELOPMENT.md](../../DEVELOPMENT.md) and [TESTING.md](../../TESTING.md).
 # Robust Link Parser - Complete Solution
 
 **Date:** October 10, 2025  

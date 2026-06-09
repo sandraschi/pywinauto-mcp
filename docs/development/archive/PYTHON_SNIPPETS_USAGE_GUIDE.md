@@ -1,3 +1,4 @@
+> **Archived fleet import** — From **notepadpp-mcp** / generic fleet dev notes. **Not** pywinauto-mcp source of truth. See [DEVELOPMENT.md](../../DEVELOPMENT.md) and [TESTING.md](../../TESTING.md).
 # 🐍 Python Snippets Usage Guide
 
 **Complete Practical Guide: How to Use Python Snippets from Documentation**

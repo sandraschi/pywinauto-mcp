@@ -1,3 +1,4 @@
+> **Archived fleet import** — From **notepadpp-mcp** / generic fleet dev notes. **Not** pywinauto-mcp source of truth. See [DEVELOPMENT.md](../../DEVELOPMENT.md) and [TESTING.md](../../TESTING.md).
 # 🔥 Python Dependency Hell - The Great 3.13 Catastrophe of October 2025
 
 **Date**: October 8, 2025  

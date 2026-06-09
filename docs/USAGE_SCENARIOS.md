@@ -691,7 +691,7 @@ automation_keyboard("type", text="ab")
 ## See Also
 
 - [Desktop State Tool Documentation](./desktop-state-tool.md)
-- [Development Guidelines](./development/README.md)
+- [Development](./DEVELOPMENT.md)
 - [MCP Technical Docs](./mcp-technical/README.md)
 - [Glama Platform Integration](./glama-platform/README.md)
 

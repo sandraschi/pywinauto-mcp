@@ -350,7 +350,7 @@ notepadpp-mcp.mcpb (0.19 MB)
 
 ### **In This Repository**
 
-- [Development Docs](../development/README.md) - Development practices
+- [DEVELOPMENT.md](../DEVELOPMENT.md) - Contributor quick start
 - [MCP Technical](../mcp-technical/README.md) - MCP specifics
 - [Repository Protection](../repository-protection/README.md) - Safety
 - [Documentation Index](../DOCUMENTATION_INDEX.md) - All docs

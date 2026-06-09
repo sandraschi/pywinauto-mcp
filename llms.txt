@@ -30,6 +30,11 @@ Windows **computer use agent** (CUA-MCP): structured native UI automation via Py
 - API: http://127.0.0.1:10789/api/v1/*
 - MCP HTTP: http://127.0.0.1:10789/mcp
 
+## Docs hub
+
+- Contributor: docs/DEVELOPMENT.md, docs/TESTING.md
+- Archived fleet imports: docs/development/archive/ (stale notepadpp-mcp notes)
+
 ## Metadata
 
 - Package: pywinauto-mcp 0.5.x

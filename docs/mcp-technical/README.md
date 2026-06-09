@@ -211,7 +211,7 @@ This directory contains **MCP server technical documentation** including:
 
 ### **In This Repository**
 
-- [Development Docs](../development/README.md) - Development practices
+- [DEVELOPMENT.md](../DEVELOPMENT.md) - Contributor quick start
 - [MCPB Packaging](../mcpb-packaging/README.md) - Distribution
 - [Repository Protection](../repository-protection/README.md) - Safety
 - [Documentation Index](../DOCUMENTATION_INDEX.md) - All docs

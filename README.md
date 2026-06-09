@@ -118,7 +118,7 @@ Other important non-`py` deps: **FastMCP** (MCP server), **FastAPI** + **uvicorn
 | [docs/TOOLS.md](docs/TOOLS.md) | Portmanteau MCP tools reference |
 | [docs/TESTING.md](docs/TESTING.md) | CI vs local pytest, hardware markers |
 | [docs/mcp-technical/README.md](docs/mcp-technical/README.md) | MCP transport, production checklist |
-| [docs/development/README.md](docs/development/README.md) | Dev guides and fleet patterns |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributor quick start (archived notes in `docs/development/archive/`) |
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
 
 ### Packaging & distribution

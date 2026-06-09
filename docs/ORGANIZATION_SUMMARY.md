@@ -256,7 +256,7 @@ src/notepadpp_mcp/docs/
 | **Repository protection** | [docs/repository-protection/](repository-protection/README.md) |
 | **Glama.ai & Gold Status** | [docs/glama-platform/](glama-platform/README.md) |
 | **Notepad++ reference** | [docs/notepadpp/](notepadpp/README.md) |
-| **Development guides** | [docs/development/](development/README.md) |
+| **Development guides** | [docs/DEVELOPMENT.md](DEVELOPMENT.md) (archived: [development/archive/](development/archive/README.md)) |
 | **MCP technical** | [docs/mcp-technical/](mcp-technical/README.md) |
 | **MCPB packaging** | [docs/mcpb-packaging/](mcpb-packaging/README.md) |
 | **All documentation** | [docs/DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) |
