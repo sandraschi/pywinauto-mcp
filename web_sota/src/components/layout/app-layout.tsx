@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { McpOnboardingDialog } from "@/components/McpOnboardingDialog";
+import { useMcpSetup } from "@/hooks/useMcpSetup";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -9,6 +11,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+	const mcp = useMcpSetup();
 	const [collapsed, setCollapsed] = useState(
 		() => localStorage.getItem("sidebar-collapsed") === "true",
 	);
@@ -21,6 +24,16 @@ export function AppLayout({ children }: AppLayoutProps) {
 
 	return (
 		<div className="flex min-h-screen flex-col bg-slate-950 text-slate-50 font-sans selection:bg-emerald-500/30">
+			<McpOnboardingDialog
+				open={mcp.isDesktop && mcp.showOnboarding}
+				backendReady={mcp.backendReady}
+				status={mcp.status}
+				busy={mcp.busy}
+				message={mcp.message}
+				error={mcp.error}
+				onRegister={mcp.register}
+				onDismiss={mcp.dismissOnboarding}
+			/>
 			<div className="flex flex-1 overflow-hidden">
 				<Sidebar collapsed={collapsed} onToggle={handleToggle} />
 				<div className="flex flex-1 flex-col overflow-hidden">

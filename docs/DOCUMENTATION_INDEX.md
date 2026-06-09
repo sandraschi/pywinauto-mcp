@@ -1,6 +1,6 @@
 # 📚 Complete Documentation Index
 
-**Central hub for all pywinauto-mcp documentation - v0.4.2**
+**Extended documentation map — v0.5.3. Start at [README.md](../README.md) (fleet TOC) or [docs/README.md](README.md) (doc hub).**
 
 ---
 

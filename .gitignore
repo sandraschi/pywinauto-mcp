@@ -161,12 +161,23 @@ Thumbs.db
 
 web_sota/node_modules/
 web_sota/dist/
+web_sota/playwright-report/
+web_sota/test-results/
+web_sota/src-tauri/binaries/*.exe
+web_sota/src-tauri/resources/pywinauto-mcp-backend.exe
+dist/pywinauto-mcp-backend.exe
+build/pywinauto-mcp-backend/
+web_sota/src-tauri/target/
+build/sidecar/
 
 # Windows automation specific
 data/known_faces/*.jpg
 data/known_faces/*.png
 *.log
 screenshots/
+
+# MCPB pack sync (scripts/build-mcpb-package.ps1 copies src/ here)
+mcpb/src/
 
 # DXT build artifacts (keep dist/ in repo for releases)
 # build/  # Keep build directory for CI/CD

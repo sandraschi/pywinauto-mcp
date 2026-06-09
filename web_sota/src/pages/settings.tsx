@@ -1,6 +1,8 @@
 import { Activity, Database, MessageSquare, Sliders } from "lucide-react";
+import { McpClientPanel } from "@/components/McpClientPanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useMcpSetup } from "@/hooks/useMcpSetup";
 import {
 	Card,
 	CardContent,
@@ -12,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function Settings() {
+	const mcp = useMcpSetup();
+
 	return (
 		<div className="p-6 space-y-6">
 			<div className="flex items-center justify-between">
@@ -25,6 +29,27 @@ export function Settings() {
 					dev UI
 				</Badge>
 			</div>
+
+			{mcp.isDesktop ? (
+				<div className="space-y-3">
+					<McpClientPanel
+						backendReady={mcp.backendReady}
+						status={mcp.status}
+						busy={mcp.busy}
+						message={mcp.message}
+						error={mcp.error}
+						onRegister={mcp.register}
+					/>
+					<Button
+						type="button"
+						variant="outline"
+						className="border-slate-700 text-slate-300"
+						onClick={mcp.openOnboarding}
+					>
+						Show first-run MCP setup again
+					</Button>
+				</div>
+			) : null}
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 				<Card className="border-slate-800 bg-slate-900/50">

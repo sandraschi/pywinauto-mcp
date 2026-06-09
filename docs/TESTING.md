@@ -39,3 +39,36 @@ uv run pytest tests/ -m requires_hardware -q
 
 - **`tests/test_cameras_api.py`** — `test_cameras_get_returns_json` mocks `enumerate_cameras` (CI-safe).
 - **`test_enumerate_cameras_runs_on_local_host`** is marked **`requires_hardware`** (skipped in CI).
+
+## Web operator (`web_sota`)
+
+| Layer | Tool | Scope |
+|-------|------|--------|
+| Unit | **Vitest** | `src/**/*.test.ts` (e.g. `toolResult` parser) |
+| Browser e2e | **Playwright** | DOM for dashboard, `/targets`, HITL bar; hits live API via Vite proxy |
+| Native GUI | **pytest `-m e2e`** | LibreOffice / pywinauto loop (existing) |
+
+### Commands
+
+```powershell
+cd web_sota
+npm install
+npm run test              # Vitest
+npm run build             # required before e2e preview
+npm run test:e2e:install  # Chromium for Playwright
+npm run test:e2e          # starts backend + vite preview (10788/10789)
+```
+
+Playwright config: `web_sota/playwright.config.ts`. Stack launcher: `web_sota/scripts/start-e2e-stack.ps1`.
+
+**Do not** conflate Playwright (browser operator UI) with pytest LibreOffice e2e (native Windows automation).
+
+## Desktop (Tauri)
+
+Sidecar + installer build: `docs/DESKTOP_APP.md`.
+
+```powershell
+cd web_sota
+npm run sidecar:build
+npm run tauri:build
+```

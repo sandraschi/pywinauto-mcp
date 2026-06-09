@@ -1,68 +1,93 @@
-# PRD — PyWinAuto MCP (portmanteau edition)
+# PRD — pywinauto-mcp (Computer Use Agent)
 
 ## 1. Overview
 
-**PyWinAuto MCP** is a [Model Context Protocol](https://modelcontextprotocol.io/) server for **Windows UI automation**. It exposes **portmanteau tools** (PyWinAuto, PyAutoGUI, OCR, optional face) so agentic clients can drive **real desktop sessions** with HITL (human-in-the-loop) and safety limits.
+**pywinauto-mcp** is the fleet's Windows **computer use agent** — a [Model Context Protocol](https://modelcontextprotocol.io/) server that exposes **portmanteau tools** so AI clients can operate the **real desktop**: discover windows, interact with UI Automation elements, inject mouse/keyboard, capture screenshots/OCR, run shortcuts, handle dialogs, and **verify outcomes** (assert).
 
-**Non-goals:** This server does **not** replace **Windows Sandbox** or disposable VMs — pair with **`virtualization-mcp`** when isolation is required. See [`SAFETY.md`](SAFETY.md).
+**Positioning:** *Hands, not brain.* The host LLM plans; this server executes and reports structured evidence. Closed-loop task running is roadmap ([CUA_ROADMAP.md](CUA_ROADMAP.md)); today operators combine MCP tools + HITL.
+
+**Non-goals:** Not a browser DOM agent (use Playwright MCP). Not an isolation boundary — pair with **`virtualization-mcp`** for Sandbox/VM. See [SAFETY.md](SAFETY.md).
+
+**Package name:** `pywinauto-mcp` / `pywinauto_mcp`. Public fleet label: **CUA-MCP (Computer Use Agent)**.
 
 ## 2. Goals
 
 | Goal | Detail |
 |------|--------|
-| **Tool efficiency** | Consolidate many operations into **8 portmanteau tools** + `get_desktop_state` to limit tool explosion and token load. |
-| **Framework** | **FastMCP 3.1+** — stdio/SSE and HTTP MCP surface; async tools; docstring-first descriptions. |
-| **Safety** | HITL (human-in-the-loop) via `approve_automation`, kill switch, rate limits, dry-run, optional face **opt-in** only. |
-| **Operator UX** | Optional **`web_sota`** dashboard: REST bridge, tools hub, help, local LLM chat, live host metrics, biometrics (browser preview + safety snapshot). |
-| **Testability** | **Environment-aware pytest** (CI vs local hardware) per **mcp-central-docs** `standards/testing-environment-aware.md` — see [`TESTING.md`](TESTING.md). |
-| **Maintainability** | Ruff, type hints, docs match **implemented** behavior. |
+| **Computer use** | Reliable Windows GUI actuation with structured tool results for agent loops |
+| **Tool efficiency** | Portmanteau tools limit tool explosion and token load |
+| **Framework** | **FastMCP 3.2+** — stdio + HTTP `/mcp`; async tools; docstring-first descriptions |
+| **Safety** | HITL via `approve_automation`, kill switch, rate limits, dry-run; invasive tools opt-in only |
+| **Verification** | `automation_assert`, set-of-mark state, evidence on failure |
+| **Operator UX** | Optional **`web_sota`** + Tauri **operator app** — tools hub, HITL, local LLM chat |
+| **Testability** | Environment-aware pytest per **mcp-central-docs** — [TESTING.md](TESTING.md) |
+| **Distribution** | PyPI (`uvx`), MCPB bundle, desktop installer |
 
 ## 3. Key product surfaces
 
 ### 3.1 MCP tools (core)
 
-- `automation_windows`, `automation_elements`, `automation_mouse`, `automation_keyboard`, `automation_visual`, `automation_system`, `get_desktop_state`
-- **`automation_face`** — registered only when **`PYWINAUTO_MCP_ENABLE_FACE=1`** and **`face`** extra installed ([`SAFETY.md`](SAFETY.md) §5).
-- **`approve_automation`**, **`automation_safety`** — HITL (human-in-the-loop) and counters.
+| Tool | Purpose |
+|------|---------|
+| `automation_windows` | Window lifecycle — find, focus, move, resize, close |
+| `automation_elements` | UIA element ops — click, text, tree |
+| `automation_mouse` | Pointer — click, drag, scroll, telemetry HUD |
+| `automation_keyboard` | Keys, hotkeys, typing |
+| `automation_visual` | Screenshot, OCR, image match |
+| `automation_assert` | Outcome verification (CUA loops) |
+| `automation_dialog` | Native dialog handling |
+| `automation_shortcut` | App-specific shortcut tables (e.g. VRoid) |
+| `automation_task` | Multi-step task helpers |
+| `automation_system` | Help, clipboard, processes, `start_app` |
+| `get_desktop_state` / `get_window_state` | Discovery, set-of-mark |
+| `approve_automation`, `automation_safety` | HITL and counters |
+
+**Opt-in only:**
+
+- `automation_face` — `PYWINAUTO_MCP_ENABLE_FACE=1` + `face` extra ([SAFETY.md](SAFETY.md) §5)
+- `global_keylogger` — `PYWINAUTO_MCP_ENABLE_KEYLOGGER=1` ([SAFETY.md](SAFETY.md) §6)
 
 ### 3.2 HTTP / ASGI
 
-- **FastAPI** routes under **`/api/v1/*`** (health, tools list/call, windows, **LLM proxy**, **cameras**, **system/info**, **safety/status**).
-- FastMCP **`http_app()`** mounted so **`/mcp`** remains the streamable MCP endpoint.
-- **CORS** for local `web_sota` dev ports.
+- FastAPI **`/api/v1/*`** — health, tools, windows, LLM proxy, cameras, safety
+- FastMCP **`http_app()`** mounted at **`/mcp`**
+- CORS for local `web_sota` dev ports
 
-### 3.3 Web dashboard (`web_sota`)
+### 3.3 Web operator (`web_sota`)
 
-- **Vite** dev server; **`start.ps1`** — backend **10789**, frontend **10788** (fleet **10700+** range; see **mcp-central-docs** `standards/WEBAPP_STANDARDS.md`).
-- **Proxy:** `/api` → backend (same-origin API calls).
-- **Routes:** Overview, Windows, Elements, Tools Hub, **Local LLM** (`/chat`), Help, Biometrics, Settings. (No in-repo robotics teleop or 3D “digital twin” — use fleet **robotics-mcp**.)
-- **Local LLM:** OpenAI-compatible proxy to **Ollama** / **LM Studio** (`PYWINAUTO_LLM_BASE_URL`); personas, prompt refiner, repo context (`llm_repo_context.py`).
-- **Cameras:** `GET /api/v1/cameras/`; UI selection when multiple devices; syncs `camera_index` with Tools / face capture.
-- **Biometrics:** browser preview + **`GET /api/v1/safety/status`** + optional **`automation_face`** via **`POST /api/v1/tools/call`** when face tool is registered.
-- **Transparency:** Dashboard host metrics and biometrics safety line are **live**; browser webcam preview is **local MediaDevices** (not OpenCV — indices may differ).
+- Vite UI; **`start.ps1`** — frontend **10788**, backend **10789**
+- Routes: Overview, Windows, Elements, Tools Hub, Local LLM (`/chat`), Help, Biometrics, Settings
+- Local LLM: Ollama / LM Studio via OpenAI-compatible proxy (`PYWINAUTO_LLM_BASE_URL`)
+
+### 3.4 Desktop operator app
+
+- Tauri 2 + PyInstaller sidecar — see [DESKTOP_APP.md](DESKTOP_APP.md), [INSTALL.md](../INSTALL.md)
+- Bundled backend; optional Cursor/Claude registration on first launch
 
 ## 4. Technical standards
 
-- **Python 3.12+**, **Windows 10/11** host for production automation.
-- **Ruff** for lint/format; prefer **`dict`**, **`X \| None`**, async MCP tools.
-- **Testing:** Markers `requires_hardware`, `destructive`, etc.; CI skips hardware probes; see [`TESTING.md`](TESTING.md).
+- **Python 3.12+**, **Windows 10/11** for production automation
+- **Ruff** lint/format; `win32_mouse` for DPI-aware pointer injection
+- **Env:** `CUA_MCP_KEYBOARD=win32`, `CUA_MCP_RETRY_ATTEMPTS`, standard safety keys (see README / SAFETY)
+- **Testing:** `requires_hardware`, `destructive` markers; CI skips hardware probes
 
 ## 5. Success metrics (directional)
 
-- Tool calls return structured **`success` / `error`** with recoverable guidance where feasible.
-- **First connection** documented for common MCP clients (`README`, `glama.json`).
-- **Docs** (`SAFETY`, `OPERATOR_PROTOCOL`, PRD, changelog) stay aligned with code.
+- Tool calls return structured **`success` / `error`** with recoverable guidance
+- First connection documented for MCP clients ([INSTALL.md](../INSTALL.md), [mcpb/README.md](../mcpb/README.md))
+- Docs stay aligned with implemented tools and env vars
+- Assert/evidence paths support agent retry loops
 
 ## 6. References
 
 | Doc | Purpose |
 |-----|---------|
-| [`SAFETY.md`](SAFETY.md) | Isolation, face opt-in, two-server model |
-| [`OPERATOR_PROTOCOL.md`](OPERATOR_PROTOCOL.md) | Focus and foreground during automation |
-| [`TESTING.md`](TESTING.md) | CI vs local, pytest markers |
-| [`LLM_REPO_CONTEXT.md`](LLM_REPO_CONTEXT.md) | Canonical pointer for web chat repo context source |
-| **mcp-central-docs** | `patterns/PYWINAUTO_MCP_SAFETY.md`, `standards/testing-environment-aware.md` |
+| [SAFETY.md](SAFETY.md) | Isolation, opt-in invasive tools |
+| [MEMOPS_CUA.md](MEMOPS_CUA.md) | Fleet CUA doctrine |
+| [OPERATOR_PROTOCOL.md](OPERATOR_PROTOCOL.md) | Focus during automation |
+| [TESTING.md](TESTING.md) | CI vs local |
+| **mcp-central-docs** | `patterns/PYWINAUTO_MCP_SAFETY.md`, packaging standards |
 
 ---
 
-*Version note: PRD updated with web_sota, REST API, LLM proxy, cameras, and testing strategy — 2026.*
+*PRD v0.5.x — computer use agent positioning, assert/dialog/shortcut/task tools, operator app — 2026.*

@@ -4,12 +4,12 @@
     "sandraschi"
   ],
   "name": "pywinauto-mcp",
-  "description": "Windows desktop UI automation (PyWinAuto): high privilege — read docs/SAFETY.md first. Pair with virtualization-mcp for Windows Sandbox / disposable VM isolation; HITL on mouse/keyboard, kill switch, rate limits, dry-run. FastMCP 3.1+; 8 portmanteau tools (60+ ops). Stars = distribution, not safety.",
+  "description": "Windows computer use agent (CUA-MCP): native UI automation via portmanteau MCP tools — windows, elements, mouse, keyboard, visual, assert, dialog, shortcut, task. High privilege — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM. HITL, kill switch, rate limits. FastMCP 3.2+.",
   "type": "mcp_server",
   "status": "production",
   "framework": "FastMCP 3.1+",
-  "version": "0.4.2",
-  "last_sota_sync": "2026-04-10",
+  "version": "0.5.3",
+  "last_sota_sync": "2026-06-09",
   "sota_version": "13.0",
   "tools": 8,
   "transport": [

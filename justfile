@@ -119,6 +119,10 @@ audit-deps:
 check-machine-paths:
     pwsh -NoProfile -File .\scripts\check-no-machine-paths.ps1
 
+# Build Claude Desktop MCPB bundle (dist/pywinauto-mcp.mcpb)
+mcpb-pack:
+    pwsh -NoProfile -File .\scripts\build-mcpb-package.ps1 -NoSign
+
 # Remove build artifacts and temporary files
 clean:
     if (Test-Path "dist") { Remove-Item -Recurse -Force dist }

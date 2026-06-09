@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Documentation (fleet standard):** Root **README** shortened with TOC and sub-readme tables; hero positions the project as a Windows **computer use agent**. Added **docs/ARCHITECTURE.md**, **docs/TOOLS.md**. Refreshed **docs/README.md**, **docs/PRD.md** (CUA tools, v0.5.x), **mcpb/README.md**, **mcpb/manifest.json** (v0.5.3).
+- **MCPB build:** `scripts/build-mcpb-package.ps1` syncs `src/pywinauto_mcp` into `mcpb/` and packs `dist/pywinauto-mcp.mcpb`; **`just mcpb-pack`** recipe added.
+
+### Removed
+- **Legacy DXT docs** under `mcpb/`: `DXT_BUILDING_GUIDE.md`, `DXT_PACKAGING_ISSUES.md`, `DXT_README.md` (superseded by MCPB — see `docs/mcpb-packaging/`).
+
 ### Fixed
 - **Web orchestration (`start.ps1`)**: Root and **`web_sota/start.ps1`** now wait until the API port accepts connections (or **`/api/v1/health`** on pywinauto) before starting Vite, set **`WorkingDirectory`** correctly for the uvicorn child, and resolve **`$RepoRoot`** without overwriting **`$PSScriptRoot`** — avoids Vite proxy **`ECONNREFUSED`** during slow `uv run` / first import. Root script uses **`Join-Path`** for **`web_sota`** so it works when the shell cwd is not the repo root.
 

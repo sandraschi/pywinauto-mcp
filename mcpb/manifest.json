@@ -1,10 +1,10 @@
 {
   "manifest_version": "0.2",
   "name": "pywinauto-mcp",
-  "version": "0.4.2",
-  "description": "Windows desktop UI automation (PyWinAuto): read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM isolation. HITL, kill switch, rate limits. Face recognition, OCR, 8 portmanteau tools.",
+  "version": "0.5.3",
+  "description": "Windows computer use agent (CUA-MCP): native UI automation via portmanteau MCP tools. High privilege — read docs/SAFETY.md; pair with virtualization-mcp for Sandbox/VM. HITL, kill switch, rate limits.",
   "author": {
-    "name": "Sandra Schi",
+    "name": "sandraschi",
     "email": "sandra@example.com"
   },
   "license": "MIT",
@@ -17,14 +17,38 @@
     "entry_point": "src/pywinauto_mcp/main.py",
     "mcp_config": {
       "command": "python",
-      "args": ["src/pywinauto_mcp/main.py"],
+      "args": ["-m", "pywinauto_mcp"],
       "env": {
         "PYTHONPATH": "${__dirname}/src",
         "PYTHONUNBUFFERED": "1"
       }
     }
-  }
+  },
+  "user_config": {
+    "bypass_hitl": {
+      "type": "boolean",
+      "title": "Bypass HITL (dangerous)",
+      "description": "Skip human approval for mouse/keyboard. Leave false unless you fully trust this session.",
+      "default": false
+    }
+  },
+  "tools": [
+    { "name": "automation_windows", "description": "Window find, focus, move, resize, close" },
+    { "name": "automation_elements", "description": "UIA element click, text, tree, rects" },
+    { "name": "automation_mouse", "description": "Pointer click, drag, scroll, telemetry HUD" },
+    { "name": "automation_keyboard", "description": "Keys, hotkeys, typing" },
+    { "name": "automation_visual", "description": "Screenshot, OCR, image match" },
+    { "name": "automation_assert", "description": "Outcome verification for CUA loops" },
+    { "name": "automation_dialog", "description": "Native dialog handling" },
+    { "name": "automation_shortcut", "description": "App-specific keyboard shortcuts" },
+    { "name": "automation_task", "description": "Multi-step task helpers" },
+    { "name": "automation_system", "description": "Help, clipboard, processes, start_app" },
+    { "name": "get_desktop_state", "description": "Desktop / window discovery (set-of-mark)" },
+    { "name": "approve_automation", "description": "HITL approval for mutating input" },
+    { "name": "automation_safety", "description": "Safety counters and status" }
+  ],
+  "compatibility": {
+    "platforms": ["win32"]
+  },
+  "keywords": ["windows", "computer-use", "cua", "ui-automation", "pywinauto", "fastmcp", "mcp"]
 }
-
-
-
